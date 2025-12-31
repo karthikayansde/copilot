@@ -1,3 +1,8 @@
+import 'dart:math';
+
+import 'package:copilot/core/theme/app_colors.dart';
+import 'package:copilot/utils/app_strings.dart';
+import 'package:copilot/widgets/button_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
@@ -7,6 +12,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
 
+import 'package:get/get.dart';
+import 'controller/home_controller.dart';
+import 'core/theme/styles.dart';
+import 'services/shared_pref_manager.dart';
 import 'views/login_view.dart';
 
 void main() {
@@ -26,7 +35,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const LoginView(),
+      home: const AuthScreen(),
     );
   }
 }
@@ -42,34 +51,37 @@ class _AuthScreenState extends State<AuthScreen> {
   final LocalAuthentication auth = LocalAuthentication();
   bool _canCheckBiometrics = false;
   bool _isLoading = true;
+  bool _isLoggedIn = false;
 
   @override
   void initState() {
     super.initState();
-    _initializeAuth();
+    _checkLoginStatus();
   }
 
-  Future<void> _initializeAuth() async {
+  Future<void> _checkLoginStatus() async {
+    // Add a small delay for splash effect
     await Future.delayed(const Duration(milliseconds: 500));
-    await _checkBiometrics();
-    await _checkIfLoggedIn();
-    setState(() {
-      _isLoading = false;
-    });
-  }
+    
+    final isLoggedIn = await SharedPrefManager.instance.getBoolAsync(SharedPrefManager.isLoggedIn) ?? false;
+    if (!mounted) return;
 
-  Future<void> _checkIfLoggedIn() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-      if (isLoggedIn && mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
+    if (!isLoggedIn) {
+      // Not logged in -> Go to Login
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginView()),
+      );
+    } else {
+      // Logged in -> Setup Biometrics
+      setState(() {
+        _isLoggedIn = true;
+        _isLoading = false;
+      });
+      await _checkBiometrics();
+      if (_canCheckBiometrics) {
+        _authenticate();
       }
-    } catch (e) {
-      debugPrint('Error checking login status: $e');
     }
   }
 
@@ -94,18 +106,12 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Future<void> _authenticate() async {
-    if (!_canCheckBiometrics) {
-      _showToast('Biometric authentication not available');
-      return;
-    }
-
-    bool authenticated = false;
     try {
-      authenticated = await auth.authenticate(
+      final authenticated = await auth.authenticate(
         localizedReason: 'Please authenticate to access the app',
         authMessages: const <AuthMessages>[
           AndroidAuthMessages(
-            signInTitle: 'Biometric Authentication',
+            signInTitle: 'Welcome Back',
             cancelButton: 'Cancel',
             signInHint: 'Verify your identity',
           ),
@@ -114,41 +120,17 @@ class _AuthScreenState extends State<AuthScreen> {
           ),
         ],
           biometricOnly: false,
-          sensitiveTransaction: false,
       );
 
-      if (authenticated) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('isLoggedIn', true);
-
-        if (mounted) {
-          _showToast('Login successful');
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
-          );
-        }
-      } else {
-        _showToast('Something went wrong, login again');
+      if (authenticated && mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
       }
-    } on PlatformException catch (e) {
-      debugPrint('Authentication error: ${e.code} - ${e.message}');
-      _showToast('Something went wrong, login again');
     } catch (e) {
-      debugPrint('Unexpected error: $e');
-      _showToast('Something went wrong, login again');
-    }
-  }
-
-  void _showToast(String message) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          duration: const Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      debugPrint('Authentication error: $e');
+      // Allow retry via button
     }
   }
 
@@ -156,240 +138,70 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('Login'),
-        centerTitle: true,
-      ),
+      backgroundColor: AppColors.cardBackground,
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.fingerprint,
-                size: 100,
-                color: Colors.deepPurple,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+
+            Text(
+              'Authentication',
+
+              style: text28Bold.copyWith(fontSize: 24),
+            ),
+            SizedBox(height: 40,),
+            Icon(
+              Icons.fingerprint,
+              size: 100,
+              color: AppColors.textPrimary,
+            ),
+            const SizedBox(height: 40),
+            if (_canCheckBiometrics)
+              BasicButtonWidget(
+                width: 250,
+                onPressed: _authenticate, 
+                label: 'Unlock with Biometrics',
+              )
+            else
+              const Text(
+                'Biometrics not available.\nPlease log in again.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.red),
               ),
-              const SizedBox(height: 60),
-              ElevatedButton.icon(
-                onPressed: _canCheckBiometrics ? _authenticate : null,
-                icon: const Icon(Icons.login, size: 24),
-                label: const Text(
-                  'Authenticate',
-                  style: TextStyle(fontSize: 18),
-                ),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 48,
-                    vertical: 20,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-              if (!_canCheckBiometrics) ...[
-                const SizedBox(height: 20),
-                const Text(
-                  'Biometric authentication not available',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ],
-          ),
+            
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: () async {
+                 await SharedPrefManager.instance.logout();
+                 if(mounted){
+                   Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginView()),
+                  );
+                 }
+              },
+              child: Text('Log out',style: TextStyle(color: AppColors.textSecondary),),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-class HomeScreen extends StatefulWidget {
+
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  final stt.SpeechToText _speech = stt.SpeechToText();
-  final TextEditingController _searchController = TextEditingController();
-  bool _isListening = false;
-  bool _speechEnabled = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _initSpeech();
-  }
-
-  Future<void> _initSpeech() async {
-    try {
-      final status = await Permission.microphone.request();
-      if (status.isGranted) {
-        _speechEnabled = await _speech.initialize(
-          onError: (error) {
-            debugPrint('Speech error: $error');
-            if (mounted) {
-              setState(() {
-                _isListening = false;
-              });
-              _showToast('Some thing went wrong, please try again');
-            }
-          },
-          onStatus: (status) {
-            debugPrint('Speech status: $status');
-            if (status == 'notListening' || status == 'done') {
-              if (mounted) {
-                setState(() {
-                  _isListening = false;
-                });
-              }
-            }
-          },
-        );
-        setState(() {});
-      } else {
-        _showToast('Microphone permission denied');
-      }
-    } catch (e) {
-      debugPrint('Error initializing speech: $e');
-      _showToast('Error initializing speech recognition');
-    }
-  }
-
-  Future<void> _startListening() async {
-    if (!_speechEnabled) {
-      _showToast('Speech recognition not available');
-      return;
-    }
-
-    if (_isListening) {
-      return;
-    }
-
-    try {
-      await _speech.listen(
-        onResult: (result) {
-          if (mounted) {
-            setState(() {
-              _searchController.text = result.recognizedWords;
-            });
-          }
-        },
-        listenFor: const Duration(seconds: 30),
-        pauseFor: const Duration(seconds: 3),
-        localeId: 'en_US',
-        cancelOnError: true,
-        listenMode: stt.ListenMode.confirmation,
-      );
-
-      if (mounted) {
-        setState(() {
-          _isListening = true;
-        });
-      }
-    } catch (e) {
-      debugPrint('Error starting listening: $e');
-      if (mounted) {
-        setState(() {
-          _isListening = false;
-        });
-      }
-      _showToast('Error starting speech recognition');
-    }
-  }
-
-  Future<void> _stopListening() async {
-    try {
-      await _speech.stop();
-      if (mounted) {
-        setState(() {
-          _isListening = false;
-        });
-      }
-    } catch (e) {
-      debugPrint('Error stopping listening: $e');
-      if (mounted) {
-        setState(() {
-          _isListening = false;
-        });
-      }
-    }
-  }
-
-  void _clearText() {
-    setState(() {
-      _searchController.clear();
-    });
-  }
-
-  void _showToast(String message) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          duration: const Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
-  }
-
-  Future<void> _logout(BuildContext context) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isLoggedIn', false);
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Logged out successfully'),
-            duration: Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const AuthScreen()),
-        );
-      }
-    } catch (e) {
-      debugPrint('Error logging out: $e');
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Error logging out'),
-            duration: Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _speech.stop();
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final controller = Get.put(HomeController());
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -397,195 +209,96 @@ class _HomeScreenState extends State<HomeScreen> {
         centerTitle: true,
         actions: [
           IconButton(
-            onPressed: () => _logout(context),
+            onPressed: () => controller.logout(context),
             icon: const Icon(Icons.logout),
             tooltip: 'Logout',
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            if (_isListening) ...[
-              const SizedBox(height: 16),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Expanded(
+                child: SizedBox(),
+              ),
+        
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.red.shade50,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.red.shade200),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 10,
-                      height: 10,
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'Listening...',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.red,
-                        fontWeight: FontWeight.w500,
-                      ),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.shade300,
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-              ),
-            ],
-            const SizedBox(height: 20),
-            Expanded(
-              child: Center(
-                child: _searchController.text.isEmpty
-                    ? Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.mic_none_outlined,
-                      size: 80,
-                      color: Colors.grey.shade400,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Tap the microphone to start\nspeaking or type to search',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ],
-                )
-                    : SingleChildScrollView(
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.deepPurple.shade50,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.deepPurple.shade200,
-                        width: 2,
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                child: Obx(() => TextField(
+                  controller: controller.searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Search or speak...',
+                    prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                    suffixIcon: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Row(
+                        Stack(
+                          alignment: Alignment.center,
                           children: [
-                            Icon(
-                              Icons.chat_bubble_outline,
-                              color: Colors.deepPurple,
-                              size: 24,
-                            ),
-                            const SizedBox(width: 8),
-                            const Text(
-                              'Your Query:',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.deepPurple,
+                            IconButton(
+                              icon: Icon(
+                                controller.isListening.value ? Icons.mic : Icons.mic_none,
+                                color: controller.isListening.value ? Colors.red : Colors.deepPurple,
+                                size: 28,
                               ),
+                              onPressed: controller.speechEnabled.value
+                                  ? (controller.isListening.value ? controller.stopListening : controller.startListening)
+                                  : null,
+                              tooltip: controller.isListening.value ? 'Stop listening' : 'Start voice search',
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          _searchController.text,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.shade300,
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Search or speak...',
-                  prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                  suffixIcon: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (_searchController.text.isNotEmpty)
-                        IconButton(
-                          icon: const Icon(Icons.clear, color: Colors.grey),
-                          onPressed: _clearText,
-                          tooltip: 'Clear',
-                        ),
-                      Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          IconButton(
-                            icon: Icon(
-                              _isListening ? Icons.mic : Icons.mic_none,
-                              color: _isListening ? Colors.red : Colors.deepPurple,
-                              size: 28,
-                            ),
-                            onPressed: _speechEnabled
-                                ? (_isListening ? _stopListening : _startListening)
-                                : null,
-                            tooltip: _isListening ? 'Stop listening' : 'Start voice search',
-                          ),
-                          if (_isListening)
-                            Positioned(
-                              right: 8,
-                              top: 8,
-                              child: Container(
-                                width: 8,
-                                height: 8,
-                                decoration: const BoxDecoration(
-                                  color: Colors.red,
-                                  shape: BoxShape.circle,
+                            if (controller.isListening.value)
+                              Positioned(
+                                right: 8,
+                                top: 8,
+                                child: Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
                                 ),
                               ),
-                            ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+
+                        if (controller.hasText.value)
+                          IconButton(
+                            icon: const Icon(Icons.send, color: Colors.deepPurple),
+                            onPressed: () async {
+                              await controller.sendMessage(context);
+                            },
+                            tooltip: 'Send',
+                          ),
+                      ],
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
                   ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: BorderSide.none,
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 16,
-                  ),
-                ),
-                onChanged: (value) {
-                  setState(() {});
-                },
+                )),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

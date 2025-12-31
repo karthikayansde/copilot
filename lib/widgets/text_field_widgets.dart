@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import '../utils/app_colors.dart';
 
 class TextFieldWidget extends StatelessWidget {
-  TextFieldWidget({super.key, required this.controller, required this.hint, this.radius = 10, this.contentPadding, this.isReadOnly = false, this.suffixIcon, this.prefixIcon, this.isPassword = false, this.keyboardType, this.inputFormatters, this.formKey, this.validator, this.focusNode, this.maxLines, this.onTap, this.enableInteractiveSelection, this.onChanged, this.hasHindOnTop = false, this.bgColor = AppColors.white, this.fillBgColor = false, this.isBorderNeeded = false, this.hintColor, this.header, this.maxLength});
+  TextFieldWidget({super.key, required this.controller, required this.hint, this.radius = 20, this.contentPadding, this.isReadOnly = false, this.suffixIcon, this.prefixIcon, this.isPassword = false, this.keyboardType, this.inputFormatters, this.formKey, this.validator, this.focusNode, this.maxLines, this.onTap, this.enableInteractiveSelection, this.onChanged, this.hasHindOnTop = false, this.bgColor = AppColors.white, this.fillBgColor = false, this.isBorderNeeded = false, this.hintColor, this.header, this.maxLength});
   final TextEditingController controller;
   final String hint;
   final String? header;

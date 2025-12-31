@@ -39,210 +39,204 @@ class _SignupViewState extends State<SignupView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.cardBackground,
+      backgroundColor: AppColors.greyBackground,
       body: Obx(
         () => Stack(
           children: [
             Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: SingleChildScrollView(
-                  child: Form(
-                    key: controller.formKey,
-                    child: Padding(
-                      padding: EdgeInsets.only(left: 20, right: 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const SizedBox(height: 20),
+                child: Card(
+                  color: AppColors.cardBackground,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  child: SingleChildScrollView(
+                    child: Form(
+                      key: controller.formKey,
+                      child: Padding(
+                        padding: EdgeInsets.only(left: 20, right: 20),
+                        child: Column(
 
-                          Row(
-                            mainAxisAlignment: .start,
-                            children: [
-                              Icon(Icons.person_add_alt, size: 40),
-                              SizedBox(width: 10),
-                              Column(
-                                crossAxisAlignment: .start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 16),
+
+                            SizedBox(height: 16,),
+
+                            Align(
+                              alignment: AlignmentGeometry.center,
+                              child: Text(
+                                AppStrings.register,
+                                style: text28Bold.copyWith(fontSize: 24),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            TextFieldWidget(
+                              isBorderNeeded: true,
+                              hasHindOnTop: true,
+                              suffixIcon: Padding(
+                                padding: const EdgeInsets.only(
+                                  left: 10,
+                                  right: 10,
+                                ),
+                                child: Icon(
+                                  Icons.person_2_outlined,
+                                  size: 18,
+                                ),
+                              ),
+                              maxLines: 1,
+                              inputFormatters: [
+                                AppInputFormatters.limitedText(maxLength: 255),
+                                AppInputFormatters.lettersNumbersSpaceSymbolsFormat,
+                              ],
+                              validator: AppValidators.name,
+                              controller: controller.nameController,
+                              hint: AppStrings.name,
+                            ),
+                  
+                            TextFieldWidget(
+                              isBorderNeeded: true,
+                              hasHindOnTop: true,
+                              suffixIcon: Padding(
+                                padding: const EdgeInsets.only(left: 10, right: 10),
+                                child: Icon(Icons.person_2_outlined, size: 18),
+                              ),
+                              maxLines: 1,
+                              // inputFormatters: AppInputFormatters.email(),
+                              validator: AppValidators.name,
+                              hint: AppStrings.userName,
+                              controller: controller.emailController,
+                            ),
+                            TextFieldWidget(
+                              isBorderNeeded: true,
+                              hasHindOnTop: true,
+                              isPassword: controller.isPasswordHidden.value,
+                              suffixIcon: InkWell(
+                                onTap: () {
+                                  controller.isPasswordHidden.value =
+                                  !controller.isPasswordHidden.value;
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 10,
+                                    right: 10,
+                                  ),
+                                  child: controller.isPasswordHidden.value
+                                      ? Icon(
+                                    Icons.visibility_outlined,
+                                    size: 18,
+                                  )
+                                      : Icon(
+                                    Icons.visibility_off_outlined,
+                                    size: 18,
+                                  ),
+                                ),
+                              ),
+                              maxLines: 1,
+                              inputFormatters: [
+                                AppInputFormatters.limitedText(maxLength: 16),
+                                AppInputFormatters.lettersNumbersSymbolsFormat
+                              ],
+                              validator: AppValidators.password,
+                              hint: AppStrings.password,
+                              controller: controller.passwordController,
+                            ),
+                  
+                            TextFieldWidget(
+                              isBorderNeeded: true,
+                              hasHindOnTop: true,
+                              isPassword:
+                              controller.isConfirmPasswordHidden.value,
+                              suffixIcon: InkWell(
+                                onTap: () {
+                                  controller.isConfirmPasswordHidden.value =
+                                  !controller
+                                      .isConfirmPasswordHidden
+                                      .value;
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 10,
+                                    right: 10,
+                                  ),
+                                  child:
+                                  controller.isConfirmPasswordHidden.value
+                                      ? Icon(
+                                    Icons.visibility_outlined,
+                                    size: 18,
+                                  )
+                                      : Icon(
+                                    Icons.visibility_off_outlined,
+                                    size: 18,
+                                  ),
+                                ),
+                              ),
+                              maxLines: 1,
+                              inputFormatters: [
+                                AppInputFormatters.limitedText(maxLength: 16),
+                                AppInputFormatters.lettersNumbersSymbolsFormat
+                              ],
+                              validator: AppValidators.confirmPassword,
+                              hint: AppStrings.confirmPassword,
+                              controller:
+                              controller.confirmPasswordController,
+                            ),
+                            const SizedBox(height: 10),
+                            InkWell(
+                              onTap: () {
+                                Navigator.pop(context);
+                              },
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
                                   Text(
-                                    AppStrings.register,
-                                    style: text28Bold.copyWith(fontSize: 24),
-                                  ),
-                                  Text(
-                                    AppStrings.plsEnterDetailsToSignup,
+                                    AppStrings.alreadyHaveAnAccount,
                                     style: bodyText16.copyWith(
-                                      color: AppColors.textSecondary,
+                                      height: 1.6,
+                                      color: AppColors.textPrimary,
+                                      letterSpacing: 0.2,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    AppStrings.login,
+                                    style: bodyText16.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      height: 1.6,
+                                      color: AppColors.primary,
+                                      letterSpacing: 0.2,
                                     ),
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 20),
-                          TextFieldWidget(
-                            isBorderNeeded: true,
-                            hasHindOnTop: true,
-                            suffixIcon: Padding(
-                              padding: const EdgeInsets.only(
-                                left: 10,
-                                right: 10,
-                              ),
-                              child: Icon(
-                                Icons.person_2_outlined,
-                                size: 18,
-                              ),
                             ),
-                            maxLines: 1,
-                            inputFormatters: [
-                              AppInputFormatters.limitedText(maxLength: 255),
-                              AppInputFormatters.lettersNumbersSpaceSymbolsFormat,
-                            ],
-                            validator: AppValidators.name,
-                            controller: controller.nameController,
-                            hint: AppStrings.name,
-                          ),
-
-                          TextFieldWidget(
-                            isBorderNeeded: true,
-                            hasHindOnTop: true,
-                            suffixIcon: Padding(
-                              padding: const EdgeInsets.only(left: 10, right: 10),
-                              child: Icon(Icons.person_2_outlined, size: 18),
-                            ),
-                            maxLines: 1,
-                            // inputFormatters: AppInputFormatters.email(),
-                            validator: AppValidators.name,
-                            hint: AppStrings.userName,
-                            controller: controller.emailController,
-                          ),
-                          TextFieldWidget(
-                            isBorderNeeded: true,
-                            hasHindOnTop: true,
-                            isPassword: controller.isPasswordHidden.value,
-                            suffixIcon: InkWell(
-                              onTap: () {
-                                controller.isPasswordHidden.value =
-                                !controller.isPasswordHidden.value;
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 10,
-                                  right: 10,
-                                ),
-                                child: controller.isPasswordHidden.value
-                                    ? Icon(
-                                  Icons.visibility_outlined,
-                                  size: 18,
-                                )
-                                    : Icon(
-                                  Icons.visibility_off_outlined,
-                                  size: 18,
-                                ),
-                              ),
-                            ),
-                            maxLines: 1,
-                            inputFormatters: [
-                              AppInputFormatters.limitedText(maxLength: 16),
-                              AppInputFormatters.lettersNumbersSymbolsFormat
-                            ],
-                            validator: AppValidators.password,
-                            hint: AppStrings.password,
-                            controller: controller.passwordController,
-                          ),
-
-                          TextFieldWidget(
-                            isBorderNeeded: true,
-                            hasHindOnTop: true,
-                            isPassword:
-                            controller.isConfirmPasswordHidden.value,
-                            suffixIcon: InkWell(
-                              onTap: () {
-                                controller.isConfirmPasswordHidden.value =
-                                !controller
-                                    .isConfirmPasswordHidden
-                                    .value;
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 10,
-                                  right: 10,
-                                ),
-                                child:
-                                controller.isConfirmPasswordHidden.value
-                                    ? Icon(
-                                  Icons.visibility_outlined,
-                                  size: 18,
-                                )
-                                    : Icon(
-                                  Icons.visibility_off_outlined,
-                                  size: 18,
-                                ),
-                              ),
-                            ),
-                            maxLines: 1,
-                            inputFormatters: [
-                              AppInputFormatters.limitedText(maxLength: 16),
-                              AppInputFormatters.lettersNumbersSymbolsFormat
-                            ],
-                            validator: AppValidators.confirmPassword,
-                            hint: AppStrings.confirmPassword,
-                            controller:
-                            controller.confirmPasswordController,
-                          ),
-                          const SizedBox(height: 10),
-                          InkWell(
-                            onTap: () {
-                              Navigator.pop(context);
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Text(
-                                  AppStrings.alreadyHaveAnAccount,
-                                  style: bodyText16.copyWith(
-                                    height: 1.6,
-                                    color: AppColors.textPrimary,
-                                    letterSpacing: 0.2,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  AppStrings.login,
-                                  style: bodyText16.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    height: 1.6,
-                                    color: AppColors.primary,
-                                    letterSpacing: 0.2,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 30),
-                          BasicButtonWidget(
-                            onPressed: () async {
-                              if (controller.formKey.currentState!
-                                  .validate()) {
-                                if (controller.passwordController.text !=
-                                    controller
-                                        .confirmPasswordController
-                                        .text) {
-                                  SnackBarWidget.show(
-                                    context,
-                                    message: AppStrings.passwordMatch,
-                                    contentType: ContentType.warning,
-                                  );
-                                } else {
-                                  FocusScope.of(context).unfocus();
-                                  await controller.signupApi(context);
+                            const SizedBox(height: 30),
+                            BasicButtonWidget(
+                              onPressed: () async {
+                                if (controller.formKey.currentState!
+                                    .validate()) {
+                                  if (controller.passwordController.text !=
+                                      controller
+                                          .confirmPasswordController
+                                          .text) {
+                                    SnackBarWidget.show(
+                                      context,
+                                      message: AppStrings.passwordMatch,
+                                      contentType: ContentType.warning,
+                                    );
+                                  } else {
+                                    FocusScope.of(context).unfocus();
+                                    await controller.signupApi(context);
+                                  }
                                 }
-                              }
-                            },
-                            label: AppStrings.register,
-                          ),
-                          const SizedBox(height: 20),
-                        ],
+                              },
+                              label: AppStrings.register,
+                            ),
+                            const SizedBox(height: 32),
+                          ],
+                        ),
                       ),
                     ),
                   ),

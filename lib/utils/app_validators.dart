@@ -31,8 +31,6 @@ class AppValidators {
   static String? password(String? value) {
     if (value == null || value.isEmpty) {
       return AppStrings.newPasswordEMTValidator;
-    } else if (value.length < 6) {
-      return AppStrings.passwordValidator;
     }
     return null;
   }
@@ -47,8 +45,6 @@ class AppValidators {
   static String? confirmPassword(String? value) {
     if (value == null || value.isEmpty) {
       return AppStrings.confirmPasswordEMTValidator;
-    } else if (value.length < 6) {
-      return AppStrings.confirmPasswordValidator;
     }
     return null;
   }

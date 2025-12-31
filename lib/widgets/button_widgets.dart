@@ -13,7 +13,7 @@ class BasicButtonWidget extends StatefulWidget {
   final bool isDisable;
   final bool? elevation;
 
-  const BasicButtonWidget({super.key, required this.onPressed, required this.label, this.height = 44, this.width = double.maxFinite, this.color = AppColors.primary, this.radius = 10, this.isDisable = false, this.labelColor, this.elevation});
+  const BasicButtonWidget({super.key, required this.onPressed, required this.label, this.height = 55, this.width = double.maxFinite, this.color = AppColors.black, this.radius = 20, this.isDisable = false, this.labelColor, this.elevation});
 
   @override
   State<BasicButtonWidget> createState() => _BasicButtonWidgetState();
@@ -38,7 +38,7 @@ class _BasicButtonWidgetState extends State<BasicButtonWidget> {
             borderRadius: BorderRadius.all(Radius.circular(widget.radius)),
             border: Border.all(
               color: widget.isDisable ? AppColors.grey : (widget.color ?? AppColors.primary),
-              width: 2,
+              width: 1.5,
             ),
             boxShadow: widget.elevation == true || widget.elevation != null
                 ? [
