@@ -6,6 +6,7 @@ import '../main.dart';
 import '../services/api/api_service.dart';
 import '../services/api/endpoints.dart';
 import '../services/shared_pref_manager.dart';
+import '../views/home_screen.dart';
 import '../widgets/snack_bar_widget.dart';
 
 class LoginController extends GetxController {
@@ -30,32 +31,22 @@ class LoginController extends GetxController {
         method: ApiMethod.post,
         endpoint: Endpoints.login,
         body: {
-          "email": emailController.text,
+          "username": emailController.text,
           "password": passwordController.text
         },
+        useFormData: true,
       );
       bool result = apiService.showApiResponse(
         context: context,
         response: response,
         codes: {
           ApiCode.requestTimeout1: true,
-          ApiCode.unauthorized401: true,
-          ApiCode.notFound404: true,
-        },
-        customMessages: {
-          ApiCode.unauthorized401: true,
-          ApiCode.notFound404: true,
         },
       );
 
       if(result){
         await SharedPrefManager.instance.setBoolAsync(SharedPrefManager.isLoggedIn, true);
-        await SharedPrefManager.instance.setUserData(
-          name: response.data["data"]['name'],
-          code: response.data["data"]['code'],
-          id: response.data["data"]['_id'],
-          mail: response.data["data"]['email'],
-        );
+        await SharedPrefManager.instance.setStringAsync(SharedPrefManager.username, emailController.text);
         isLoading.value = false;
         Navigator.pushAndRemoveUntil(
           context,

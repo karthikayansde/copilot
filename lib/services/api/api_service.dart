@@ -136,13 +136,16 @@ class ApiService {
     Map<String, dynamic>? body,
     Map<String, String>? headers,
     bool customUrl = false,
+    bool useFormData = false,
   }) async {
     final Uri uri = Uri.parse('${customUrl?"":Endpoints.baseUrl}$endpoint');
 
     // Combine common headers with any request-specific headers
     final Map<String, String> requestHeaders = {
       'Accept': 'application/json',
-      'Content-Type': 'application/json',
+      'Content-Type': useFormData 
+          ? 'application/x-www-form-urlencoded'
+          : 'application/json',
       // ...{
       //   'Authorization': 'Bearer ${await KeycloakAuthService().getAccessToken()}',
       // },
@@ -163,7 +166,11 @@ class ApiService {
           break;
         case ApiMethod.post:
           response = await http
-              .post(uri, headers: requestHeaders, body: jsonEncode(body ?? {}))
+              .post(uri, 
+                headers: requestHeaders, 
+                body: useFormData
+                    ? body?.map((key, value) => MapEntry(key, value.toString()))
+                    : jsonEncode(body ?? {}))
               .timeout(
                 Duration(seconds: 30),
                 onTimeout: () => _createTimeoutResponse(),
@@ -171,7 +178,11 @@ class ApiService {
           break;
         case ApiMethod.put:
           response = await http
-              .put(uri, headers: requestHeaders, body: jsonEncode(body ?? {}))
+              .put(uri, 
+                headers: requestHeaders, 
+                body: useFormData
+                    ? body?.map((key, value) => MapEntry(key, value.toString()))
+                    : jsonEncode(body ?? {}))
               .timeout(
                 Duration(seconds: 30),
                 onTimeout: () => _createTimeoutResponse(),
@@ -182,7 +193,9 @@ class ApiService {
               .delete(
                 uri,
                 headers: requestHeaders,
-                body: jsonEncode(body ?? {}),
+                body: useFormData
+                    ? body?.map((key, value) => MapEntry(key, value.toString()))
+                    : jsonEncode(body ?? {}),
               )
               .timeout(
                 Duration(seconds: 30),
@@ -191,7 +204,11 @@ class ApiService {
           break;
         case ApiMethod.patch:
           response = await http
-              .patch(uri, headers: requestHeaders, body: jsonEncode(body ?? {}))
+              .patch(uri, 
+                headers: requestHeaders, 
+                body: useFormData
+                    ? body?.map((key, value) => MapEntry(key, value.toString()))
+                    : jsonEncode(body ?? {}))
               .timeout(
                 Duration(seconds: 30),
                 onTimeout: () => _createTimeoutResponse(),
@@ -210,6 +227,64 @@ class ApiService {
     } catch (e) {
       // Catches any other unexpected errors during the request process
       // debugPrint('Unhandled API Error for $endpoint: $e');
+      return ApiResponse(
+        code: ApiCode.unexpected0.index,
+        message: "An unexpected error occurred: $e",
+        data: {},
+      );
+    }
+  }
+
+  /// Multipart request for file uploads with form data
+  Future<ApiResponse> multipartRequest({
+    required String endpoint,
+    required Map<String, String> fields,
+    List<http.MultipartFile>? files,
+    Map<String, String>? headers,
+    bool customUrl = false,
+  }) async {
+    final Uri uri = Uri.parse('${customUrl?"":Endpoints.baseUrl}$endpoint');
+    
+    var request = http.MultipartRequest('POST', uri);
+    
+    // Add headers
+    request.headers.addAll({
+      'Accept': 'application/json',
+      // ...{
+      //   'Authorization': 'Bearer ${await KeycloakAuthService().getAccessToken()}',
+      // },
+      ...(headers ?? {}),
+    });
+    
+    // Add form fields
+    request.fields.addAll(fields);
+    
+    // Add files if any
+    if (files != null) {
+      request.files.addAll(files);
+    }
+    
+    try {
+      var streamedResponse = await request.send().timeout(
+        Duration(seconds: 30),
+        onTimeout: () => throw Exception('Request timeout'),
+      );
+      var response = await http.Response.fromStream(streamedResponse);
+      return _handleResponse(response);
+    } on http.ClientException {
+      return ApiResponse(
+        code: ApiCode.networkError3.index,
+        message: "Network error: Please check your internet connection.",
+        data: {},
+      );
+    } catch (e) {
+      if (e.toString().contains('timeout')) {
+        return ApiResponse(
+          code: ApiCode.requestTimeout1.index,
+          message: "The connection has timed out.",
+          data: {},
+        );
+      }
       return ApiResponse(
         code: ApiCode.unexpected0.index,
         message: "An unexpected error occurred: $e",
