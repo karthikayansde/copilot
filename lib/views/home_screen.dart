@@ -358,81 +358,84 @@ class HomeScreen extends StatelessWidget {
               Expanded(
                 child: Obx(() {
                   if (controller.messages.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(28),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.black.withOpacity(0.03),
-                                  Colors.black.withOpacity(0.01),
-                                ],
-                              ),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.black.withOpacity(0.08),
-                                width: 2,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
-                                  blurRadius: 30,
-                                  spreadRadius: 0,
-                                ),
-                              ],
-                            ),
-                            child: Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: const BoxDecoration(
+                    return SingleChildScrollView(
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(height: 20,),
+                            Container(
+                              padding: const EdgeInsets.all(28),
+                              decoration: BoxDecoration(
                                 gradient: LinearGradient(
-                                  colors: [Colors.black, Color(0xFF2D2D2D)],
+                                  colors: [
+                                    Colors.black.withOpacity(0.03),
+                                    Colors.black.withOpacity(0.01),
+                                  ],
                                 ),
                                 shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.black.withOpacity(0.08),
+                                  width: 2,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 30,
+                                    spreadRadius: 0,
+                                  ),
+                                ],
                               ),
-                              child: const Icon(
-                                Icons.analytics_outlined,
-                                size: 48,
-                                color: Colors.white,
+                              child: Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [Colors.black, Color(0xFF2D2D2D)],
+                                  ),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.analytics_outlined,
+                                  size: 48,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 32),
-                          const Text(
-                            'Welcome to Pilog AI Lens',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 32,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -1,
-                              height: 1.2,
+                            const SizedBox(height: 32),
+                            const Text(
+                              'Welcome to Pilog AI Lens',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 32,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -1,
+                                height: 1.2,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Advanced AI insights at your fingertips',
-                            style: TextStyle(
-                              color: Colors.black.withOpacity(0.5),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: 0.2,
+                            const SizedBox(height: 12),
+                            Text(
+                              'Advanced AI insights at your fingertips',
+                              style: TextStyle(
+                                color: Colors.black.withOpacity(0.5),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                letterSpacing: 0.2,
+                              ),
                             ),
-                          ),
-                          // const SizedBox(height: 48),
-                          // Wrap(
-                          //   spacing: 12,
-                          //   runSpacing: 12,
-                          //   alignment: WrapAlignment.center,
-                          //   children: [
-                          //     _buildSuggestionChip('Analyze Data', Icons.assessment_outlined),
-                          //     _buildSuggestionChip('Get Insights', Icons.lightbulb_outline),
-                          //     _buildSuggestionChip('Ask Questions', Icons.help_outline),
-                          //     _buildSuggestionChip('Generate Reports', Icons.description_outlined),
-                          //   ],
-                          // ),
-                        ],
+                            const SizedBox(height: 48),
+                            Wrap(
+                              spacing: 12,
+                              runSpacing: 12,
+                              alignment: WrapAlignment.center,
+                              children: [
+                                _buildSuggestionChip('Analyze Data', Icons.assessment_outlined),
+                                _buildSuggestionChip('Get Insights', Icons.lightbulb_outline),
+                                _buildSuggestionChip('Ask Questions', Icons.help_outline),
+                                _buildSuggestionChip('Generate Reports', Icons.description_outlined),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   }
