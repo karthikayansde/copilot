@@ -6,6 +6,7 @@ import '../main.dart';
 import '../services/api/api_service.dart';
 import '../services/api/endpoints.dart';
 import '../services/shared_pref_manager.dart';
+import '../views/home_screen.dart';
 import '../widgets/snack_bar_widget.dart';
 
 class LoginController extends GetxController {

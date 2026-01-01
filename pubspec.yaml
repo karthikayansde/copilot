@@ -43,6 +43,7 @@ dependencies:
   get: ^4.7.3
   http: ^1.6.0
   awesome_snackbar_content: ^0.1.1
+  flutter_html: ^3.0.0
 
 dev_dependencies:
   flutter_test:
