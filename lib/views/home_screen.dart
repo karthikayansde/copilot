@@ -156,22 +156,17 @@ class HomeScreen extends StatelessWidget {
                       );
                     }
       
-                    return Padding(
-                      padding: const EdgeInsets.only(top:55.0),
-                      child: ListView.separated(
-                        controller: controller.scrollController,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        itemCount: controller.messages.length + (controller.isLoading.value ? 1 : 0),
-                        separatorBuilder: (context, index) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          if (index == controller.messages.length) {
-                            return _buildLoadingMessage();
-                          }
-
-                          final message = controller.messages[index];
-                          return _buildMessage(context, message, controller);
-                        },
-                      ),
+                    return ListView.separated(
+                      controller: controller.scrollController,
+                      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 20, top: 60),
+                      itemCount: controller.messages.length + (controller.isLoading.value ? 1 : 0),
+                      separatorBuilder: (context, index) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        if (index == controller.messages.length) {
+                          return _buildLoadingMessage();
+                        }
+                        return _buildMessage(context, controller.messages[index], controller);
+                      },
                     );
                   }),
                 ),
@@ -299,161 +294,162 @@ class HomeScreen extends StatelessWidget {
   Widget _buildMessage(BuildContext context, dynamic message, dynamic controller) {
     final isUser = message.isUser;
 
-    return Align(
-      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-      child: Row(
-        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+    if (!isUser) {
+      return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (!isUser) ...[
-            Container(
-              height: 37,
-              width: 37,
-              margin: const EdgeInsets.only(right: 12, top: 4),
+          Container(
+            height: 37,
+            width: 37,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Colors.black, Color(0xFF2D2D2D)],
+              ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.15),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Center(child: Text("AI", style: TextStyle(color: AppColors.white, fontSize: 16, fontWeight: FontWeight.bold))),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Colors.black.withOpacity(0.1),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 20,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Html(
+              data: message.text,
+              style: {
+                "body": Style(
+                  margin: Margins.zero,
+                  padding: HtmlPaddings.zero,
+                  fontSize: FontSize(15),
+                  color: Colors.black87,
+                  lineHeight: const LineHeight(1.7),
+                ),
+                "p": Style(
+                  margin: Margins.only(bottom: 12),
+                  color: Colors.black87,
+                ),
+                "code": Style(
+                  backgroundColor: Colors.black.withOpacity(0.05),
+                  color: Colors.black,
+                  padding: HtmlPaddings.all(4),
+                  fontFamily: 'monospace',
+                  fontWeight: FontWeight.w600,
+                ),
+                "pre": Style(
+                  backgroundColor: Colors.black.withOpacity(0.04),
+                  padding: HtmlPaddings.all(12),
+                  margin: Margins.symmetric(vertical: 8),
+                  border: Border.all(
+                    color: Colors.black.withOpacity(0.1),
+                    width: 1,
+                  ),
+                ),
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildActionIcon(Icons.content_copy_rounded, () {
+                  Clipboard.setData(ClipboardData(text: message.text));
+                  Get.snackbar(
+                    'Copied',
+                    'Message copied to clipboard',
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: Colors.black87,
+                    colorText: Colors.white,
+                    duration: const Duration(seconds: 1),
+                    margin: const EdgeInsets.all(15),
+                    borderRadius: 15,
+                  );
+                }),
+                const SizedBox(width: 4),
+                _buildActionIcon(Icons.refresh_outlined, () {}),
+                const SizedBox(width: 4),
+                _buildActionIcon(Icons.thumb_up_outlined, () => _showFeedbackDialog(context)),
+                const SizedBox(width: 4),
+                _buildActionIcon(Icons.thumb_down_outlined, () => _showNegativeFeedbackDialog(context)),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [Colors.black, Color(0xFF2D2D2D)],
                 ),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
-                    blurRadius: 12,
+                    color: Colors.black.withOpacity(0.12),
+                    blurRadius: 20,
                     offset: const Offset(0, 4),
                   ),
                 ],
               ),
-              child: Center(child: Text("AI", style: TextStyle(color: AppColors.white,fontSize: 16, fontWeight: FontWeight.bold),)),
-            ),
-          ],
-          Flexible(
-            child: Column(
-              crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                  margin: EdgeInsets.only(
-                    left: isUser ? 80 : 0,
-                    right: isUser ? 0 : 80,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: isUser
-                        ? const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Colors.black, Color(0xFF2D2D2D)],
-                    )
-                        : null,
-                    color: isUser ? null : Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: isUser
-                          ? Colors.black
-                          : Colors.black.withOpacity(0.1),
-                      width: isUser ? 0 : 1.5,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(isUser ? 0.12 : 0.06),
-                        blurRadius: 20,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: isUser
-                      ? Text(
-                    message.text,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      height: 1.6,
-                      letterSpacing: 0.1,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  )
-                      : Html(
-                    data: message.text,
-                    style: {
-                      "body": Style(
-                        margin: Margins.zero,
-                        padding: HtmlPaddings.zero,
-                        fontSize: FontSize(15),
-                        color: Colors.black87,
-                        lineHeight: const LineHeight(1.7),
-                      ),
-                      "p": Style(
-                        margin: Margins.only(bottom: 12),
-                        color: Colors.black87,
-                      ),
-                      "code": Style(
-                        backgroundColor: Colors.black.withOpacity(0.05),
-                        color: Colors.black,
-                        padding: HtmlPaddings.all(4),
-                        fontFamily: 'monospace',
-                        fontWeight: FontWeight.w600,
-                      ),
-                      "pre": Style(
-                        backgroundColor: Colors.black.withOpacity(0.04),
-                        padding: HtmlPaddings.all(12),
-                        margin: Margins.symmetric(vertical: 8),
-                        border: Border.all(
-                          color: Colors.black.withOpacity(0.1),
-                          width: 1,
-                        ),
-                      ),
-                    },
-                  ),
-                ),
-                if (!isUser) ...[
-                  const SizedBox(height: 8),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _buildActionIcon(Icons.content_copy_rounded, () {
-                          Clipboard.setData(ClipboardData(text: message.text));
-                          Get.snackbar(
-                            'Copied',
-                            'Message copied to clipboard',
-                            snackPosition: SnackPosition.BOTTOM,
-                            backgroundColor: Colors.black87,
-                            colorText: Colors.white,
-                            duration: const Duration(seconds: 1),
-                            margin: const EdgeInsets.all(15),
-                            borderRadius: 15,
-                          );
-                        }),
-                        const SizedBox(width: 4),
-                        _buildActionIcon(Icons.refresh_outlined, () {}),
-                        const SizedBox(width: 4),
-                        _buildActionIcon(Icons.thumb_up_outlined, () => _showFeedbackDialog(context)),
-                        const SizedBox(width: 4),
-                        _buildActionIcon(Icons.thumb_down_outlined, () => _showNegativeFeedbackDialog(context)),
-                      ],
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          if (isUser) ...[
-            Container(
-              height: 37,
-              width: 37,
-              margin: const EdgeInsets.only(left: 12, top: 4),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.04),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Colors.black.withOpacity(0.1),
-                  width: 1.5,
+              child: Text(
+                message.text,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  height: 1.6,
+                  letterSpacing: 0.1,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-              child: Center(child: Icon(Icons.person_outline, color: Colors.black.withOpacity(0.7), size: 16)),
             ),
-          ],
+          ),
+          Container(
+            height: 37,
+            width: 37,
+            margin: const EdgeInsets.only(left: 12, top: 4),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.04),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.black.withOpacity(0.1),
+                width: 1.5,
+              ),
+            ),
+            child: Center(child: Icon(Icons.person_outline, color: Colors.black.withOpacity(0.7), size: 16)),
+          ),
         ],
       ),
     );
@@ -461,7 +457,7 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildInputArea(BuildContext context, dynamic controller) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
