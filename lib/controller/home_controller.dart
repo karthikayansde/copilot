@@ -25,6 +25,7 @@ class HomeController extends GetxController {
   var speechEnabled = false.obs;
   var hasText = false.obs;
   var messages = <ChatMessage>[].obs;
+  var selectedSuggestions = <String>[].obs;
   var userName = '';
   String sessionId = '';
 
@@ -153,6 +154,15 @@ class HomeController extends GetxController {
     }
   }
 
+  void addSuggestion(String suggestion) {
+    selectedSuggestions.clear();
+    selectedSuggestions.add(suggestion);
+  }
+
+  void removeSuggestion(String suggestion) {
+    selectedSuggestions.remove(suggestion);
+  }
+
   void clearText() {
     searchController.clear();
 
@@ -265,11 +275,20 @@ class HomeController extends GetxController {
   }
 
   Future<void> sendMessage(BuildContext context) async {
-    if (searchController.text.trim().isEmpty) return;
+    if (searchController.text.trim().isEmpty && selectedSuggestions.isEmpty) return;
 
-    final userMessage = searchController.text;
+    String prompt = '';
+    if (selectedSuggestions.isNotEmpty) {
+      prompt += '[${selectedSuggestions.join(", ")}] ';
+    }
+    prompt += searchController.text;
+
+    final userMessage = prompt;
     messages.add(ChatMessage(text: userMessage, isUser: true));
+    
+    // Clear inputs
     searchController.clear();
+    selectedSuggestions.clear();
     scrollToBottom();
 
     isLoading.value = true;

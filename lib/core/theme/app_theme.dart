@@ -1,5 +1,5 @@
-import 'package:copilot/core/theme/styles.dart';
 import 'package:flutter/material.dart';
+import 'package:iMirAI/core/theme/styles.dart';
 
 import '../../utils/app_colors.dart';
 

@@ -1,11 +1,9 @@
 import 'dart:math';
-
-import 'package:copilot/core/theme/app_colors.dart';
-import 'package:copilot/utils/app_strings.dart';
-import 'package:copilot/views/home_screen.dart';
-import 'package:copilot/widgets/button_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:iMirAI/utils/app_strings.dart';
+import 'package:iMirAI/views/home_screen.dart';
+import 'package:iMirAI/widgets/button_widgets.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth_android/local_auth_android.dart';
 import 'package:local_auth_ios/local_auth_ios.dart';
@@ -16,6 +14,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:get/get.dart';
 import 'controller/home_controller.dart';
+import 'core/theme/app_colors.dart';
 import 'core/theme/styles.dart';
 import 'services/shared_pref_manager.dart';
 import 'views/login_view.dart';
@@ -31,7 +30,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Copilot',
+      title: AppStrings.appName,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),

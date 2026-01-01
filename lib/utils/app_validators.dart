@@ -8,26 +8,6 @@ class AppValidators {
     }
     return null;
   }
-  static String? feedback(String? value) {
-    if (value == null || value.isEmpty) {
-      return AppStrings.feedbackValidator;
-    }
-    return null;
-  }
-  static String? unit(String? value) {
-    if (value == null || value.isEmpty) {
-      return AppStrings.uomValidator;
-    }
-    return null;
-  }
-
-  static String? mateCode(String? value) {
-    if (value == null || value.isEmpty) {
-      return AppStrings.codeValidator;
-    }
-    return null;
-  }
-
   static String? password(String? value) {
     if (value == null || value.isEmpty) {
       return AppStrings.newPasswordEMTValidator;

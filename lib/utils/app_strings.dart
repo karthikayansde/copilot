@@ -1,54 +1,13 @@
 class AppStrings {
-  static const String appName = "Cart Mate";
-  static const String enter = "Enter";
+  static const String appName = "iMirAI";
   static const String userName = "User Name";
-  static const String welcomeBack = "Welcome back 👋";
-  static const String plsEnterMailPassword =
-      "Please enter your email & password to Log in.";
-  static const String email = "Email";
-  static const String editItem = "Edit Item";
-  static const String delete = "Delete";
-  static const String notes = "Notes";
-  static const String edit = "Edit";
-  static const String info = "Info";
   static const String password = "Password";
-  static const String forgotPassword = "Forgot password?";
   static const String dontHaveAnAccount = "Don’t have an account?";
   static const String login = "Login";
-  static const String createAccount = "Create account";
-  static const String plsEnterDetailsToSignup =
-      "Please enter your details to sign up.";
   static const String confirmPassword = "Confirm Password";
   static const String register = "Register";
   static const String name = "Name";
-  static const String you = "You";
-  static const String units = "Units";
-  static const String tagMate = "Tag a mate";
-  static const String addNote = "Add note";
-  static const String itemName = "Item name";
-  static const String listName = "List name";
-  static const String forgotPasswordTitle = "Forgot Password?";
-  static const String forgotPasswordSubtitle =
-      "Enter your email to receive a OTP.";
-  static const String sendOtp = "Send OTP";
-  static const String newPasswordTitle = "Set a New Password";
-  static const String newPasswordSubtitle =
-      "Create a new, strong password for your account.";
-  static const String newPassword = "New Password";
-  static const String backToLogin = "Back to Login";
-  static const String savePassword = "Save Password";
-  static const String save = "Save";
-  static const String send = "Send";
-  static const String create = "Create";
-  static const String otpVerificationTitle = "OTP Verification";
-  static const String otpVerificationSubtitle =
-      "Enter the 4-digit code sent to your email.";
-  static const String otpHint = "Enter OTP";
-  static const String verifyAndProceed = "Verify and Proceed";
   static const String nameValidator = "Please enter name";
-  static const String feedbackValidator = "Please enter feedback";
-  static const String uomValidator = "Please enter unit";
-  static const String codeValidator = "Please enter code";
   static const String emailEMTValidator = "Please enter email";
   static const String emailValidator = "Please enter a valid email";
   static const String newPasswordEMTValidator = "Please enter a new password";
@@ -64,31 +23,5 @@ class AppStrings {
   static const String requestTimedOut = "Request timed out. Please check your network and try again.";
   static const String alreadyHaveAnAccount = "Already have an account?";
   static const String passwordMatch = "Password and Confirm Password must match";
-  static const String matesList = "Mates' List";
-  static const String myList = "My List";
-  static const String cancel = "Cancel";
-  static const String ok = "Ok";
-  static const String copy = "Copy";
-  static const String add = "Add";
-  static const String yes = "Yes";
   static const String logout = "Logout";
-  static const String logoutDetail = "Are you sure you want to log out?";
-  static const String addList = "+ Add List";
-  static const String matesCode = "Mates' Code";
-  static const String yourCode = "Your Code";
-  static const String addMate = "+ Add Mate";
-  static const String addItem = "+ Add Item";
-  static const String mates = "Mates";
-  static const String helpFeedback = "Help and Feedback";
-  static const String enterYourFeedback = "Enter your feedback";
-  static const String editProfile = "Edit Profile";
-  static const String getYourCode = "Get Your Code";
-  static const String imageNotFound = "Image not found";
-  static const String deleteAccount = "Delete Account";
-  static const String itemNameRequired = "Item name is required";
-  static const String deleteAccountDetail = "Are you sure you want to delete your account? This action cannot be undone.";
-  static const String actionRestricted = "Action Restricted";
-  static const String creatorCanDelete = "Only the creator can delete this item. You can update its status instead.";
-  static const String noMates = "You have no mates yet.\nAdd mates by sharing your code or entering your family and friends' codes to start shopping together.";
-  static const String noItems = "No items in this list.\nAdd items and assign them to your mates or yourself.";
 }

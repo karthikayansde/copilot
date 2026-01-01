@@ -64,7 +64,27 @@ class _SignupViewState extends State<SignupView> {
                             const SizedBox(height: 16),
 
                             SizedBox(height: 16,),
-
+                            Align(
+                              alignment: Alignment.center,
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Colors.black, Color(0xFF2D2D2D)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.15),
+                                      blurRadius: 15,
+                                      offset: const Offset(0, 5),
+                                    ),
+                                  ],
+                                ),
+                                child: Image.asset('assets/images/iMirAI-Logo1.png', height: 40, width: 40),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
                             Align(
                               alignment: AlignmentGeometry.center,
                               child: Text(

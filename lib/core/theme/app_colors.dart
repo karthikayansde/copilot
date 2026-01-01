@@ -12,6 +12,7 @@ class AppColors {
   static Color green = const Color.fromARGB(255, 1, 55, 14);
 
   // Background Colors
+  static Color white = Colors.white;
   static Color scaffoldBackground = Colors.white;
   static Color cardBackground = Colors.white;
   static Color greyBackground = const Color(0xFFF5F5F5);
