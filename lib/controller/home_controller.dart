@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:iMirAI/model/sessions_model.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
@@ -28,6 +29,7 @@ class HomeController extends GetxController {
   var selectedSuggestions = <String>[].obs;
   var userName = '';
   String sessionId = '';
+  var sessionsList = SessionsModel().obs;
 
   final apiService = ApiService();
 
@@ -38,13 +40,14 @@ class HomeController extends GetxController {
   }
 
   Future<void> init() async {
-    _initSpeech();
-    _getSessionId();
     userName =
         await SharedPrefManager.instance.getStringAsync(
           SharedPrefManager.username,
         ) ??
         '';
+    await _initSpeech();
+    await _getSessionId();
+    await getSessionsApi();
     searchController.addListener(() {
       hasText.value = searchController.text.isNotEmpty;
     });
@@ -332,5 +335,119 @@ class HomeController extends GetxController {
         );
       }
     });
+  }
+
+  Future<void> getSessionsApi() async {
+    try {
+
+      isLoading.value = true;
+
+      ApiResponse response = await apiService.request(
+        method: ApiMethod.get,
+        endpoint: "${Endpoints.sessions}$userName",
+      );
+      if(response.code == ApiCode.success200.index){
+        sessionsList.value = SessionsModel.fromJson(response.data);
+        isLoading.value = false;
+      }
+    } catch (e) {
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> editSessionTitleApi(BuildContext context, String sessionId, String newTitle) async {
+    try {
+      isLoading.value = true;
+      ApiResponse response = await apiService.request(
+        method: ApiMethod.post,
+        endpoint: Endpoints.updateSessionTitle,
+        body: {
+          "name": newTitle,
+          "username": userName,
+          "session_id": sessionId,
+        },
+        useFormData: true
+      );
+
+      if (response.code == ApiCode.success200.index) {
+        await getSessionsApi();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Session title updated')),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) SnackBarWidget.showError(context);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> deleteSessionApi(BuildContext context, String sessionId) async {
+    try {
+      isLoading.value = true;
+      ApiResponse response = await apiService.request(
+        method: ApiMethod.post,
+        endpoint: Endpoints.deleteSession,
+        body: {
+          "username": userName,
+          "session_id": sessionId
+        },
+        useFormData: true
+      );
+
+      if (response.code == ApiCode.success200.index) {
+        await getSessionsApi();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Session deleted')),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) SnackBarWidget.showError(context);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<bool> saveFeedbackApi({
+    required BuildContext context,
+    required String question,
+    required bool isThumbsUp,
+    required double percentage,
+    required int messageIndex,
+    String? reason,
+  }) async {
+    try {
+      isLoading.value = true;
+      ApiResponse response = await apiService.request(
+        method: ApiMethod.post,
+        endpoint: Endpoints.saveFeedback,
+        body: {
+          "question": question,
+          "Thumbs_up": isThumbsUp ? "1" : "0",
+          "Thumbs_down": isThumbsUp ? "0" : "1",
+          "Percentage": percentage.toInt().toString(),
+          "sessionId": sessionId,
+          "reason": reason ?? "",
+        },
+        useFormData: false,
+      );
+
+      if (response.code == ApiCode.success200.index) {
+        messages[messageIndex].feedbackStatus = isThumbsUp ? 'liked' : 'disliked';
+        messages.refresh();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      if (context.mounted) SnackBarWidget.showError(context);
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
   }
 }

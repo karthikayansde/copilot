@@ -5,6 +5,9 @@ import 'package:get/get.dart';
 import 'package:iMirAI/utils/app_strings.dart';
 import '../controller/home_controller.dart';
 import '../core/theme/app_colors.dart';
+import '../utils/app_utils.dart';
+
+import '../widgets/loading_widget.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -25,71 +28,101 @@ class HomeScreen extends StatelessWidget {
               bottomRight: Radius.circular(30),
             ),
           ),
-          child: Column(
+          child: Stack(
             children: [
-              DrawerHeader(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border(
-                    bottom: BorderSide(
-                      color: Colors.black.withOpacity(0.05),
-                      width: 1,
-                    ),
-                  ),
-                ),
-                child: Center(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Image.asset('assets/images/iMirAI-Logo1.png', height: 65, width: 65),
-                      SizedBox(width: 12,),
-                      const Text(
-                        AppStrings.appName,
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.5,
+              Column(
+                children: [
+                  DrawerHeader(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Colors.black.withOpacity(0.05),
+                          width: 1,
                         ),
                       ),
-                    ],
+                    ),
+                    child: Center(
+                      child: Image.asset('assets/images/iMirAI-Logo1.png', height: 50, width: 180),
+                    ),
                   ),
-                ),
-              ),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                  children: [
-                    _buildDrawerItem(
-                      icon: Icons.chat_bubble_outline_rounded,
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                    child: _buildDrawerItem(
+                      icon: Icons.add_comment_outlined,
                       label: 'New Chat',
                       onTap: () {
-                        Get.back();
+                        Navigator.pop(context);
                         // Logic for new chat if needed
                       },
                     ),
-                    _buildDrawerItem(
-                      icon: Icons.history_rounded,
-                      label: 'History',
-                      onTap: () {},
+                  ),
+                  const SizedBox(height: 2),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    child: Text(
+                      'Chats',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.black.withOpacity(0.4),
+                        letterSpacing: 1.2,
+                        height: 1.5,
+                      ),
                     ),
-                    _buildDrawerItem(
-                      icon: Icons.settings_outlined,
-                      label: 'Settings',
-                      onTap: () {},
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: RefreshIndicator(
+                      onRefresh: () => controller.getSessionsApi(),
+                      child: Obx(() {
+                        return ListView(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: [
+                            if (controller.sessionsList.value.sessions != null)
+                              ...controller.sessionsList.value.sessions!.map((session) {
+                                return _buildDrawerItem(
+                                  icon: Icons.chat_bubble_outline_rounded,
+                                  label: session.title ?? 'Untitled Chat',
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                  },
+                                  onLongPress: () => _showSessionOptions(context, session, controller),
+                                );
+                              }).toList(),
+                          ],
+                        );
+                      }),
                     ),
-                  ],
-                ),
+                  ),
+                  Divider(color: Colors.black.withOpacity(0.05), height: 1),
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: _buildDrawerItem(
+                      icon: Icons.logout_rounded,
+                      label: 'Logout',
+                      isDestructive: true,
+                      onTap: () => controller.logout(context),
+                    ),
+                  ),
+                ],
               ),
-              Divider(color: Colors.black.withOpacity(0.05), height: 1),
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: _buildDrawerItem(
-                  icon: Icons.logout_rounded,
-                  label: 'Logout',
-                  isDestructive: true,
-                  onTap: () => controller.logout(context),
-                ),
+              Obx(
+                () => controller.isLoading.value
+                    ? Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.shadowMedium,
+                            borderRadius: const BorderRadius.only(
+                              topRight: Radius.circular(30),
+                              bottomRight: Radius.circular(30),
+                            ),
+                          ),
+                          child: LoadingWidget.loader(),
+                        ),
+                      )
+                    : const SizedBox.shrink(),
               ),
             ],
           ),
@@ -121,22 +154,7 @@ class HomeScreen extends StatelessWidget {
                             children: [
                               SizedBox(height: 12,),
                               Center(
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Image.asset('assets/images/iMirAI-Logo1.png', height: 75, width: 75),
-                                    SizedBox(width: 12,),
-                                    const Text(
-                                      AppStrings.appName,
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: -0.5,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                child: Image.asset('assets/images/iMirAI-Logo1.png', height: 50, width: 180),
                               ),
                               const SizedBox(height: 20),
                               Wrap(
@@ -165,7 +183,7 @@ class HomeScreen extends StatelessWidget {
                         if (index == controller.messages.length) {
                           return _buildLoadingMessage();
                         }
-                        return _buildMessage(context, controller.messages[index], controller);
+                        return _buildMessage(context, controller.messages[index], controller, index);
                       },
                     );
                   }),
@@ -182,13 +200,23 @@ class HomeScreen extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Image.asset(
-                      'assets/images/iMirAI-Logo1.png',
+                      'assets/images/logo_small.png',
                       height: 40,
                       width: 40,
                     ),
                   ),
                 ),
               ),
+            ),
+            Obx(
+                  () => controller.isLoading.value && controller.messages.isEmpty
+                  ? Positioned.fill(
+                child: Container(
+                    color: AppColors.shadowMedium,
+                    child: LoadingWidget.loader()
+                ),
+              )
+                  : const SizedBox.shrink(),
             ),
           ],
         ),
@@ -291,7 +319,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMessage(BuildContext context, dynamic message, dynamic controller) {
+  Widget _buildMessage(BuildContext context, dynamic message, dynamic controller, int index) {
     final isUser = message.isUser;
 
     if (!isUser) {
@@ -375,7 +403,7 @@ class HomeScreen extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 _buildActionIcon(Icons.content_copy_rounded, () {
-                  Clipboard.setData(ClipboardData(text: message.text));
+                  Clipboard.setData(ClipboardData(text: AppUtils.stripHtml(message.text)));
                   Get.snackbar(
                     'Copied',
                     'Message copied to clipboard',
@@ -390,9 +418,25 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(width: 4),
                 _buildActionIcon(Icons.refresh_outlined, () {}),
                 const SizedBox(width: 4),
-                _buildActionIcon(Icons.thumb_up_outlined, () => _showFeedbackDialog(context)),
+                _buildActionIcon(
+                  Icons.thumb_up_outlined, 
+                  message.feedbackStatus == null ? () {
+                    final String question = index > 0 ? (controller.messages[index - 1].isUser ? controller.messages[index - 1].text : "") : "";
+                    _showFeedbackDialog(context, question, controller, index);
+                  } : null,
+                  isSelected: message.feedbackStatus == 'liked',
+                  isDisabled: message.feedbackStatus != null && message.feedbackStatus != 'liked',
+                ),
                 const SizedBox(width: 4),
-                _buildActionIcon(Icons.thumb_down_outlined, () => _showNegativeFeedbackDialog(context)),
+                _buildActionIcon(
+                  Icons.thumb_down_outlined, 
+                  message.feedbackStatus == null ? () {
+                    final String question = index > 0 ? (controller.messages[index - 1].isUser ? controller.messages[index - 1].text : "") : "";
+                    _showNegativeFeedbackDialog(context, question, controller, index);
+                  } : null,
+                  isSelected: message.feedbackStatus == 'disliked',
+                  isDisabled: message.feedbackStatus != null && message.feedbackStatus != 'disliked',
+                ),
               ],
             ),
           ),
@@ -547,7 +591,7 @@ class HomeScreen extends StatelessWidget {
               letterSpacing: 0.1,
               fontWeight: FontWeight.w500,
             ),
-            maxLines: null,
+            maxLines: 1,
             textInputAction: TextInputAction.newline,
             decoration: InputDecoration(
               hintText: 'Ask anything...',
@@ -636,6 +680,7 @@ class HomeScreen extends StatelessWidget {
                           ),
                           onPressed: controller.hasText.value
                               ? () async {
+                            FocusScope.of(context).unfocus();
                             await controller.sendMessage(context);
                           }
                               : null,
@@ -658,7 +703,7 @@ class HomeScreen extends StatelessWidget {
     ));
   }
 
-  void _showNegativeFeedbackDialog(BuildContext context) {
+  void _showNegativeFeedbackDialog(BuildContext context, String question, dynamic controller, int messageIndex) {
     double rating = 30.0;
     String? selectedReason;
     final TextEditingController otherReasonController = TextEditingController();
@@ -673,13 +718,13 @@ class HomeScreen extends StatelessWidget {
 
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => Dialog(
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (stateContext, setState) => Dialog(
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -687,7 +732,7 @@ class HomeScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       IconButton(
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () => Navigator.pop(stateContext),
                         icon: Icon(Icons.close_rounded, color: Colors.black.withOpacity(0.3)),
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
@@ -698,41 +743,40 @@ class HomeScreen extends StatelessWidget {
                     'What went wrong?',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 22,
+                      fontSize: 16,
                       fontWeight: FontWeight.w800,
                       color: Color(0xFF1A1F2E),
                       letterSpacing: -0.5,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 8),
                   Text(
                     'Your feedback helps improve future answers',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 12,
                       color: Colors.black.withOpacity(0.5),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   Text(
                     '${rating.toInt()}%',
                     style: TextStyle(
-                      fontSize: 40,
+                      fontSize: 24,
                       fontWeight: FontWeight.w900,
                       color: rating < 30 ? const Color(0xFFEF4444) : const Color(0xFFF59E0B),
                       letterSpacing: -1,
                     ),
                   ),
-                  const SizedBox(height: 8),
                   SliderTheme(
-                    data: SliderTheme.of(context).copyWith(
+                    data: SliderTheme.of(stateContext).copyWith(
                       activeTrackColor: const Color(0xFF334155),
                       inactiveTrackColor: const Color(0xFFE2E8F0),
                       thumbColor: const Color(0xFF334155),
                       overlayColor: const Color(0xFF334155).withOpacity(0.12),
-                      trackHeight: 6,
-                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10, elevation: 4),
+                      trackHeight: 3,
+                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8, elevation: 3),
                       trackShape: const RoundedRectSliderTrackShape(),
                     ),
                     child: Slider(
@@ -758,14 +802,14 @@ class HomeScreen extends StatelessWidget {
                         value: selectedReason,
                         hint: Text(
                           'Select a reason',
-                          style: TextStyle(color: Colors.black.withOpacity(0.4), fontSize: 15),
+                          style: TextStyle(color: Colors.black.withOpacity(0.4), fontSize: 13),
                         ),
                         isExpanded: true,
                         icon: const Icon(Icons.expand_more_rounded),
                         items: reasons.map((String reason) {
                           return DropdownMenuItem<String>(
                             value: reason,
-                            child: Text(reason, style: const TextStyle(fontSize: 15)),
+                            child: Text(reason, style: const TextStyle(fontSize: 13)),
                           );
                         }).toList(),
                         onChanged: (value) {
@@ -790,58 +834,65 @@ class HomeScreen extends StatelessWidget {
                         onChanged: (value) => setState(() {}),
                         decoration: InputDecoration(
                           hintText: 'Please describe the issue',
-                          hintStyle: TextStyle(color: Colors.black.withOpacity(0.3), fontSize: 15),
+                          hintStyle: TextStyle(color: Colors.black.withOpacity(0.3), fontSize: 13),
                           border: InputBorder.none,
                         ),
                       ),
                     ),
                   ],
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
+                      OutlinedButton(
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          elevation: 0,
+                        ),
+                        onPressed: () => Navigator.pop(stateContext),
                         child: Text(
                           'Cancel',
                           style: TextStyle(
                             color: Colors.black.withOpacity(0.6),
                             fontWeight: FontWeight.w600,
-                            fontSize: 15,
+                            fontSize: 12,
                           ),
                         ),
                       ),
                       const SizedBox(width: 12),
                       ElevatedButton(
-                        onPressed: (selectedReason == null || 
+                        onPressed: (selectedReason == null ||
                                   (selectedReason == 'Other' && otherReasonController.text.trim().isEmpty))
                             ? null
-                            : () {
-                                Navigator.pop(context);
-                                Get.snackbar(
-                                  'Thank You!',
-                                  'Feedback received. We will look into it.',
-                                  snackPosition: SnackPosition.BOTTOM,
-                                  backgroundColor: Colors.black87,
-                                  colorText: Colors.white,
-                                  margin: const EdgeInsets.all(15),
-                                  borderRadius: 15,
+                            : () async {
+                                Navigator.pop(stateContext);
+                                bool success = await controller.saveFeedbackApi(
+                                  context: context,
+                                  question: question,
+                                  isThumbsUp: false,
+                                  percentage: rating,
+                                  messageIndex: messageIndex,
+                                  reason: selectedReason == 'Other' ? otherReasonController.text : selectedReason,
                                 );
+                                if (success && context.mounted) {
+                                  _showThankYouDialog(context);
+                                }
                               },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF1E293B),
                           disabledBackgroundColor: const Color(0xFF1E293B).withOpacity(0.2),
                           foregroundColor: Colors.white,
                           disabledForegroundColor: Colors.white.withOpacity(0.5),
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           elevation: 0,
                         ),
                         child: const Text(
                           'Submit feedback',
                           style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
                           ),
                         ),
                       ),
@@ -856,16 +907,16 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  void _showFeedbackDialog(BuildContext context) {
+  void _showFeedbackDialog(BuildContext context, String question, dynamic controller, int messageIndex) {
     double rating = 80.0;
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => Dialog(
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (stateContext, setState) => Dialog(
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -873,7 +924,7 @@ class HomeScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     IconButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => Navigator.pop(stateContext),
                       icon: Icon(Icons.close_rounded, color: Colors.black.withOpacity(0.3)),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -884,7 +935,7 @@ class HomeScreen extends StatelessWidget {
                   'How helpful was this response?',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 22,
+                    fontSize: 16,
                     fontWeight: FontWeight.w800,
                     color: Color(0xFF1A1F2E),
                     letterSpacing: -0.5,
@@ -895,30 +946,29 @@ class HomeScreen extends StatelessWidget {
                   'Your feedback helps improve future answers',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 12,
                     color: Colors.black.withOpacity(0.5),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 12),
                 Text(
                   '${rating.toInt()}%',
                   style: TextStyle(
-                    fontSize: 48,
+                    fontSize: 24,
                     fontWeight: FontWeight.w900,
                     color: rating < 70 ? const Color(0xFFF59E0B) : const Color(0xFF0D9488),
                     letterSpacing: -1,
                   ),
                 ),
-                const SizedBox(height: 24),
                 SliderTheme(
-                  data: SliderTheme.of(context).copyWith(
+                  data: SliderTheme.of(stateContext).copyWith(
                     activeTrackColor: const Color(0xFF334155),
                     inactiveTrackColor: const Color(0xFFE2E8F0),
                     thumbColor: const Color(0xFF334155),
                     overlayColor: const Color(0xFF334155).withOpacity(0.12),
-                    trackHeight: 6,
-                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10, elevation: 4),
+                    trackHeight: 3,
+                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8, elevation: 3),
                     trackShape: const RoundedRectSliderTrackShape(),
                   ),
                   child: Slider(
@@ -932,47 +982,55 @@ class HomeScreen extends StatelessWidget {
                     },
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
+                    OutlinedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                      onPressed: () => Navigator.pop(stateContext),
                       child: Text(
                         'Cancel',
                         style: TextStyle(
                           color: Colors.black.withOpacity(0.6),
                           fontWeight: FontWeight.w600,
-                          fontSize: 15,
+                          fontSize: 12,
                         ),
                       ),
                     ),
                     const SizedBox(width: 12),
+
                     ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        Get.snackbar(
-                          'Thank You!',
-                          'Your feedback has been submitted.',
-                          snackPosition: SnackPosition.BOTTOM,
-                          backgroundColor: Colors.black87,
-                          colorText: Colors.white,
-                          margin: const EdgeInsets.all(15),
-                          borderRadius: 15,
+                      onPressed: () async {
+                        Navigator.pop(stateContext);
+                        bool success = await controller.saveFeedbackApi(
+                          context: context,
+                          question: question,
+                          isThumbsUp: true,
+                          percentage: rating,
+                          messageIndex: messageIndex,
+                          reason: null,
                         );
+                        if (success && context.mounted) {
+                          _showThankYouDialog(context);
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF1E293B),
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         elevation: 0,
                       ),
                       child: const Text(
                         'Submit feedback',
                         style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
                         ),
                       ),
                     ),
@@ -986,20 +1044,231 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionIcon(IconData icon, VoidCallback onTap) {
+  Widget _buildActionIcon(IconData icon, VoidCallback? onTap, {bool isSelected = false, bool isDisabled = false}) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+        onTap: isDisabled ? null : onTap,
         borderRadius: BorderRadius.circular(8),
         child: Padding(
           padding: const EdgeInsets.all(6.0),
           child: Icon(
-            icon,
+            isSelected ? (icon == Icons.thumb_up_outlined ? Icons.thumb_up_rounded : Icons.thumb_down_rounded) : icon,
             size: 16,
-            color: Colors.black.withOpacity(0.4),
+            color: isSelected 
+              ? (icon == Icons.thumb_up_outlined ? Colors.green : Colors.red)
+              : (isDisabled ? Colors.black.withOpacity(0.1) : Colors.black.withOpacity(0.4)),
           ),
         ),
+      ),
+    );
+  }
+
+  void _showThankYouDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        Future.delayed(const Duration(seconds: 2), () {
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+          }
+        });
+        return Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 12, 16, 40),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: Icon(Icons.close_rounded, color: const Color(0xFF94A3B8).withOpacity(0.5)),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  '🙏',
+                  style: TextStyle(fontSize: 48),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Thank you!',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF1E293B),
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'Your feedback has been recorded',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Color(0xFF64748B),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showSessionOptions(BuildContext context, dynamic session, dynamic controller) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Chat Options',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Divider(height: 1, color: Colors.black.withOpacity(0.05)),
+              _buildDialogOption(
+                icon: Icons.edit_outlined,
+                label: 'Edit Name',
+                onTap: () {
+                  Navigator.pop(context);
+                  _showEditSessionDialog(context, session, controller);
+                },
+              ),
+              _buildDialogOption(
+                icon: Icons.delete_outline_rounded,
+                label: 'Delete Chat',
+                isDestructive: true,
+                onTap: () {
+                  Navigator.pop(context);
+                  _showDeleteConfirmationDialog(context, session, controller);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDialogOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    bool isDestructive = false,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                size: 20,
+                color: isDestructive ? Colors.red.shade600 : Colors.black87,
+              ),
+              const SizedBox(width: 16),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: isDestructive ? Colors.red.shade600 : Colors.black87,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showEditSessionDialog(BuildContext context, dynamic session, dynamic controller) {
+    final TextEditingController editController = TextEditingController(text: session.title);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: const Text('Edit Chat Title'),
+        content: TextField(
+          controller: editController,
+          decoration: const InputDecoration(
+            hintText: 'Enter new title',
+            border: OutlineInputBorder(),
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              final newTitle = editController.text.trim();
+              if (newTitle.isNotEmpty) {
+                Navigator.pop(context);
+                controller.editSessionTitleApi(context, session.sessionId, newTitle);
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteConfirmationDialog(BuildContext context, dynamic session, dynamic controller) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: const Text('Delete Chat?'),
+        content: const Text('Are you sure you want to delete this chat history? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+              controller.deleteSessionApi(context, session.sessionId);
+            },
+            child: const Text('Delete'),
+          ),
+        ],
       ),
     );
   }
@@ -1008,6 +1277,7 @@ class HomeScreen extends StatelessWidget {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    VoidCallback? onLongPress,
     bool isDestructive = false,
   }) {
     return Container(
@@ -1016,6 +1286,7 @@ class HomeScreen extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
+          onLongPress: onLongPress,
           borderRadius: BorderRadius.circular(15),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -1031,12 +1302,15 @@ class HomeScreen extends StatelessWidget {
                   color: isDestructive ? Colors.red.shade700 : Colors.black87,
                 ),
                 const SizedBox(width: 16),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: isDestructive ? Colors.red.shade700 : Colors.black87,
+                Expanded(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: isDestructive ? Colors.red.shade700 : Colors.black87,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
