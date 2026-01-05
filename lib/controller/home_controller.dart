@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iMirAI/model/sessions_model.dart';
+import 'package:iMirAI/model/session_chat_model.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
@@ -22,6 +23,8 @@ class HomeController extends GetxController {
   final ScrollController scrollController = ScrollController();
 
   var isLoading = false.obs;
+  var isSessionsLoading = false.obs;
+  var isMessageLoading = false.obs;
   var isListening = false.obs;
   var speechEnabled = false.obs;
   var hasText = false.obs;
@@ -62,8 +65,8 @@ class HomeController extends GetxController {
     super.onClose();
   }
 
-  Future<void> _getSessionId() async {
-    if (sessionId.isEmpty) {
+  Future<void> _getSessionId({bool force = false}) async {
+    if (sessionId.isEmpty || force) {
       const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
 
       sessionId = String.fromCharCodes(
@@ -287,7 +290,7 @@ class HomeController extends GetxController {
     prompt += searchController.text;
 
     final userMessage = prompt;
-    messages.add(ChatMessage(text: userMessage, isUser: true));
+    messages.add(ChatMessage(text: userMessage, isUser: true, isLoading: false));
     
     // Clear inputs
     searchController.clear();
@@ -306,6 +309,7 @@ class HomeController extends GetxController {
         },
       );
 
+
       bool result = apiService.showApiResponse(
         context: context,
         response: response,
@@ -315,8 +319,13 @@ class HomeController extends GetxController {
       if (result && response.data != null) {
         final data = response.data!;
         final answer = data['answer'] ?? 'No answer received.';
-        messages.add(ChatMessage(text: answer, isUser: false));
+        messages.add(ChatMessage(text: answer, isUser: false, isLoading: false));
         scrollToBottom();
+
+        // Refresh sessions list if this was the first exchange in a new session
+        if (messages.length <= 2) {
+          getSessionsApi();
+        }
       }
     } catch (e) {
       SnackBarWidget.showError(context);
@@ -339,26 +348,75 @@ class HomeController extends GetxController {
 
   Future<void> getSessionsApi() async {
     try {
-
-      isLoading.value = true;
-
+      isSessionsLoading.value = true;
       ApiResponse response = await apiService.request(
         method: ApiMethod.get,
         endpoint: "${Endpoints.sessions}$userName",
       );
       if(response.code == ApiCode.success200.index){
-        sessionsList.value = SessionsModel.fromJson(response.data);
-        isLoading.value = false;
+        SessionsModel model = SessionsModel.fromJson(response.data);
+        if (model.sessions != null) {
+          model.sessions!.sort((a, b) {
+            DateTime dateA = a.updatedAt != null ? DateTime.tryParse(a.updatedAt!) ?? DateTime(0) : DateTime(0);
+            DateTime dateB = b.updatedAt != null ? DateTime.tryParse(b.updatedAt!) ?? DateTime(0) : DateTime(0);
+            return dateB.compareTo(dateA); // Newest first
+          });
+        }
+        sessionsList.value = model;
       }
     } catch (e) {
     } finally {
-      isLoading.value = false;
+      isSessionsLoading.value = false;
+    }
+  }
+
+  Future<void> reloadMessage(BuildContext context, int index) async {
+    if (index <= 0 || messages[index].isUser) return;
+    
+    final userMessage = messages[index - 1].text;
+    
+    // Set message to loading state
+    messages[index] = ChatMessage(text: "", isUser: false, isLoading: true);
+    messages.refresh();
+    
+    try {
+      ApiResponse response = await apiService.request(
+        method: ApiMethod.post,
+        endpoint: Endpoints.ask,
+        body: {
+          "question": userMessage,
+          "sessionId": sessionId,
+          "username": userName,
+        },
+      );
+
+      bool result = apiService.showApiResponse(
+        context: context,
+        response: response,
+        codes: {ApiCode.requestTimeout1: true},
+      );
+
+      if (result && response.data != null) {
+        final data = response.data!;
+        final answer = data['answer'] ?? 'No answer received.';
+        messages[index] = ChatMessage(text: answer, isUser: false, isLoading: false);
+        messages.refresh();
+      } else {
+        // Restore original message if failed or handle error
+        // For now just stop loading
+        messages[index] = ChatMessage(text: "Failed to reload. Please try again.", isUser: false, isLoading: false);
+        messages.refresh();
+      }
+    } catch (e) {
+      SnackBarWidget.showError(context);
+      messages[index] = ChatMessage(text: "Error occurred during reload.", isUser: false, isLoading: false);
+      messages.refresh();
     }
   }
 
   Future<void> editSessionTitleApi(BuildContext context, String sessionId, String newTitle) async {
     try {
-      isLoading.value = true;
+      isSessionsLoading.value = true;
       ApiResponse response = await apiService.request(
         method: ApiMethod.post,
         endpoint: Endpoints.updateSessionTitle,
@@ -381,13 +439,13 @@ class HomeController extends GetxController {
     } catch (e) {
       if (context.mounted) SnackBarWidget.showError(context);
     } finally {
-      isLoading.value = false;
+      isSessionsLoading.value = false;
     }
   }
 
   Future<void> deleteSessionApi(BuildContext context, String sessionId) async {
     try {
-      isLoading.value = true;
+      isSessionsLoading.value = true;
       ApiResponse response = await apiService.request(
         method: ApiMethod.post,
         endpoint: Endpoints.deleteSession,
@@ -409,7 +467,7 @@ class HomeController extends GetxController {
     } catch (e) {
       if (context.mounted) SnackBarWidget.showError(context);
     } finally {
-      isLoading.value = false;
+      isSessionsLoading.value = false;
     }
   }
 
@@ -449,5 +507,48 @@ class HomeController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  Future<void> getSessionChatsApi(String sessionId) async {
+    try {
+      this.sessionId = sessionId;
+      isLoading.value = true;
+      messages.clear();
+      searchController.clear();
+      selectedSuggestions.clear();
+
+      ApiResponse response = await apiService.request(
+        method: ApiMethod.get,
+        endpoint: "${Endpoints.getSessionChats}$sessionId",
+      );
+
+      if (response.code == ApiCode.success200.index) {
+        final sessionChat = SessionChatModel.fromJson(response.data);
+        if (sessionChat.messages != null) {
+          for (var msg in sessionChat.messages!) {
+            messages.add(
+              ChatMessage(
+                text: msg.content ?? "",
+                isUser: msg.role == "user",
+                isLoading: false,
+              ),
+            );
+          }
+        }
+        scrollToBottom();
+      }
+    } catch (e) {
+      debugPrint('Error getting session chats: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  void startNewChat() {
+    _getSessionId(force: true);
+    messages.clear();
+    searchController.clear();
+    selectedSuggestions.clear();
+    hasText.value = false;
   }
 }

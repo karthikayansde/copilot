@@ -10,4 +10,5 @@ class Endpoints {
   static String get updateSessionTitle => '/session/rename';
   static String get deleteSession => '/session/delete';
   static String get saveFeedback => '/save-feedback';
+  static String get getSessionChats => '/chat/session/';
 }

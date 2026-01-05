@@ -53,7 +53,7 @@ class HomeScreen extends StatelessWidget {
                       label: 'New Chat',
                       onTap: () {
                         Navigator.pop(context);
-                        // Logic for new chat if needed
+                        controller.startNewChat();
                       },
                     ),
                   ),
@@ -87,6 +87,9 @@ class HomeScreen extends StatelessWidget {
                                   label: session.title ?? 'Untitled Chat',
                                   onTap: () {
                                     Navigator.pop(context);
+                                    if (session.sessionId != null) {
+                                      controller.getSessionChatsApi(session.sessionId!);
+                                    }
                                   },
                                   onLongPress: () => _showSessionOptions(context, session, controller),
                                 );
@@ -109,7 +112,7 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
               Obx(
-                () => controller.isLoading.value
+                () => controller.isSessionsLoading.value
                     ? Positioned.fill(
                         child: Container(
                           decoration: BoxDecoration(
@@ -173,7 +176,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                       );
                     }
-      
+
                     return ListView.separated(
                       controller: controller.scrollController,
                       padding: const EdgeInsets.only(left: 16, right: 16, bottom: 20, top: 60),
@@ -363,83 +366,100 @@ class HomeScreen extends StatelessWidget {
                 ),
               ],
             ),
-            child: Html(
-              data: message.text,
-              style: {
-                "body": Style(
-                  margin: Margins.zero,
-                  padding: HtmlPaddings.zero,
-                  fontSize: FontSize(15),
-                  color: Colors.black87,
-                  lineHeight: const LineHeight(1.7),
-                ),
-                "p": Style(
-                  margin: Margins.only(bottom: 12),
-                  color: Colors.black87,
-                ),
-                "code": Style(
-                  backgroundColor: Colors.black.withOpacity(0.05),
-                  color: Colors.black,
-                  padding: HtmlPaddings.all(4),
-                  fontFamily: 'monospace',
-                  fontWeight: FontWeight.w600,
-                ),
-                "pre": Style(
-                  backgroundColor: Colors.black.withOpacity(0.04),
-                  padding: HtmlPaddings.all(12),
-                  margin: Margins.symmetric(vertical: 8),
-                  border: Border.all(
-                    color: Colors.black.withOpacity(0.1),
-                    width: 1,
+            child: message.isLoading == true
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Row(
+                    children: [
+                      const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black54),
+                      ),
+                      const SizedBox(width: 12),
+                      Text("Reloading...", style: TextStyle(color: Colors.black.withOpacity(0.5), fontSize: 14)),
+                    ],
                   ),
+                )
+              : Html(
+                  data: message.text,
+                  style: {
+                    "body": Style(
+                      margin: Margins.zero,
+                      padding: HtmlPaddings.zero,
+                      fontSize: FontSize(15),
+                      color: Colors.black87,
+                      lineHeight: const LineHeight(1.7),
+                    ),
+                    "p": Style(
+                      margin: Margins.only(bottom: 12),
+                      color: Colors.black87,
+                    ),
+                    "code": Style(
+                      backgroundColor: Colors.black.withOpacity(0.05),
+                      color: Colors.black,
+                      padding: HtmlPaddings.all(4),
+                      fontFamily: 'monospace',
+                      fontWeight: FontWeight.w600,
+                    ),
+                    "pre": Style(
+                      backgroundColor: Colors.black.withOpacity(0.04),
+                      padding: HtmlPaddings.all(12),
+                      margin: Margins.symmetric(vertical: 8),
+                      border: Border.all(
+                        color: Colors.black.withOpacity(0.1),
+                        width: 1,
+                      ),
+                    ),
+                  },
                 ),
-              },
-            ),
           ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.only(left: 4),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildActionIcon(Icons.content_copy_rounded, () {
-                  Clipboard.setData(ClipboardData(text: AppUtils.stripHtml(message.text)));
-                  Get.snackbar(
-                    'Copied',
-                    'Message copied to clipboard',
-                    snackPosition: SnackPosition.BOTTOM,
-                    backgroundColor: Colors.black87,
-                    colorText: Colors.white,
-                    duration: const Duration(seconds: 1),
-                    margin: const EdgeInsets.all(15),
-                    borderRadius: 15,
-                  );
-                }),
-                const SizedBox(width: 4),
-                _buildActionIcon(Icons.refresh_outlined, () {}),
-                const SizedBox(width: 4),
-                _buildActionIcon(
-                  Icons.thumb_up_outlined, 
-                  message.feedbackStatus == null ? () {
-                    final String question = index > 0 ? (controller.messages[index - 1].isUser ? controller.messages[index - 1].text : "") : "";
-                    _showFeedbackDialog(context, question, controller, index);
-                  } : null,
-                  isSelected: message.feedbackStatus == 'liked',
-                  isDisabled: message.feedbackStatus != null && message.feedbackStatus != 'liked',
-                ),
-                const SizedBox(width: 4),
-                _buildActionIcon(
-                  Icons.thumb_down_outlined, 
-                  message.feedbackStatus == null ? () {
-                    final String question = index > 0 ? (controller.messages[index - 1].isUser ? controller.messages[index - 1].text : "") : "";
-                    _showNegativeFeedbackDialog(context, question, controller, index);
-                  } : null,
-                  isSelected: message.feedbackStatus == 'disliked',
-                  isDisabled: message.feedbackStatus != null && message.feedbackStatus != 'disliked',
-                ),
-              ],
+          if (message.isLoading != true) ...[
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.only(left: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildActionIcon(Icons.content_copy_rounded, () {
+                    Clipboard.setData(ClipboardData(text: AppUtils.stripHtml(message.text)));
+                    Get.snackbar(
+                      'Copied',
+                      'Message copied to clipboard',
+                      snackPosition: SnackPosition.BOTTOM,
+                      backgroundColor: Colors.black87,
+                      colorText: Colors.white,
+                      duration: const Duration(seconds: 1),
+                      margin: const EdgeInsets.all(15),
+                      borderRadius: 15,
+                    );
+                  }),
+                  const SizedBox(width: 4),
+                  _buildActionIcon(Icons.refresh_outlined, () => controller.reloadMessage(context, index)),
+                  const SizedBox(width: 4),
+                  _buildActionIcon(
+                    Icons.thumb_up_outlined,
+                    message.feedbackStatus == null ? () {
+                      final String question = index > 0 ? (controller.messages[index - 1].isUser ? controller.messages[index - 1].text : "") : "";
+                      _showFeedbackDialog(context, question, controller, index);
+                    } : null,
+                    isSelected: message.feedbackStatus == 'liked',
+                    isDisabled: message.feedbackStatus != null && message.feedbackStatus != 'liked',
+                  ),
+                  const SizedBox(width: 4),
+                  _buildActionIcon(
+                    Icons.thumb_down_outlined,
+                    message.feedbackStatus == null ? () {
+                      final String question = index > 0 ? (controller.messages[index - 1].isUser ? controller.messages[index - 1].text : "") : "";
+                      _showNegativeFeedbackDialog(context, question, controller, index);
+                    } : null,
+                    isSelected: message.feedbackStatus == 'disliked',
+                    isDisabled: message.feedbackStatus != null && message.feedbackStatus != 'disliked',
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         ],
       );
     }
@@ -584,6 +604,7 @@ class HomeScreen extends StatelessWidget {
                 : const SizedBox.shrink()),
             Obx(
               () => TextField(
+                readOnly: controller.isLoading.value,
             controller: controller.searchController,
             style: const TextStyle(
               color: Colors.black,
@@ -614,81 +635,37 @@ class HomeScreen extends StatelessWidget {
               ),
               suffixIcon: Padding(
                 padding: const EdgeInsets.only(right: 6),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(right: 6),
-                      decoration: BoxDecoration(
-                        color: controller.isListening.value
-                            ? Colors.red.withOpacity(0.1)
-                            : Colors.transparent,
-                        shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        icon: Icon(
-                          controller.isListening.value ? Icons.mic : Icons.mic_none_outlined,
-                          color: controller.isListening.value
-                              ? Colors.red
-                              : controller.speechEnabled.value
-                              ? Colors.black.withOpacity(0.5)
-                              : Colors.black.withOpacity(0.25),
-                          size: 24,
-                        ),
-                        onPressed: controller.speechEnabled.value
-                            ? (controller.isListening.value
-                            ? controller.stopListening
-                            : controller.startListening)
-                            : null,
-                        tooltip: controller.isListening.value
-                            ? 'Stop listening'
-                            : 'Start voice',
-                      ),
-                    ),
-                    Obx(
-                          () => AnimatedContainer(
-                        duration: const Duration(milliseconds: 250),
-                        curve: Curves.easeInOut,
-                        decoration: BoxDecoration(
-                          gradient: controller.hasText.value
-                              ? const LinearGradient(
-                            colors: [Colors.black, Color(0xFF2D2D2D)],
-                          )
-                              : null,
-                          color: controller.hasText.value
-                              ? null
-                              : Colors.black.withOpacity(0.06),
-                          shape: BoxShape.circle,
-                          boxShadow: controller.hasText.value
-                              ? [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 16,
-                              spreadRadius: 0,
-                              offset: const Offset(0, 4),
-                            ),
-                          ]
-                              : [],
-                        ),
-                        child: IconButton(
-                          icon: Icon(
-                            Icons.arrow_upward_rounded,
-                            color: controller.hasText.value
-                                ? Colors.white
-                                : Colors.black.withOpacity(0.3),
-                            size: 22,
-                          ),
-                          onPressed: controller.hasText.value
-                              ? () async {
-                            FocusScope.of(context).unfocus();
-                            await controller.sendMessage(context);
-                          }
-                              : null,
-                          tooltip: 'Send message',
-                        ),
-                      ),
-                    ),
-                  ],
+                child: Container(
+                  margin: const EdgeInsets.only(right: 6),
+                  decoration: BoxDecoration(
+                    color: controller.isLoading.value? Colors.grey: controller.isListening.value
+                        ? Colors.red
+                        : Colors.black,
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon: controller.hasText.value?Icon(
+                      Icons.arrow_upward_rounded,
+                      color: controller.hasText.value
+                          ? Colors.white
+                          : Colors.black.withOpacity(0.3),
+                      size: 22,
+                    ): Image.asset("assets/images/mic_icon.png",width: 24,height: 24,),
+                    onPressed: controller.isLoading.value? null: controller.hasText.value
+                        ? () async {
+                      FocusScope.of(context).unfocus();
+                      await controller.sendMessage(context);
+                    }
+                        : controller.speechEnabled.value
+                        ? (controller.isListening.value
+                        ? controller.stopListening
+                        : controller.startListening)
+                        : null,
+                    tooltip: controller.hasText.value?
+                    'Send message': controller.isListening.value
+                        ? 'Stop listening'
+                        : 'Start voice',
+                  ),
                 ),
               ),
               border: InputBorder.none,
@@ -1055,7 +1032,7 @@ class HomeScreen extends StatelessWidget {
           child: Icon(
             isSelected ? (icon == Icons.thumb_up_outlined ? Icons.thumb_up_rounded : Icons.thumb_down_rounded) : icon,
             size: 16,
-            color: isSelected 
+            color: isSelected
               ? (icon == Icons.thumb_up_outlined ? Colors.green : Colors.red)
               : (isDisabled ? Colors.black.withOpacity(0.1) : Colors.black.withOpacity(0.4)),
           ),
