@@ -7,6 +7,8 @@ import '../controller/home_controller.dart';
 import '../core/theme/app_colors.dart';
 import '../utils/app_utils.dart';
 import '../widgets/loading_widget.dart';
+import '../widgets/popover_dialog.dart';
+import '../services/download_service.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -461,38 +463,7 @@ class HomeScreen extends StatelessWidget {
                       ],
                     ),
                   )
-                : Html(
-                    data: message.text,
-                    style: {
-                      "body": Style(
-                        margin: Margins.zero,
-                        padding: HtmlPaddings.zero,
-                        fontSize: FontSize(15),
-                        color: Colors.black87,
-                        lineHeight: const LineHeight(1.7),
-                      ),
-                      "p": Style(
-                        margin: Margins.only(bottom: 12),
-                        color: Colors.black87,
-                      ),
-                      "code": Style(
-                        backgroundColor: Colors.black.withOpacity(0.05),
-                        color: Colors.black,
-                        padding: HtmlPaddings.all(4),
-                        fontFamily: 'monospace',
-                        fontWeight: FontWeight.w600,
-                      ),
-                      "pre": Style(
-                        backgroundColor: Colors.black.withOpacity(0.04),
-                        padding: HtmlPaddings.all(12),
-                        margin: Margins.symmetric(vertical: 8),
-                        border: Border.all(
-                          color: Colors.black.withOpacity(0.1),
-                          width: 1,
-                        ),
-                      ),
-                    },
-                  ),
+                : _buildHtmlWithDownloadSupport(context, message.text),
           ),
           if (message.isLoading != true) ...[
             const SizedBox(height: 8),
@@ -742,16 +713,18 @@ class HomeScreen extends StatelessWidget {
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
                   ),
-                  prefixIcon: Container(
-                    margin: const EdgeInsets.only(left: 6),
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.add_circle_outline,
-                        color: Colors.black.withOpacity(0.4),
-                        size: 24,
+                  prefixIcon: Builder(
+                    builder: (buttonContext) => Container(
+                      margin: const EdgeInsets.only(left: 6),
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.attach_file_rounded,
+                          color: Colors.black.withOpacity(0.4),
+                          size: 24,
+                        ),
+                        onPressed: () => _showAttachPopover(context, buttonContext),
+                        tooltip: 'Attach',
                       ),
-                      onPressed: () {},
-                      tooltip: 'Attach',
                     ),
                   ),
                   suffixIcon: Padding(
@@ -1502,6 +1475,118 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildHtmlWithDownloadSupport(BuildContext context, String htmlData) {
+    // Parse HTML to find download links and handle them
+    return Html(
+      data: htmlData,
+      style: {
+        "body": Style(
+          margin: Margins.zero,
+          padding: HtmlPaddings.zero,
+          fontSize: FontSize(15),
+          color: Colors.black87,
+          lineHeight: const LineHeight(1.7),
+        ),
+        "p": Style(
+          margin: Margins.only(bottom: 12),
+          color: Colors.black87,
+        ),
+        "code": Style(
+          backgroundColor: Colors.black.withOpacity(0.05),
+          color: Colors.black,
+          padding: HtmlPaddings.all(4),
+          fontFamily: 'monospace',
+          fontWeight: FontWeight.w600,
+        ),
+        "pre": Style(
+          backgroundColor: Colors.black.withOpacity(0.04),
+          padding: HtmlPaddings.all(12),
+          margin: Margins.symmetric(vertical: 8),
+          border: Border.all(
+            color: Colors.black.withOpacity(0.1),
+            width: 1,
+          ),
+        ),
+        "a": Style(
+          color: Colors.blue,
+          textDecoration: TextDecoration.underline,
+        ),
+      },
+      onLinkTap: (url, attributes, element) {
+        // Check if this is a download link
+        final downloadAttr = attributes['download'];
+        if (downloadAttr != null && url != null) {
+          _handleDownload(context, url, downloadAttr);
+        }
+      },
+    );
+  }
+
+  void _handleDownload(BuildContext context, String url, String downloadAttr) async {
+    final fileName = downloadAttr.isNotEmpty 
+        ? downloadAttr 
+        : url.split('/').last.split('?').first;
+    
+    // Show loading snackbar
+    Get.snackbar(
+      'Downloading',
+      'Downloading $fileName...',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.black87,
+      colorText: Colors.white,
+      duration: const Duration(seconds: 2),
+    );
+    
+    final filePath = await DownloadService.downloadFile(
+      url: url,
+      fileName: fileName,
+    );
+    
+    if (filePath != null) {
+      Get.snackbar(
+        'Success',
+        'File downloaded successfully',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+    }
+  }
+
+  void _showAttachPopover(BuildContext context, BuildContext buttonContext) {
+    PopoverDialog.show(
+      context: context,
+      anchorContext: buttonContext,
+      items: [
+        PopoverItem(
+          icon: Icons.camera_alt_outlined,
+          label: 'Camera',
+          onTap: () {
+            // TODO: Implement camera functionality
+          },
+        ),
+        PopoverItem(
+          icon: Icons.photo_library_outlined,
+          label: 'Photos',
+          onTap: () {
+            // TODO: Implement photos functionality
+          },
+        ),
+        PopoverItem(
+          icon: Icons.insert_drive_file_outlined,
+          label: 'Files',
+          onTap: () {
+            // TODO: Implement files functionality
+          },
+        ),
+      ],
+      width: 200,
+      borderRadius: 16,
+      elevation: 2,
     );
   }
 

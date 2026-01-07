@@ -44,6 +44,7 @@ dependencies:
   http: ^1.6.0
   awesome_snackbar_content: ^0.1.1
   flutter_html: ^3.0.0
+  path_provider: ^2.1.1
   file_picker: ^10.3.8
   excel: ^4.0.6
   csv: ^6.0.0
