@@ -53,7 +53,7 @@ class HomeScreen extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                     child: _buildDrawerItem(
                       icon: Icons.add_comment_outlined,
-                      label: 'New Chat',
+                      label: 'New Conversation',
                       onTap: () {
                         Navigator.pop(context);
                         controller.startNewChat();
@@ -62,15 +62,18 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
-                    child: Text(
-                      'Chats',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.black.withOpacity(0.4),
-                        letterSpacing: 1.2,
-                        height: 1.5,
+                    padding: const EdgeInsets.fromLTRB(32, 0, 0, 0),
+                    child: Align(
+                      alignment: AlignmentGeometry.centerLeft,
+                      child: Text(
+                        'Your Conversations',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.black.withOpacity(0.4),
+                          letterSpacing: 1.2,
+                          height: 1.5,
+                        ),
                       ),
                     ),
                   ),
@@ -613,10 +616,10 @@ class HomeScreen extends StatelessWidget {
             width: 37,
             margin: const EdgeInsets.only(left: 12, top: 4),
             decoration: BoxDecoration(
-              color: AppColors.primaryIcon.withOpacity(0.7).withOpacity(0.04),
+              color: AppColors.primaryIcon,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: AppColors.primaryIcon.withOpacity(0.7),
+                color: AppColors.primaryIcon,
                 width: 1.5,
               ),
             ),
@@ -624,7 +627,7 @@ class HomeScreen extends StatelessWidget {
               child: Text(
                 'U',
                 style: TextStyle(
-                  color: AppColors.primaryIcon.withOpacity(0.7),
+                  color: AppColors.white,
                   fontWeight: FontWeight.w900,
                   fontSize: 15
                 ),
@@ -836,11 +839,11 @@ class HomeScreen extends StatelessWidget {
     String? selectedReason;
     final TextEditingController otherReasonController = TextEditingController();
     final List<String> reasons = [
-      'Incorrect information',
-      'Incomplete answer',
-      'Irrelevant response',
-      'Formatting issue',
-      'Too generic',
+      'Incorrect Information',
+      'Incomplete Answer',
+      'Irrelevant Response',
+      'Formatting Issue',
+      'Too Generic',
       'Other',
     ];
 
