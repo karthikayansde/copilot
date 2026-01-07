@@ -3,8 +3,9 @@
     <uses-permission android:name="android.permission.USE_FINGERPRINT"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
     <application
-        android:label="iMirAI"
+        android:label="Intel Agent"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

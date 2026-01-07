@@ -16,6 +16,10 @@ import '../views/login_view.dart';
 import '../widgets/button_widgets.dart';
 import '../widgets/snack_bar_widget.dart';
 import '../model/chat_message.dart';
+import '../services/file_processor_service.dart';
+import '../views/qr_scanner_view.dart';
+import 'package:file_picker/file_picker.dart';
+
 
 class HomeController extends GetxController {
   final stt.SpeechToText _speech = stt.SpeechToText();
@@ -29,6 +33,12 @@ class HomeController extends GetxController {
   var speechEnabled = false.obs;
   var hasText = false.obs;
   var messages = <ChatMessage>[].obs;
+  final List<String> searchOptions = [
+    'IntelAgent',
+    'SellNow',
+    'Get Insights',
+    'Generate Document'
+  ];
   var selectedSuggestions = <String>[].obs;
   var userName = '';
   String sessionId = '';
@@ -550,5 +560,132 @@ class HomeController extends GetxController {
     searchController.clear();
     selectedSuggestions.clear();
     hasText.value = false;
+  }
+
+  Future<void> pickAndProcessFile(BuildContext context) async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'xlsx', 'xls', 'csv', 'docx', 'doc', 'txt'],
+      );
+
+      if (result != null) {
+
+        isLoading.value = true;
+        PlatformFile file = result.files.first;
+
+        messages.add(ChatMessage(
+            text: "Uploaded file: ${file.name} (Ready for analysis)",
+            isUser: true,
+            isLoading: false
+        ));
+        // Use the 5-step processing flow from FileProcessorService
+        final processedData = await FileProcessorService.processFile(file);
+
+        if (processedData['status'] == 'success') {
+          debugPrint("File Processed: ${file.name}");
+
+          // Extract file name without extension for table_name
+          String fileNameNoExt = file.name;
+          if (fileNameNoExt.contains('.')) {
+            fileNameNoExt = fileNameNoExt.substring(0, fileNameNoExt.lastIndexOf('.'));
+          }
+
+          // Step: Data Insights API Call
+          try {
+            ApiResponse response = await apiService.request(
+              method: ApiMethod.post,
+              customUrl: true,
+              endpoint: Endpoints.insightBaseUrl+Endpoints.dataInsights,
+              body: {
+                "response_id": sessionId,
+                "table_name": fileNameNoExt.replaceAll(RegExp(r'[^a-zA-Z0-9]'), ''),
+                "data_table": jsonEncode([
+                  {"ID": "A4", "Value": 3},
+                  {"ID": "B2", "Value": 5}
+                ])
+                // jsonEncode(processedData['body']),
+              },
+              useFormData: true,
+            );
+
+            if (response.code == ApiCode.success200.index) {
+              if (response.data != null && response.data != null) {
+                messages.add(ChatMessage(
+                  text: response.data,
+                  isUser: false,
+                  isLoading: false,
+                  hasRefresh: false
+                ));
+              }
+              _showToast("File processed and insights generated successfully.");
+            } else {
+              _showToast("File standardized, but insights API failed.");
+            }
+          } catch (e) {
+            debugPrint("Error calling Data Insights API: $e");
+            _showToast("Error during insights generation.");
+          }
+          scrollToBottom();
+        } else {
+          _showToast("Error: ${processedData['message']}");
+          
+          // If encrypted, you might want to show a dialog for password
+          if (processedData['error_type'] == 'ENCRYPTED') {
+             _showPasswordDialog(context, file);
+          }
+        }
+      }
+    } catch (e) {
+      _showToast("Error: ${e.toString()}");
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  void _showPasswordDialog(BuildContext context, PlatformFile file) {
+    final TextEditingController passwordController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Protected File"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text("This file is password protected. Please enter the password:"),
+            TextField(
+              controller: passwordController,
+              obscureText: true,
+              decoration: const InputDecoration(hintText: "Password"),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _showToast("Manual password handling would go here.");
+            },
+            child: const Text("Unlock"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> scanQRCode(BuildContext context) async {
+    final status = await Permission.camera.request();
+    if (status.isGranted) {
+      final result = await Get.to(() => const QRScannerView());
+      if (result != null && result is String) {
+        searchController.text = result;
+        hasText.value = true;
+      }
+    } else if (status.isPermanentlyDenied) {
+      openAppSettings();
+    } else {
+      _showToast('Camera permission denied');
+    }
   }
 }

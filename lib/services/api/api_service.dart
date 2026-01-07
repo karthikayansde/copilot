@@ -170,11 +170,11 @@ class ApiService {
                 headers: requestHeaders, 
                 body: useFormData
                     ? body?.map((key, value) => MapEntry(key, value.toString()))
-                    : jsonEncode(body ?? {}))
-              .timeout(
-                Duration(seconds: 30),
-                onTimeout: () => _createTimeoutResponse(),
-              );
+                    : jsonEncode(body ?? {}));
+              // .timeout(
+              //   Duration(seconds: 30),
+              //   onTimeout: () => _createTimeoutResponse(),
+              // );
           break;
         case ApiMethod.put:
           response = await http

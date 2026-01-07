@@ -4,6 +4,7 @@ class ChatMessage {
   final DateTime timestamp;
   String? feedbackStatus; // 'liked', 'disliked', or null
   final bool isLoading;
+  final bool hasRefresh;
 
   ChatMessage({
     required this.text,
@@ -11,5 +12,6 @@ class ChatMessage {
     DateTime? timestamp,
     this.feedbackStatus,
     this.isLoading = false,
+    this.hasRefresh = true,
   }) : timestamp = timestamp ?? DateTime.now();
 }

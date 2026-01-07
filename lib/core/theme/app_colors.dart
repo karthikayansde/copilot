@@ -4,6 +4,7 @@ class AppColors {
   // Primary Colors
   static Color primary = const Color(0xFF3d90ff);
   static Color primaryDark = const Color(0xFF2367c7);
+  static Color primaryIcon = const Color(0xFF2563EB);
 
   // Status Colors
   static Color pendingStatusColor = const Color(0xFFFFA800);
