@@ -297,7 +297,7 @@ class HomeController extends GetxController {
       prompt += searchController.text;
 
     final userMessage = prompt;
-    messages.add(ChatMessage(text: userMessage, isUser: true, isLoading: false));
+    messages.add(ChatMessage(text: {'answer':userMessage}, isUser: true, isLoading: false));
     
     // Clear inputs
     searchController.clear();
