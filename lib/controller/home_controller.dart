@@ -328,8 +328,20 @@ class HomeController extends GetxController {
 
       if (result && response.data != null) {
         final data = response.data!;
-        final answer = data['answer'] ?? 'No answer received.';
-        messages.add(ChatMessage(text: answer, isUser: false, isLoading: false));
+        final answer = (data['answer'] ?? 'No answer received.') as String;
+        final previewHtml = (data['preview_html'] ?? '') as String;
+
+        // If preview_html is present (e.g., Excel/file responses), append it so
+        // the HTML viewer can render the file card + download link.
+        final combinedHtml = previewHtml.trim().isNotEmpty
+            ? '$answer\n$previewHtml'
+            : answer;
+
+        messages.add(ChatMessage(
+          text: combinedHtml,
+          isUser: false,
+          isLoading: false,
+        ));
         scrollToBottom();
 
         // Refresh sessions list if this was the first exchange in a new session
@@ -408,8 +420,18 @@ class HomeController extends GetxController {
 
       if (result && response.data != null) {
         final data = response.data!;
-        final answer = data['answer'] ?? 'No answer received.';
-        messages[index] = ChatMessage(text: answer, isUser: false, isLoading: false);
+        final answer = (data['answer'] ?? 'No answer received.') as String;
+        final previewHtml = (data['preview_html'] ?? '') as String;
+
+        final combinedHtml = previewHtml.trim().isNotEmpty
+            ? '$answer\n$previewHtml'
+            : answer;
+
+        messages[index] = ChatMessage(
+          text: combinedHtml,
+          isUser: false,
+          isLoading: false,
+        );
         messages.refresh();
       } else {
         // Restore original message if failed or handle error

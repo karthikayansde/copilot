@@ -1479,8 +1479,21 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildHtmlWithDownloadSupport(BuildContext context, String htmlData) {
-    // Parse HTML to find download links and handle them
-    return Html(
+    // Try to extract a download link and filename from the HTML
+    String? downloadUrl;
+    String? downloadFileName;
+
+    final hrefMatch = RegExp(r'href="([^"]+)"').firstMatch(htmlData);
+    final downloadMatch = RegExp(r'download="([^"]*)"').firstMatch(htmlData);
+
+    if (hrefMatch != null) {
+      downloadUrl = hrefMatch.group(1);
+    }
+    if (downloadMatch != null) {
+      downloadFileName = downloadMatch.group(1);
+    }
+
+    Widget htmlWidget = Html(
       data: htmlData,
       style: {
         "body": Style(
@@ -1523,6 +1536,44 @@ class HomeScreen extends StatelessWidget {
         }
       },
     );
+
+    // If we found a download link, show a dedicated download button
+    if (downloadUrl != null && downloadFileName != null && downloadUrl.isNotEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          htmlWidget,
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF107C41),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              ),
+              onPressed: () {
+                _handleDownload(context, downloadUrl!, downloadFileName!);
+              },
+              icon: const Icon(Icons.download_rounded, size: 18),
+              label: Text(
+                'Download ${downloadFileName!}',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    // Default: just render the HTML
+    return htmlWidget;
   }
 
   void _handleDownload(BuildContext context, String url, String downloadAttr) async {
