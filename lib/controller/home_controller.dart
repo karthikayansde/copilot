@@ -300,7 +300,7 @@ class HomeController extends GetxController {
     prompt += searchController.text;
 
     final userMessage = prompt;
-    messages.add(ChatMessage(text: userMessage, isUser: true, isLoading: false));
+    messages.add(ChatMessage(text: {"answer": userMessage}, isUser: true, isLoading: false));
     
     // Clear inputs
     searchController.clear();
@@ -327,18 +327,8 @@ class HomeController extends GetxController {
       );
 
       if (result && response.data != null) {
-        final data = response.data!;
-        final answer = (data['answer'] ?? 'No answer received.') as String;
-        final previewHtml = (data['preview_html'] ?? '') as String;
-
-        // If preview_html is present (e.g., Excel/file responses), append it so
-        // the HTML viewer can render the file card + download link.
-        final combinedHtml = previewHtml.trim().isNotEmpty
-            ? '$answer\n$previewHtml'
-            : answer;
-
         messages.add(ChatMessage(
-          text: combinedHtml,
+          text: response.data!,
           isUser: false,
           isLoading: false,
         ));
@@ -398,7 +388,7 @@ class HomeController extends GetxController {
     final userMessage = messages[index - 1].text;
     
     // Set message to loading state
-    messages[index] = ChatMessage(text: "", isUser: false, isLoading: true);
+    messages[index] = ChatMessage(text: {'answer': ''}, isUser: false, isLoading: true);
     messages.refresh();
     
     try {
@@ -419,16 +409,9 @@ class HomeController extends GetxController {
       );
 
       if (result && response.data != null) {
-        final data = response.data!;
-        final answer = (data['answer'] ?? 'No answer received.') as String;
-        final previewHtml = (data['preview_html'] ?? '') as String;
-
-        final combinedHtml = previewHtml.trim().isNotEmpty
-            ? '$answer\n$previewHtml'
-            : answer;
 
         messages[index] = ChatMessage(
-          text: combinedHtml,
+          text: response.data!,
           isUser: false,
           isLoading: false,
         );
@@ -436,12 +419,12 @@ class HomeController extends GetxController {
       } else {
         // Restore original message if failed or handle error
         // For now just stop loading
-        messages[index] = ChatMessage(text: "Failed to reload. Please try again.", isUser: false, isLoading: false);
+        messages[index] = ChatMessage(text: {'answer': "Failed to reload. Please try again."}, isUser: false, isLoading: false);
         messages.refresh();
       }
     } catch (e) {
       SnackBarWidget.showError(context);
-      messages[index] = ChatMessage(text: "Error occurred during reload.", isUser: false, isLoading: false);
+      messages[index] = ChatMessage(text: {'answer': "Error occurred during reload."}, isUser: false, isLoading: false);
       messages.refresh();
     }
   }
@@ -560,7 +543,7 @@ class HomeController extends GetxController {
           for (var msg in sessionChat.messages!) {
             messages.add(
               ChatMessage(
-                text: msg.content ?? "",
+                text: {'answer':msg.content ?? ""},
                 isUser: msg.role == "user",
                 isLoading: false,
               ),
@@ -597,7 +580,7 @@ class HomeController extends GetxController {
         PlatformFile file = result.files.first;
 
         messages.add(ChatMessage(
-            text: "Uploaded file: ${file.name} (Ready for analysis)",
+            text: {'answer': "Uploaded file: ${file.name} (Ready for analysis)"},
             isUser: true,
             isLoading: false
         ));

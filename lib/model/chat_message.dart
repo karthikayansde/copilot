@@ -1,5 +1,5 @@
 class ChatMessage {
-  final String text; // Or htmlContent for AI
+  final Map<String, dynamic> text; // Or htmlContent for AI
   final bool isUser;
   final DateTime timestamp;
   String? feedbackStatus; // 'liked', 'disliked', or null

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_html_table/flutter_html_table.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../controller/home_controller.dart';
 import '../core/theme/app_colors.dart';
@@ -474,7 +476,7 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   _buildActionIcon(Icons.content_copy_rounded, () {
                     Clipboard.setData(
-                      ClipboardData(text: AppUtils.stripHtml(message.text)),
+                      ClipboardData(text: AppUtils.stripHtml(message.text['answer'])),
                     );
                     Get.snackbar(
                       'Copied',
@@ -499,7 +501,7 @@ class HomeScreen extends StatelessWidget {
                         ? () {
                             final String question = index > 0
                                 ? (controller.messages[index - 1].isUser
-                                      ? controller.messages[index - 1].text
+                                      ? controller.messages[index - 1].text['answer']
                                       : "")
                                 : "";
                             _showFeedbackDialog(
@@ -522,7 +524,7 @@ class HomeScreen extends StatelessWidget {
                         ? () {
                             final String question = index > 0
                                 ? (controller.messages[index - 1].isUser
-                                      ? controller.messages[index - 1].text
+                                      ? controller.messages[index - 1].text['answer']
                                       : "")
                                 : "";
                             _showNegativeFeedbackDialog(
@@ -571,7 +573,7 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
               child: Text(
-                message.text,
+                message.text['answer'],
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 15,
@@ -1478,135 +1480,93 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHtmlWithDownloadSupport(BuildContext context, String htmlData) {
-    // Try to extract a download link and filename from the HTML
-    String? downloadUrl;
-    String? downloadFileName;
+  Widget _buildHtmlWithDownloadSupport(BuildContext context, Map<String, dynamic> htmlData) {
 
-    final hrefMatch = RegExp(r'href="([^"]+)"').firstMatch(htmlData);
-    final downloadMatch = RegExp(r'download="([^"]*)"').firstMatch(htmlData);
+    final List<Widget> valuesList = [];
 
-    if (hrefMatch != null) {
-      downloadUrl = hrefMatch.group(1);
-    }
-    if (downloadMatch != null) {
-      downloadFileName = downloadMatch.group(1);
-    }
+    htmlData.forEach((key, value) {
+      valuesList.add(commonHtmlWidget(htmlData[key]));
+    });
 
-    Widget htmlWidget = Html(
-      data: htmlData,
-      style: {
-        "body": Style(
-          margin: Margins.zero,
-          padding: HtmlPaddings.zero,
-          fontSize: FontSize(15),
-          color: Colors.black87,
-          lineHeight: const LineHeight(1.7),
-        ),
-        "p": Style(
-          margin: Margins.only(bottom: 12),
-          color: Colors.black87,
-        ),
-        "code": Style(
-          backgroundColor: Colors.black.withOpacity(0.05),
-          color: Colors.black,
-          padding: HtmlPaddings.all(4),
-          fontFamily: 'monospace',
-          fontWeight: FontWeight.w600,
-        ),
-        "pre": Style(
-          backgroundColor: Colors.black.withOpacity(0.04),
-          padding: HtmlPaddings.all(12),
-          margin: Margins.symmetric(vertical: 8),
-          border: Border.all(
-            color: Colors.black.withOpacity(0.1),
-            width: 1,
-          ),
-        ),
-        "a": Style(
-          color: Colors.blue,
-          textDecoration: TextDecoration.underline,
-        ),
-      },
-      onLinkTap: (url, attributes, element) {
-        // Check if this is a download link
-        final downloadAttr = attributes['download'];
-        if (downloadAttr != null && url != null) {
-          _handleDownload(context, url, downloadAttr);
-        }
-      },
+    // Wrap in horizontal scroll view to handle wide tables
+    Widget htmlWidget = SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Column(
+        children: valuesList,
+      ),
     );
+    // if(htmlData['answer'])
 
     // If we found a download link, show a dedicated download button
-    if (downloadUrl != null && downloadFileName != null && downloadUrl.isNotEmpty) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          htmlWidget,
-          const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF107C41),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              ),
-              onPressed: () {
-                _handleDownload(context, downloadUrl!, downloadFileName!);
-              },
-              icon: const Icon(Icons.download_rounded, size: 18),
-              label: Text(
-                'Download ${downloadFileName!}',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
+    // if (downloadUrl != null && downloadFileName != null && downloadUrl.isNotEmpty) {
+    //   return Column(
+    //     crossAxisAlignment: CrossAxisAlignment.start,
+    //     children: [
+    //       htmlWidget,
+    //       const SizedBox(height: 12),
+    //       Align(
+    //         alignment: Alignment.centerLeft,
+    //         child: ElevatedButton.icon(
+    //           style: ElevatedButton.styleFrom(
+    //             backgroundColor: const Color(0xFF107C41),
+    //             foregroundColor: Colors.white,
+    //             shape: RoundedRectangleBorder(
+    //               borderRadius: BorderRadius.circular(24),
+    //             ),
+    //             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+    //           ),
+    //           onPressed: () {
+    //             _handleDownload(context, downloadUrl!, downloadFileName!);
+    //           },
+    //           icon: const Icon(Icons.download_rounded, size: 18),
+    //           label: Text(
+    //             'Download ${downloadFileName!}',
+    //             style: const TextStyle(
+    //               fontSize: 13,
+    //               fontWeight: FontWeight.w600,
+    //             ),
+    //           ),
+    //         ),
+    //       ),
+    //     ],
+    //   );
+    // }
 
     // Default: just render the HTML
     return htmlWidget;
   }
 
-  void _handleDownload(BuildContext context, String url, String downloadAttr) async {
-    final fileName = downloadAttr.isNotEmpty 
-        ? downloadAttr 
-        : url.split('/').last.split('?').first;
-    
-    // Show loading snackbar
-    Get.snackbar(
-      'Downloading',
-      'Downloading $fileName...',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.black87,
-      colorText: Colors.white,
-      duration: const Duration(seconds: 2),
-    );
-    
-    final filePath = await DownloadService.downloadFile(
-      url: url,
-      fileName: fileName,
-    );
-    
-    if (filePath != null) {
-      Get.snackbar(
-        'Success',
-        'File downloaded successfully',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-      );
-    }
-  }
+  // void _handleDownload(BuildContext context, String url, String downloadAttr) async {
+  //   final fileName = downloadAttr.isNotEmpty
+  //       ? downloadAttr
+  //       : url.split('/').last.split('?').first;
+  //
+  //   // Show loading snackbar
+  //   Get.snackbar(
+  //     'Downloading',
+  //     'Downloading $fileName...',
+  //     snackPosition: SnackPosition.BOTTOM,
+  //     backgroundColor: Colors.black87,
+  //     colorText: Colors.white,
+  //     duration: const Duration(seconds: 2),
+  //   );
+  //
+  //   final filePath = await DownloadService.downloadFile(
+  //     url: url,
+  //     fileName: fileName,
+  //   );
+  //
+  //   if (filePath != null) {
+  //     Get.snackbar(
+  //       'Success',
+  //       'File downloaded successfully',
+  //       snackPosition: SnackPosition.BOTTOM,
+  //       backgroundColor: Colors.green,
+  //       colorText: Colors.white,
+  //       duration: const Duration(seconds: 3),
+  //     );
+  //   }
+  // }
 
   void _showAttachPopover(BuildContext context, BuildContext buttonContext) {
     PopoverDialog.show(
@@ -1690,6 +1650,83 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  static Future<bool> launch(String phUrl) async {
+    final Uri url = Uri.parse(phUrl);
+    if (await canLaunchUrl(url)) {
+      return await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      return false;
+    }
+  }
+  static Widget commonHtmlWidget(String htmlContent){
+    return Html(
+      data: htmlContent,
+      shrinkWrap: true,
+      extensions: [
+        const TableHtmlExtension(),
+      ],
+      style: {
+        "body": Style(
+          margin: Margins.zero,
+          padding: HtmlPaddings.zero,
+          fontSize: FontSize(15),
+          color: Colors.black87,
+          lineHeight: const LineHeight(1.7),
+        ),
+        "table": Style(
+          backgroundColor: Colors.white,
+          border: Border.all(color: Colors.black12, width: 1),
+          margin: Margins.symmetric(vertical: 10),
+        ),
+        "th": Style(
+          padding: HtmlPaddings.all(12),
+          backgroundColor: Colors.grey.shade100,
+          fontWeight: FontWeight.bold,
+          border: Border.all(color: Colors.black12, width: 0.5),
+        ),
+        "td": Style(
+          padding: HtmlPaddings.all(12),
+          border: Border.all(color: Colors.black12, width: 0.5),
+          alignment: Alignment.centerLeft,
+        ),
+        "h1": Style(
+          fontSize: FontSize(24),
+          fontWeight: FontWeight.bold,
+          color: const Color(0xFF0066CC),
+          margin: Margins.only(bottom: 12),
+        ),
+        "p": Style(
+          margin: Margins.only(bottom: 12),
+          color: Colors.black87,
+        ),
+        "code": Style(
+          backgroundColor: Colors.black.withOpacity(0.05),
+          color: Colors.black,
+          padding: HtmlPaddings.all(4),
+          fontFamily: 'monospace',
+          fontWeight: FontWeight.w600,
+        ),
+        "pre": Style(
+          backgroundColor: Colors.black.withOpacity(0.04),
+          padding: HtmlPaddings.all(12),
+          margin: Margins.symmetric(vertical: 8),
+          border: Border.all(
+            color: Colors.black.withOpacity(0.1),
+            width: 1,
+          ),
+        ),
+        "a": Style(
+          color: Colors.blue,
+          textDecoration: TextDecoration.underline,
+        ),
+      },
+      onLinkTap: (url, attributes, element) {
+        // _handleDownload(context, url??'', attributes);
+        launch(url??'');
+      },
     );
   }
 }
