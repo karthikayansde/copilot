@@ -549,6 +549,7 @@ class HomeController extends GetxController {
               ),
             );
           }
+          messages.refresh();
         }
         scrollToBottom();
       }

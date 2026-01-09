@@ -1489,12 +1489,14 @@ class HomeScreen extends StatelessWidget {
     });
 
     // Wrap in horizontal scroll view to handle wide tables
-    Widget htmlWidget = SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Column(
+    Widget htmlWidget =
+    // SingleChildScrollView(
+    //   scrollDirection: Axis.horizontal,
+    //   child:
+      Column(
         children: valuesList,
-      ),
-    );
+      );
+    // );
     // if(htmlData['answer'])
 
     // If we found a download link, show a dedicated download button
@@ -1679,16 +1681,16 @@ class HomeScreen extends StatelessWidget {
         "table": Style(
           backgroundColor: Colors.white,
           border: Border.all(color: Colors.black12, width: 1),
-          margin: Margins.symmetric(vertical: 10),
+          // margin: Margins.symmetric(vertical: 10),
         ),
         "th": Style(
-          padding: HtmlPaddings.all(12),
+          // padding: HtmlPaddings.all(12),
           backgroundColor: Colors.grey.shade100,
           fontWeight: FontWeight.bold,
           border: Border.all(color: Colors.black12, width: 0.5),
         ),
         "td": Style(
-          padding: HtmlPaddings.all(12),
+          // padding: HtmlPaddings.all(12),
           border: Border.all(color: Colors.black12, width: 0.5),
           alignment: Alignment.centerLeft,
         ),
