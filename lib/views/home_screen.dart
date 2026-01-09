@@ -768,18 +768,7 @@ class HomeScreen extends StatelessWidget {
                                     width: 24,
                                     height: 24,
                                   ),
-                            onPressed: controller.isLoading.value
-                                ? null
-                                : controller.hasText.value
-                                ? () async {
-                                    FocusScope.of(context).unfocus();
-                                    await controller.sendMessage(context);
-                                  }
-                                : controller.speechEnabled.value
-                                ? (controller.isListening.value
-                                      ? controller.stopListening
-                                      : controller.startListening)
-                                : null,
+                            onPressed: ()=>handleSendMessage(controller, context),
                             tooltip: controller.hasText.value
                                 ? 'Send message'
                                 : controller.isListening.value
@@ -802,6 +791,26 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> handleSendMessage(controller, BuildContext context) async {
+    if (controller.isLoading.value) {
+      return;
+    }
+
+    if (controller.hasText.value) {
+      FocusScope.of(context).unfocus();
+      await controller.sendMessage(context);
+      return;
+    }
+
+    if (controller.speechEnabled.value) {
+      if (controller.isListening.value) {
+        controller.stopListening();
+      } else {
+        controller.startListening();
+      }
+    }
   }
 
   void _showNegativeFeedbackDialog(

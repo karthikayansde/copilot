@@ -93,37 +93,41 @@ class HomeController extends GetxController {
       final status = await Permission.microphone.request();
 
       if (status.isGranted) {
-        speechEnabled.value = await _speech.initialize(
+        final initialized = await _speech.initialize(
           onError: (error) {
             debugPrint('Speech error: $error');
-
             isListening.value = false;
-
-            // SnackBarWidget.showError(Get.context!);
           },
-
           onStatus: (status) {
             debugPrint('Speech status: $status');
-
             if (status == 'notListening' || status == 'done') {
               isListening.value = false;
             }
           },
         );
-      } else {
+        speechEnabled.value = initialized;
+        if (!initialized) {
+          _showToast('Speech recognition not available on this device');
+        }
+      } else if (status.isDenied) {
         _showToast('Microphone permission denied');
+      } else if (status.isPermanentlyDenied) {
+        _showToast('Microphone permission permanently denied. Please enable in settings.');
+        openAppSettings();
       }
     } catch (e) {
       debugPrint('Error initializing speech: $e');
-
       _showToast('Error initializing speech recognition');
     }
   }
 
   Future<void> startListening() async {
     if (!speechEnabled.value) {
+      await _initSpeech();
+    }
+    
+    if (!speechEnabled.value) {
       _showToast('Speech recognition not available');
-
       return;
     }
 
@@ -132,28 +136,21 @@ class HomeController extends GetxController {
     }
 
     try {
+      isListening.value = true;
       await _speech.listen(
         onResult: (result) {
           searchController.text = result.recognizedWords;
+          hasText.value = result.recognizedWords.isNotEmpty;
         },
-
         listenFor: const Duration(seconds: 30),
-
         pauseFor: const Duration(seconds: 3),
-
         localeId: 'en_US',
-
         cancelOnError: true,
-
         listenMode: stt.ListenMode.confirmation,
       );
-
-      isListening.value = true;
     } catch (e) {
       debugPrint('Error starting listening: $e');
-
       isListening.value = false;
-
       _showToast('Error starting speech recognition');
     }
   }
@@ -290,34 +287,34 @@ class HomeController extends GetxController {
     }
   }
 
-  Future<void> sendMessage(BuildContext context) async {
-    if (searchController.text.trim().isEmpty && selectedSuggestions.isEmpty) return;
+    Future<void> sendMessage(BuildContext context) async {
+      if (searchController.text.trim().isEmpty && selectedSuggestions.isEmpty) return;
 
-    String prompt = '';
-    if (selectedSuggestions.isNotEmpty) {
-      prompt += '[${selectedSuggestions.join(", ")}] ';
-    }
-    prompt += searchController.text;
+      String prompt = '';
+      if (selectedSuggestions.isNotEmpty) {
+        prompt += '[${selectedSuggestions.join(", ")}] ';
+      }
+      prompt += searchController.text;
 
     final userMessage = prompt;
-    messages.add(ChatMessage(text: {"answer": userMessage}, isUser: true, isLoading: false));
+    messages.add(ChatMessage(text: userMessage, isUser: true, isLoading: false));
     
     // Clear inputs
     searchController.clear();
     selectedSuggestions.clear();
     scrollToBottom();
 
-    isLoading.value = true;
-    try {
-      ApiResponse response = await apiService.request(
-        method: ApiMethod.post,
-        endpoint: Endpoints.ask,
-        body: {
-          "question": userMessage,
-          "sessionId": sessionId,
-          "username": userName,
-        },
-      );
+      isLoading.value = true;
+      try {
+        ApiResponse response = await apiService.request(
+          method: ApiMethod.post,
+          endpoint: Endpoints.ask,
+          body: {
+            "question": userMessage,
+            "sessionId": sessionId,
+            "username": userName,
+          },
+        );
 
 
       bool result = apiService.showApiResponse(
