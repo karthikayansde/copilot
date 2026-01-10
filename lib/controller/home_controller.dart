@@ -20,7 +20,6 @@ import '../services/file_processor_service.dart';
 import '../views/qr_scanner_view.dart';
 import 'package:file_picker/file_picker.dart';
 
-
 class HomeController extends GetxController {
   final stt.SpeechToText _speech = stt.SpeechToText();
   final TextEditingController searchController = TextEditingController();
@@ -37,7 +36,7 @@ class HomeController extends GetxController {
     'IntelAgent',
     'SellNow',
     'Get Insights',
-    'Generate Document'
+    'Generate Document',
   ];
   var selectedSuggestions = <String>[].obs;
   var userName = '';
@@ -46,19 +45,13 @@ class HomeController extends GetxController {
 
   final apiService = ApiService();
 
-  @override
-  void onInit() {
-    super.onInit();
-    init();
-  }
-
   Future<void> init() async {
     userName =
         await SharedPrefManager.instance.getStringAsync(
           SharedPrefManager.username,
         ) ??
-        '';
-    await _initSpeech();
+            '';
+    // await _initSpeech();
     await _getSessionId();
     await getSessionsApi();
     searchController.addListener(() {
@@ -74,6 +67,12 @@ class HomeController extends GetxController {
 
     super.onClose();
   }
+  @override
+  void onInit() {
+    // TODO: implement onInit
+    super.onInit();
+    init();
+  }
 
   Future<void> _getSessionId({bool force = false}) async {
     if (sessionId.isEmpty || force) {
@@ -82,7 +81,7 @@ class HomeController extends GetxController {
       sessionId = String.fromCharCodes(
         Iterable.generate(
           10,
-          (_) => chars.codeUnitAt(Random().nextInt(chars.length)),
+              (_) => chars.codeUnitAt(Random().nextInt(chars.length)),
         ),
       );
     }
@@ -90,7 +89,7 @@ class HomeController extends GetxController {
 
   Future<void> _initSpeech() async {
     try {
-      final status = await Permission.microphone.request();
+      final status = await Permission.microphone.status;
 
       if (status.isGranted) {
         final initialized = await _speech.initialize(
@@ -109,11 +108,10 @@ class HomeController extends GetxController {
         if (!initialized) {
           _showToast('Speech recognition not available on this device');
         }
-      } else if (status.isDenied) {
-        _showToast('Microphone permission denied');
-      } else if (status.isPermanentlyDenied) {
-        _showToast('Microphone permission permanently denied. Please enable in settings.');
-        openAppSettings();
+      } else {
+        // Don't request permission or show dialog on init
+        // Wait until user actually tries to use voice feature
+        speechEnabled.value = false;
       }
     } catch (e) {
       debugPrint('Error initializing speech: $e');
@@ -122,20 +120,25 @@ class HomeController extends GetxController {
   }
 
   Future<void> startListening() async {
+    debugPrint('🎤 startListening called');
+
+    // Initialize speech if not already done
     if (!speechEnabled.value) {
       await _initSpeech();
     }
-    
+
     if (!speechEnabled.value) {
       _showToast('Speech recognition not available');
       return;
     }
 
     if (isListening.value) {
+      debugPrint('🎤 Already listening');
       return;
     }
 
     try {
+      debugPrint('🎤 Starting speech recognition...');
       isListening.value = true;
       await _speech.listen(
         onResult: (result) {
@@ -196,6 +199,32 @@ class HomeController extends GetxController {
     }
   }
 
+  void _showPermissionDialog(String title, String message) {
+    if (Get.context == null) return;
+
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: Colors.white,
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              Get.back();
+              openAppSettings();
+            },
+            child: const Text('Open Settings'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> logout(BuildContext context) async {
     // Show confirmation dialog
 
@@ -224,10 +253,9 @@ class HomeController extends GetxController {
 
               width: 100,
 
-              onPressed: (){
-
-        Navigator.of(dialogContext).pop(true);
-        } ,
+              onPressed: () {
+                Navigator.of(dialogContext).pop(true);
+              },
 
               label: AppStrings.logout,
             ),
@@ -267,7 +295,7 @@ class HomeController extends GetxController {
 
             MaterialPageRoute(builder: (context) => const LoginView()),
 
-            (Route<dynamic> route) => false,
+                (Route<dynamic> route) => false,
           );
         }
       } catch (e) {
@@ -287,35 +315,41 @@ class HomeController extends GetxController {
     }
   }
 
-    Future<void> sendMessage(BuildContext context) async {
-      if (searchController.text.trim().isEmpty && selectedSuggestions.isEmpty) return;
+  Future<void> sendMessage(BuildContext context) async {
+    if (searchController.text.trim().isEmpty && selectedSuggestions.isEmpty)
+      return;
 
-      String prompt = '';
-      if (selectedSuggestions.isNotEmpty) {
-        prompt += '[${selectedSuggestions.join(", ")}] ';
-      }
-      prompt += searchController.text;
+    String prompt = '';
+    if (selectedSuggestions.isNotEmpty) {
+      prompt += '[${selectedSuggestions.join(", ")}] ';
+    }
+    prompt += searchController.text;
 
     final userMessage = prompt;
-    messages.add(ChatMessage(text: {'answer':userMessage}, isUser: true, isLoading: false));
-    
+    messages.add(
+      ChatMessage(
+        text: {'answer': userMessage},
+        isUser: true,
+        isLoading: false,
+      ),
+    );
+
     // Clear inputs
     searchController.clear();
     selectedSuggestions.clear();
     scrollToBottom();
 
-      isLoading.value = true;
-      try {
-        ApiResponse response = await apiService.request(
-          method: ApiMethod.post,
-          endpoint: Endpoints.ask,
-          body: {
-            "question": userMessage,
-            "sessionId": sessionId,
-            "username": userName,
-          },
-        );
-
+    isLoading.value = true;
+    try {
+      ApiResponse response = await apiService.request(
+        method: ApiMethod.post,
+        endpoint: Endpoints.ask,
+        body: {
+          "question": userMessage,
+          "sessionId": sessionId,
+          "username": userName,
+        },
+      );
 
       bool result = apiService.showApiResponse(
         context: context,
@@ -324,11 +358,9 @@ class HomeController extends GetxController {
       );
 
       if (result && response.data != null) {
-        messages.add(ChatMessage(
-          text: response.data!,
-          isUser: false,
-          isLoading: false,
-        ));
+        messages.add(
+          ChatMessage(text: response.data!, isUser: false, isLoading: false),
+        );
         scrollToBottom();
 
         // Refresh sessions list if this was the first exchange in a new session
@@ -362,18 +394,21 @@ class HomeController extends GetxController {
         method: ApiMethod.get,
         endpoint: "${Endpoints.sessions}$userName",
       );
-      if(response.code == ApiCode.success200.index){
+      if (response.code == ApiCode.success200.index) {
         SessionsModel model = SessionsModel.fromJson(response.data);
         if (model.sessions != null) {
           model.sessions!.sort((a, b) {
-            DateTime dateA = a.updatedAt != null ? DateTime.tryParse(a.updatedAt!) ?? DateTime(0) : DateTime(0);
-            DateTime dateB = b.updatedAt != null ? DateTime.tryParse(b.updatedAt!) ?? DateTime(0) : DateTime(0);
+            DateTime dateA = a.updatedAt != null
+                ? DateTime.tryParse(a.updatedAt!) ?? DateTime(0)
+                : DateTime(0);
+            DateTime dateB = b.updatedAt != null
+                ? DateTime.tryParse(b.updatedAt!) ?? DateTime(0)
+                : DateTime(0);
             return dateB.compareTo(dateA); // Newest first
           });
         }
         sessionsList.value = model;
       }
-    } catch (e) {
     } finally {
       isSessionsLoading.value = false;
     }
@@ -381,13 +416,17 @@ class HomeController extends GetxController {
 
   Future<void> reloadMessage(BuildContext context, int index) async {
     if (index <= 0 || messages[index].isUser) return;
-    
+
     final userMessage = messages[index - 1].text;
-    
+
     // Set message to loading state
-    messages[index] = ChatMessage(text: {'answer': ''}, isUser: false, isLoading: true);
+    messages[index] = ChatMessage(
+      text: {'answer': ''},
+      isUser: false,
+      isLoading: true,
+    );
     messages.refresh();
-    
+
     try {
       ApiResponse response = await apiService.request(
         method: ApiMethod.post,
@@ -406,7 +445,6 @@ class HomeController extends GetxController {
       );
 
       if (result && response.data != null) {
-
         messages[index] = ChatMessage(
           text: response.data!,
           isUser: false,
@@ -416,28 +454,36 @@ class HomeController extends GetxController {
       } else {
         // Restore original message if failed or handle error
         // For now just stop loading
-        messages[index] = ChatMessage(text: {'answer': "Failed to reload. Please try again."}, isUser: false, isLoading: false);
+        messages[index] = ChatMessage(
+          text: {'answer': "Failed to reload. Please try again."},
+          isUser: false,
+          isLoading: false,
+        );
         messages.refresh();
       }
     } catch (e) {
       SnackBarWidget.showError(context);
-      messages[index] = ChatMessage(text: {'answer': "Error occurred during reload."}, isUser: false, isLoading: false);
+      messages[index] = ChatMessage(
+        text: {'answer': "Error occurred during reload."},
+        isUser: false,
+        isLoading: false,
+      );
       messages.refresh();
     }
   }
 
-  Future<void> editSessionTitleApi(BuildContext context, String sessionId, String newTitle) async {
+  Future<void> editSessionTitleApi(
+      BuildContext context,
+      String sessionId,
+      String newTitle,
+      ) async {
     try {
       isSessionsLoading.value = true;
       ApiResponse response = await apiService.request(
         method: ApiMethod.post,
         endpoint: Endpoints.updateSessionTitle,
-        body: {
-          "name": newTitle,
-          "username": userName,
-          "session_id": sessionId,
-        },
-        useFormData: true
+        body: {"name": newTitle, "username": userName, "session_id": sessionId},
+        useFormData: true,
       );
 
       if (response.code == ApiCode.success200.index) {
@@ -461,19 +507,16 @@ class HomeController extends GetxController {
       ApiResponse response = await apiService.request(
         method: ApiMethod.post,
         endpoint: Endpoints.deleteSession,
-        body: {
-          "username": userName,
-          "session_id": sessionId
-        },
-        useFormData: true
+        body: {"username": userName, "session_id": sessionId},
+        useFormData: true,
       );
 
       if (response.code == ApiCode.success200.index) {
         await getSessionsApi();
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Session deleted')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Session deleted')));
         }
       }
     } catch (e) {
@@ -508,7 +551,9 @@ class HomeController extends GetxController {
       );
 
       if (response.code == ApiCode.success200.index) {
-        messages[messageIndex].feedbackStatus = isThumbsUp ? 'liked' : 'disliked';
+        messages[messageIndex].feedbackStatus = isThumbsUp
+            ? 'liked'
+            : 'disliked';
         messages.refresh();
         return true;
       }
@@ -540,7 +585,7 @@ class HomeController extends GetxController {
           for (var msg in sessionChat.messages!) {
             messages.add(
               ChatMessage(
-                text: {'answer':msg.content ?? ""},
+                text: {'answer': msg.content ?? ""},
                 isUser: msg.role == "user",
                 isLoading: false,
               ),
@@ -573,15 +618,18 @@ class HomeController extends GetxController {
       );
 
       if (result != null) {
-
         isLoading.value = true;
         PlatformFile file = result.files.first;
 
-        messages.add(ChatMessage(
-            text: {'answer': "Uploaded file: ${file.name} (Ready for analysis)"},
+        messages.add(
+          ChatMessage(
+            text: {
+              'answer': "Uploaded file: ${file.name} (Ready for analysis)",
+            },
             isUser: true,
-            isLoading: false
-        ));
+            isLoading: false,
+          ),
+        );
         // Use the 5-step processing flow from FileProcessorService
         final processedData = await FileProcessorService.processFile(file);
 
@@ -591,7 +639,10 @@ class HomeController extends GetxController {
           // Extract file name without extension for table_name
           String fileNameNoExt = file.name;
           if (fileNameNoExt.contains('.')) {
-            fileNameNoExt = fileNameNoExt.substring(0, fileNameNoExt.lastIndexOf('.'));
+            fileNameNoExt = fileNameNoExt.substring(
+              0,
+              fileNameNoExt.lastIndexOf('.'),
+            );
           }
 
           // Step: Data Insights API Call
@@ -599,14 +650,17 @@ class HomeController extends GetxController {
             ApiResponse response = await apiService.request(
               method: ApiMethod.post,
               customUrl: true,
-              endpoint: Endpoints.insightBaseUrl+Endpoints.dataInsights,
+              endpoint: Endpoints.insightBaseUrl + Endpoints.dataInsights,
               body: {
                 "response_id": sessionId,
-                "table_name": fileNameNoExt.replaceAll(RegExp(r'[^a-zA-Z0-9]'), ''),
+                "table_name": fileNameNoExt.replaceAll(
+                  RegExp(r'[^a-zA-Z0-9]'),
+                  '',
+                ),
                 "data_table": jsonEncode([
                   {"ID": "A4", "Value": 3},
-                  {"ID": "B2", "Value": 5}
-                ])
+                  {"ID": "B2", "Value": 5},
+                ]),
                 // jsonEncode(processedData['body']),
               },
               useFormData: true,
@@ -614,12 +668,14 @@ class HomeController extends GetxController {
 
             if (response.code == ApiCode.success200.index) {
               if (response.data != null && response.data != null) {
-                messages.add(ChatMessage(
-                  text: response.data,
-                  isUser: false,
-                  isLoading: false,
-                  hasRefresh: false
-                ));
+                messages.add(
+                  ChatMessage(
+                    text: response.data,
+                    isUser: false,
+                    isLoading: false,
+                    hasRefresh: false,
+                  ),
+                );
               }
               _showToast("File processed and insights generated successfully.");
             } else {
@@ -632,10 +688,10 @@ class HomeController extends GetxController {
           scrollToBottom();
         } else {
           _showToast("Error: ${processedData['message']}");
-          
+
           // If encrypted, you might want to show a dialog for password
           if (processedData['error_type'] == 'ENCRYPTED') {
-             _showPasswordDialog(context, file);
+            _showPasswordDialog(context, file);
           }
         }
       }
@@ -655,7 +711,9 @@ class HomeController extends GetxController {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text("This file is password protected. Please enter the password:"),
+            const Text(
+              "This file is password protected. Please enter the password:",
+            ),
             TextField(
               controller: passwordController,
               obscureText: true,
@@ -664,7 +722,10 @@ class HomeController extends GetxController {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
@@ -686,9 +747,39 @@ class HomeController extends GetxController {
         hasText.value = true;
       }
     } else if (status.isPermanentlyDenied) {
-      openAppSettings();
-    } else {
-      _showToast('Camera permission denied');
+      _showPermissionDialog(
+        'Camera Permission Required',
+        'Please enable camera permission in settings to scan QR codes.',
+      );
     }
+    // If denied, native dialog already shown - no need for custom message
+  }
+
+  Future<void> openCamera(BuildContext context) async {
+    final status = await Permission.camera.request();
+    if (status.isGranted) {
+      _showToast('Camera feature coming soon');
+      // TODO: Implement camera functionality
+    } else if (status.isPermanentlyDenied) {
+      _showPermissionDialog(
+        'Camera Permission Required',
+        'Please enable camera permission in settings to use the camera.',
+      );
+    }
+    // If denied, native dialog already shown - no need for custom message
+  }
+
+  Future<void> openPhotos(BuildContext context) async {
+    final status = await Permission.photos.request();
+    if (status.isGranted) {
+      _showToast('Photo picker feature coming soon');
+      // TODO: Implement photo picker functionality
+    } else if (status.isPermanentlyDenied) {
+      _showPermissionDialog(
+        'Photos Permission Required',
+        'Please enable photos permission in settings to access your photo library.',
+      );
+    }
+    // If denied, native dialog already shown - no need for custom message
   }
 }

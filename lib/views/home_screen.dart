@@ -4,13 +4,13 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_html_table/flutter_html_table.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../controller/home_controller.dart';
 import '../core/theme/app_colors.dart';
 import '../utils/app_utils.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/popover_dialog.dart';
-import '../services/download_service.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -95,8 +95,8 @@ class HomeScreen extends StatelessWidget {
                           children: [
                             if (controller.sessionsList.value.sessions != null)
                               ...controller.sessionsList.value.sessions!.map((
-                                session,
-                              ) {
+                                  session,
+                                  ) {
                                 return _buildDrawerItem(
                                   icon: Icons.chat_bubble_outline_rounded,
                                   label: session.title ?? 'Untitled Chat',
@@ -114,7 +114,7 @@ class HomeScreen extends StatelessWidget {
                                     controller,
                                   ),
                                 );
-                              }).toList(),
+                              }),
                           ],
                         );
                       }),
@@ -133,19 +133,19 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
               Obx(
-                () => controller.isSessionsLoading.value
+                    () => controller.isSessionsLoading.value
                     ? Positioned.fill(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.shadowMedium,
-                            borderRadius: const BorderRadius.only(
-                              topRight: Radius.circular(30),
-                              bottomRight: Radius.circular(30),
-                            ),
-                          ),
-                          child: LoadingWidget.loader(),
-                        ),
-                      )
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.shadowMedium,
+                      borderRadius: const BorderRadius.only(
+                        topRight: Radius.circular(30),
+                        bottomRight: Radius.circular(30),
+                      ),
+                    ),
+                    child: LoadingWidget.loader(),
+                  ),
+                )
                     : const SizedBox.shrink(),
               ),
             ],
@@ -190,25 +190,25 @@ class HomeScreen extends StatelessWidget {
                                         controller,
                                         0,
                                         Icons.psychology,
-                                        context
+                                        context,
                                       ),
                                       _buildSuggestionChip(
                                         controller,
                                         1,
                                         Icons.shopping_cart_checkout,
-                                          context
+                                        context,
                                       ),
                                       _buildSuggestionChip(
                                         controller,
                                         2,
                                         Icons.lightbulb_outline,
-                                          context
+                                        context,
                                       ),
                                       _buildSuggestionChip(
                                         controller,
                                         3,
                                         Icons.description_outlined,
-                                          context
+                                        context,
                                       ),
                                     ],
                                   ),
@@ -227,10 +227,10 @@ class HomeScreen extends StatelessWidget {
                             top: 60,
                           ),
                           itemCount:
-                              controller.messages.length +
+                          controller.messages.length +
                               (controller.isLoading.value ? 1 : 0),
                           separatorBuilder: (context, index) =>
-                              const SizedBox(height: 12),
+                          const SizedBox(height: 12),
                           itemBuilder: (context, index) {
                             if (index == controller.messages.length) {
                               return _buildLoadingMessage();
@@ -266,14 +266,14 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 Obx(
-                  () =>
-                      controller.isLoading.value && controller.messages.isEmpty
+                      () =>
+                  controller.isLoading.value && controller.messages.isEmpty
                       ? Positioned.fill(
-                          child: Container(
-                            color: AppColors.shadowMedium,
-                            child: LoadingWidget.loader(),
-                          ),
-                        )
+                    child: Container(
+                      color: AppColors.shadowMedium,
+                      child: LoadingWidget.loader(),
+                    ),
+                  )
                       : const SizedBox.shrink(),
                 ),
               ],
@@ -285,19 +285,19 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildSuggestionChip(
-    dynamic controller,
-    int labelIndex,
-    IconData icon,
-      BuildContext context
-  ) {
+      dynamic controller,
+      int labelIndex,
+      IconData icon,
+      BuildContext context,
+      ) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: labelIndex == 2
             ? () => controller.pickAndProcessFile(context)
             : () => controller.addSuggestion(
-                controller.searchOptions[labelIndex],
-              ),
+          controller.searchOptions[labelIndex],
+        ),
         borderRadius: BorderRadius.circular(20),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -384,11 +384,11 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildMessage(
-    BuildContext context,
-    dynamic message,
-    dynamic controller,
-    int index,
-  ) {
+      BuildContext context,
+      dynamic message,
+      dynamic controller,
+      int index,
+      ) {
     final isUser = message.isUser;
 
     if (!isUser) {
@@ -443,28 +443,28 @@ class HomeScreen extends StatelessWidget {
             ),
             child: message.isLoading == true
                 ? Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Row(
-                      children: [
-                        const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.black54,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          "Reloading...",
-                          style: TextStyle(
-                            color: Colors.black.withOpacity(0.5),
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Row(
+                children: [
+                  const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.black54,
                     ),
-                  )
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    "Reloading...",
+                    style: TextStyle(
+                      color: Colors.black.withOpacity(0.5),
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            )
                 : _buildHtmlWithDownloadSupport(context, message.text),
           ),
           if (message.isLoading != true) ...[
@@ -476,7 +476,9 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   _buildActionIcon(Icons.content_copy_rounded, () {
                     Clipboard.setData(
-                      ClipboardData(text: AppUtils.stripHtml(message.text['answer'])),
+                      ClipboardData(
+                        text: AppUtils.stripHtml(message.text['answer']),
+                      ),
                     );
                     Get.snackbar(
                       'Copied',
@@ -489,32 +491,36 @@ class HomeScreen extends StatelessWidget {
                       borderRadius: 15,
                     );
                   }),
-                  SizedBox(width: !message.hasRefresh?0:4),
-                  !message.hasRefresh?SizedBox():_buildActionIcon(
+                  SizedBox(width: !message.hasRefresh ? 0 : 4),
+                  !message.hasRefresh
+                      ? SizedBox()
+                      : _buildActionIcon(
                     Icons.refresh_outlined,
-                    () => controller.reloadMessage(context, index),
+                        () => controller.reloadMessage(context, index),
                   ),
                   const SizedBox(width: 4),
                   _buildActionIcon(
                     Icons.thumb_up_outlined,
                     message.feedbackStatus == null
                         ? () {
-                            final String question = index > 0
-                                ? (controller.messages[index - 1].isUser
-                                      ? controller.messages[index - 1].text['answer']
-                                      : "")
-                                : "";
-                            _showFeedbackDialog(
-                              context,
-                              question,
-                              controller,
-                              index,
-                            );
-                          }
+                      final String question = index > 0
+                          ? (controller.messages[index - 1].isUser
+                          ? controller
+                          .messages[index - 1]
+                          .text['answer']
+                          : "")
+                          : "";
+                      _showFeedbackDialog(
+                        context,
+                        question,
+                        controller,
+                        index,
+                      );
+                    }
                         : null,
                     isSelected: message.feedbackStatus == 'liked',
                     isDisabled:
-                        message.feedbackStatus != null &&
+                    message.feedbackStatus != null &&
                         message.feedbackStatus != 'liked',
                   ),
                   const SizedBox(width: 4),
@@ -522,22 +528,24 @@ class HomeScreen extends StatelessWidget {
                     Icons.thumb_down_outlined,
                     message.feedbackStatus == null
                         ? () {
-                            final String question = index > 0
-                                ? (controller.messages[index - 1].isUser
-                                      ? controller.messages[index - 1].text['answer']
-                                      : "")
-                                : "";
-                            _showNegativeFeedbackDialog(
-                              context,
-                              question,
-                              controller,
-                              index,
-                            );
-                          }
+                      final String question = index > 0
+                          ? (controller.messages[index - 1].isUser
+                          ? controller
+                          .messages[index - 1]
+                          .text['answer']
+                          : "")
+                          : "";
+                      _showNegativeFeedbackDialog(
+                        context,
+                        question,
+                        controller,
+                        index,
+                      );
+                    }
                         : null,
                     isSelected: message.feedbackStatus == 'disliked',
                     isDisabled:
-                        message.feedbackStatus != null &&
+                    message.feedbackStatus != null &&
                         message.feedbackStatus != 'disliked',
                   ),
                 ],
@@ -591,10 +599,7 @@ class HomeScreen extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.primaryIcon,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: AppColors.primaryIcon,
-                width: 1.5,
-              ),
+              border: Border.all(color: AppColors.primaryIcon, width: 1.5),
             ),
             child: Center(
               child: Text(
@@ -602,7 +607,7 @@ class HomeScreen extends StatelessWidget {
                 style: TextStyle(
                   color: AppColors.white,
                   fontWeight: FontWeight.w900,
-                  fontSize: 15
+                  fontSize: 15,
                 ),
               ),
             ),
@@ -645,59 +650,59 @@ class HomeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Obx(
-              () => controller.selectedSuggestions.isNotEmpty
+                  () => controller.selectedSuggestions.isNotEmpty
                   ? Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                      child: Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: controller.selectedSuggestions.map<Widget>((
-                          suggestion,
-                        ) {
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.05),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: Colors.black.withOpacity(0.1),
-                                width: 1,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  suggestion,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                GestureDetector(
-                                  onTap: () =>
-                                      controller.removeSuggestion(suggestion),
-                                  child: Icon(
-                                    Icons.cancel,
-                                    size: 14,
-                                    color: Colors.black.withOpacity(0.4),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }).toList(),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: controller.selectedSuggestions.map<Widget>((
+                      suggestion,
+                      ) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
                       ),
-                    )
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.black.withOpacity(0.1),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            suggestion,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          GestureDetector(
+                            onTap: () =>
+                                controller.removeSuggestion(suggestion),
+                            child: Icon(
+                              Icons.cancel,
+                              size: 14,
+                              color: Colors.black.withOpacity(0.4),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              )
                   : const SizedBox.shrink(),
             ),
             Obx(
-              () => TextField(
+                  () => TextField(
                 readOnly: controller.isLoading.value,
                 controller: controller.searchController,
                 style: const TextStyle(
@@ -724,7 +729,8 @@ class HomeScreen extends StatelessWidget {
                           color: Colors.black.withOpacity(0.4),
                           size: 24,
                         ),
-                        onPressed: () => _showAttachPopover(context, buttonContext),
+                        onPressed: () =>
+                            _showAttachPopover(context, buttonContext),
                         tooltip: 'Attach',
                       ),
                     ),
@@ -735,15 +741,15 @@ class HomeScreen extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (!controller.isListening.value)
-                        IconButton(
-                          icon: Icon(
-                            Icons.qr_code_scanner_rounded,
-                            color: Colors.black.withOpacity(0.4),
-                            size: 24,
+                          IconButton(
+                            icon: Icon(
+                              Icons.qr_code_scanner_rounded,
+                              color: Colors.black.withOpacity(0.4),
+                              size: 24,
+                            ),
+                            onPressed: () => controller.scanQRCode(context),
+                            tooltip: 'Scan QR Code',
                           ),
-                          onPressed: () => controller.scanQRCode(context),
-                          tooltip: 'Scan QR Code',
-                        ),
                         Container(
                           margin: const EdgeInsets.only(right: 6),
                           decoration: BoxDecoration(
@@ -757,18 +763,19 @@ class HomeScreen extends StatelessWidget {
                           child: IconButton(
                             icon: controller.hasText.value
                                 ? Icon(
-                                    Icons.arrow_upward_rounded,
-                                    color: controller.hasText.value
-                                        ? Colors.white
-                                        : Colors.black.withOpacity(0.3),
-                                    size: 22,
-                                  )
+                              Icons.arrow_upward_rounded,
+                              color: controller.hasText.value
+                                  ? Colors.white
+                                  : Colors.black.withOpacity(0.3),
+                              size: 22,
+                            )
                                 : Image.asset(
-                                    "assets/images/mic_icon.png",
-                                    width: 24,
-                                    height: 24,
-                                  ),
-                            onPressed: ()=>handleSendMessage(controller, context),
+                              "assets/images/mic_icon.png",
+                              width: 24,
+                              height: 24,
+                            ),
+                            onPressed: () =>
+                                handleSendMessage(controller, context),
                             tooltip: controller.hasText.value
                                 ? 'Send message'
                                 : controller.isListening.value
@@ -794,31 +801,29 @@ class HomeScreen extends StatelessWidget {
   }
 
   Future<void> handleSendMessage(controller, BuildContext context) async {
+    debugPrint('🔘 handleSendMessage called');
     if (controller.isLoading.value) {
+      debugPrint('🔘 Loading, returning');
       return;
     }
 
     if (controller.hasText.value) {
+      debugPrint('🔘 Has text, sending message');
       FocusScope.of(context).unfocus();
       await controller.sendMessage(context);
       return;
     }
 
-    if (controller.speechEnabled.value) {
-      if (controller.isListening.value) {
-        controller.stopListening();
-      } else {
-        controller.startListening();
-      }
-    }
+    // Handle microphone input with permission check
+    await _handleMicrophoneInput(controller, context);
   }
 
   void _showNegativeFeedbackDialog(
-    BuildContext context,
-    String question,
-    dynamic controller,
-    int messageIndex,
-  ) {
+      BuildContext context,
+      String question,
+      dynamic controller,
+      int messageIndex,
+      ) {
     double rating = 30.0;
     String? selectedReason;
     final TextEditingController otherReasonController = TextEditingController();
@@ -1008,26 +1013,26 @@ class HomeScreen extends StatelessWidget {
                       const SizedBox(width: 12),
                       ElevatedButton(
                         onPressed:
-                            (selectedReason == null ||
-                                (selectedReason == 'Other' &&
-                                    otherReasonController.text.trim().isEmpty))
+                        (selectedReason == null ||
+                            (selectedReason == 'Other' &&
+                                otherReasonController.text.trim().isEmpty))
                             ? null
                             : () async {
-                                Navigator.pop(stateContext);
-                                bool success = await controller.saveFeedbackApi(
-                                  context: context,
-                                  question: question,
-                                  isThumbsUp: false,
-                                  percentage: rating,
-                                  messageIndex: messageIndex,
-                                  reason: selectedReason == 'Other'
-                                      ? otherReasonController.text
-                                      : selectedReason,
-                                );
-                                if (success && context.mounted) {
-                                  _showThankYouDialog(context);
-                                }
-                              },
+                          Navigator.pop(stateContext);
+                          bool success = await controller.saveFeedbackApi(
+                            context: context,
+                            question: question,
+                            isThumbsUp: false,
+                            percentage: rating,
+                            messageIndex: messageIndex,
+                            reason: selectedReason == 'Other'
+                                ? otherReasonController.text
+                                : selectedReason,
+                          );
+                          if (success && context.mounted) {
+                            _showThankYouDialog(context);
+                          }
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF1E293B),
                           disabledBackgroundColor: const Color(
@@ -1066,11 +1071,11 @@ class HomeScreen extends StatelessWidget {
   }
 
   void _showFeedbackDialog(
-    BuildContext context,
-    String question,
-    dynamic controller,
-    int messageIndex,
-  ) {
+      BuildContext context,
+      String question,
+      dynamic controller,
+      int messageIndex,
+      ) {
     double rating = 80.0;
     showDialog(
       context: context,
@@ -1228,11 +1233,11 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildActionIcon(
-    IconData icon,
-    VoidCallback? onTap, {
-    bool isSelected = false,
-    bool isDisabled = false,
-  }) {
+      IconData icon,
+      VoidCallback? onTap, {
+        bool isSelected = false,
+        bool isDisabled = false,
+      }) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -1243,15 +1248,15 @@ class HomeScreen extends StatelessWidget {
           child: Icon(
             isSelected
                 ? (icon == Icons.thumb_up_outlined
-                      ? Icons.thumb_up_rounded
-                      : Icons.thumb_down_rounded)
+                ? Icons.thumb_up_rounded
+                : Icons.thumb_down_rounded)
                 : icon,
             size: 16,
             color: isSelected
                 ? (icon == Icons.thumb_up_outlined ? Colors.green : Colors.red)
                 : (isDisabled
-                      ? Colors.black.withOpacity(0.1)
-                      : Colors.black.withOpacity(0.4)),
+                ? Colors.black.withOpacity(0.1)
+                : Colors.black.withOpacity(0.4)),
           ),
         ),
       ),
@@ -1323,10 +1328,10 @@ class HomeScreen extends StatelessWidget {
   }
 
   void _showSessionOptions(
-    BuildContext context,
-    dynamic session,
-    dynamic controller,
-  ) {
+      BuildContext context,
+      dynamic session,
+      dynamic controller,
+      ) {
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -1407,10 +1412,10 @@ class HomeScreen extends StatelessWidget {
   }
 
   void _showEditSessionDialog(
-    BuildContext context,
-    dynamic session,
-    dynamic controller,
-  ) {
+      BuildContext context,
+      dynamic session,
+      dynamic controller,
+      ) {
     final TextEditingController editController = TextEditingController(
       text: session.title,
     );
@@ -1456,10 +1461,10 @@ class HomeScreen extends StatelessWidget {
   }
 
   void _showDeleteConfirmationDialog(
-    BuildContext context,
-    dynamic session,
-    dynamic controller,
-  ) {
+      BuildContext context,
+      dynamic session,
+      dynamic controller,
+      ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1489,8 +1494,10 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHtmlWithDownloadSupport(BuildContext context, Map<String, dynamic> htmlData) {
-
+  Widget _buildHtmlWithDownloadSupport(
+      BuildContext context,
+      Map<String, dynamic> htmlData,
+      ) {
     final List<Widget> valuesList = [];
 
     htmlData.forEach((key, value) {
@@ -1502,9 +1509,7 @@ class HomeScreen extends StatelessWidget {
     // SingleChildScrollView(
     //   scrollDirection: Axis.horizontal,
     //   child:
-      Column(
-        children: valuesList,
-      );
+    Column(children: valuesList);
     // );
     // if(htmlData['answer'])
 
@@ -1580,6 +1585,7 @@ class HomeScreen extends StatelessWidget {
   // }
 
   void _showAttachPopover(BuildContext context, BuildContext buttonContext) {
+    final controller = Get.find<HomeController>();
     PopoverDialog.show(
       context: context,
       anchorContext: buttonContext,
@@ -1588,21 +1594,21 @@ class HomeScreen extends StatelessWidget {
           icon: Icons.camera_alt_outlined,
           label: 'Camera',
           onTap: () {
-            // TODO: Implement camera functionality
+            controller.openCamera(context);
           },
         ),
         PopoverItem(
           icon: Icons.photo_library_outlined,
           label: 'Photos',
           onTap: () {
-            // TODO: Implement photos functionality
+            controller.openPhotos(context);
           },
         ),
         PopoverItem(
           icon: Icons.insert_drive_file_outlined,
           label: 'Files',
           onTap: () {
-            // TODO: Implement files functionality
+            controller.pickAndProcessFile(context);
           },
         ),
       ],
@@ -1672,13 +1678,12 @@ class HomeScreen extends StatelessWidget {
       return false;
     }
   }
-  static Widget commonHtmlWidget(String htmlContent){
+
+  static Widget commonHtmlWidget(String htmlContent) {
     return Html(
       data: htmlContent,
       shrinkWrap: true,
-      extensions: [
-        const TableHtmlExtension(),
-      ],
+      extensions: [const TableHtmlExtension()],
       style: {
         "body": Style(
           margin: Margins.zero,
@@ -1709,10 +1714,7 @@ class HomeScreen extends StatelessWidget {
           color: const Color(0xFF0066CC),
           margin: Margins.only(bottom: 12),
         ),
-        "p": Style(
-          margin: Margins.only(bottom: 12),
-          color: Colors.black87,
-        ),
+        "p": Style(margin: Margins.only(bottom: 12), color: Colors.black87),
         "code": Style(
           backgroundColor: Colors.black.withOpacity(0.05),
           color: Colors.black,
@@ -1724,10 +1726,7 @@ class HomeScreen extends StatelessWidget {
           backgroundColor: Colors.black.withOpacity(0.04),
           padding: HtmlPaddings.all(12),
           margin: Margins.symmetric(vertical: 8),
-          border: Border.all(
-            color: Colors.black.withOpacity(0.1),
-            width: 1,
-          ),
+          border: Border.all(color: Colors.black.withOpacity(0.1), width: 1),
         ),
         "a": Style(
           color: Colors.blue,
@@ -1736,8 +1735,103 @@ class HomeScreen extends StatelessWidget {
       },
       onLinkTap: (url, attributes, element) {
         // _handleDownload(context, url??'', attributes);
-        launch(url??'');
+        launch(url ?? '');
       },
+    );
+  }
+
+  Future<void> _handleMicrophoneInput(
+      HomeController controller,
+      BuildContext context,
+      ) async {
+    debugPrint('🎤 _handleMicrophoneInput called');
+
+    // Check if currently listening - stop if so
+    if (controller.isListening.value) {
+      debugPrint('🎤 Stopping listening');
+      await controller.stopListening();
+      return;
+    }
+
+    // Check current permission status first
+    final status = await Permission.microphone.status;
+    debugPrint('🎤 Current permission status: $status');
+    // debugPrint('🎤 isNotDetermined: ${status.isNotDetermined}');
+    debugPrint('🎤 isGranted: ${status.isGranted}');
+    debugPrint('🎤 isDenied: ${status.isDenied}');
+    debugPrint('🎤 isPermanentlyDenied: ${status.isPermanentlyDenied}');
+    debugPrint('🎤 isRestricted: ${status.isRestricted}');
+    debugPrint('🎤 isLimited: ${status.isLimited}');
+
+    // If permanently denied or already denied, show dialog to go to settings
+    // Don't request again as it will turn denied into permanentlyDenied
+    if (status.isPermanentlyDenied) {
+      debugPrint('🎤 Permission PERMANENTLY denied - showing settings dialog');
+      _showPermissionDialog(
+        context,
+        'Microphone Permission Required',
+        'Please enable microphone permission in Settings → Privacy & Security → Microphone to use voice input.',
+      );
+      return;
+    }
+
+    // Only request if status is notDetermined - this shows native dialog
+    if (status.isGranted) {
+      // Already granted, just start listening
+      debugPrint('🎤 Permission already granted, starting voice input...');
+      await controller.startListening();
+      return;
+    }
+
+    // Status is either notDetermined or denied (not permanent) - show native dialog
+    debugPrint('🎤 Will show native iOS permission dialog...');
+    // Request microphone permission - this will show native dialog
+    debugPrint(
+      '🎤 Requesting microphone permission (will show native dialog)...',
+    );
+    final result = await Permission.microphone.request();
+    debugPrint('🎤 Permission result: $result');
+
+    if (!result.isGranted) {
+      debugPrint('🎤 Permission not granted');
+      // Native dialog was shown, user declined
+      return;
+    }
+
+    // Permission granted - start listening
+    debugPrint('🎤 Permission granted, starting voice input...');
+    await controller.startListening();
+  }
+
+  void _showPermissionDialog(
+      BuildContext context,
+      String title,
+      String message,
+      ) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+              openAppSettings();
+            },
+            child: const Text('Open Settings'),
+          ),
+        ],
+      ),
     );
   }
 }
