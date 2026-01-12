@@ -29,7 +29,7 @@ class SessionChatModel {
 
 class Messages {
   String? role;
-  String? content;
+  dynamic content;
   String? createdAt;
 
   Messages({this.role, this.content, this.createdAt});

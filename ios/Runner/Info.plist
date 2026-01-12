@@ -13,7 +13,7 @@
     <string>$(DEVELOPMENT_LANGUAGE)</string>
 
     <key>CFBundleDisplayName</key>
-    <string>Intel Agent</string>
+    <string>IntelAgent</string>
 
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>

@@ -583,9 +583,16 @@ class HomeController extends GetxController {
         final sessionChat = SessionChatModel.fromJson(response.data);
         if (sessionChat.messages != null) {
           for (var msg in sessionChat.messages!) {
+            Map<String, dynamic> msgText;
+            if (msg.content is Map) {
+              msgText = Map<String, dynamic>.from(msg.content);
+            } else {
+              msgText = {'answer': msg.content ?? ""};
+            }
+
             messages.add(
               ChatMessage(
-                text: {'answer': msg.content ?? ""},
+                text: msgText,
                 isUser: msg.role == "user",
                 isLoading: false,
               ),
