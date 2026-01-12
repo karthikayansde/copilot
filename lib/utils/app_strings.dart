@@ -1,5 +1,5 @@
 class AppStrings {
-  static const String appName = "Intel Agent";
+  static const String appName = "IntelAgent";
   static const String userName = "User Name";
   static const String password = "Password";
   static const String dontHaveAnAccount = "Don’t have an account?";
