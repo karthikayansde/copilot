@@ -7,6 +7,10 @@ import 'package:iMirAI/model/session_chat_model.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:open_file/open_file.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api/api_service.dart';
 import '../services/api/endpoints.dart';
@@ -87,7 +91,7 @@ class HomeController extends GetxController {
     }
   }
 
-  Future<void> _initSpeech() async {
+  Future<void> _initSpeech(BuildContext context) async {
     try {
       final status = await Permission.microphone.status;
 
@@ -106,7 +110,7 @@ class HomeController extends GetxController {
         );
         speechEnabled.value = initialized;
         if (!initialized) {
-          _showToast('Speech recognition not available on this device');
+          _showToast('Speech recognition not available on this device', context);
         }
       } else {
         // Don't request permission or show dialog on init
@@ -115,20 +119,20 @@ class HomeController extends GetxController {
       }
     } catch (e) {
       debugPrint('Error initializing speech: $e');
-      _showToast('Error initializing speech recognition');
+      _showToast('Error initializing speech recognition', context);
     }
   }
 
-  Future<void> startListening() async {
+  Future<void> startListening(BuildContext context) async {
     debugPrint('🎤 startListening called');
 
     // Initialize speech if not already done
     if (!speechEnabled.value) {
-      await _initSpeech();
+      await _initSpeech(context);
     }
 
     if (!speechEnabled.value) {
-      _showToast('Speech recognition not available');
+      _showToast('Speech recognition not available', context);
       return;
     }
 
@@ -154,7 +158,7 @@ class HomeController extends GetxController {
     } catch (e) {
       debugPrint('Error starting listening: $e');
       isListening.value = false;
-      _showToast('Error starting speech recognition');
+      _showToast('Error starting speech recognition', context);
     }
   }
 
@@ -185,18 +189,17 @@ class HomeController extends GetxController {
     // Listener will update hasText
   }
 
-  void _showToast(String message) {
-    if (Get.context != null) {
-      ScaffoldMessenger.of(Get.context!).showSnackBar(
-        SnackBar(
-          content: Text(message),
+  void _showToast(String message, BuildContext context) {
 
-          duration: const Duration(seconds: 2),
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
 
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
+        duration: const Duration(seconds: 2),
+
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   void _showPermissionDialog(String title, String message) {
@@ -637,113 +640,65 @@ class HomeController extends GetxController {
             isLoading: false,
           ),
         );
-        // Use the 5-step processing flow from FileProcessorService
+        // Use the simplified processing flow from FileProcessorService
         final processedData = await FileProcessorService.processFile(file);
 
-        if (processedData['status'] == 'success') {
-          debugPrint("File Processed: ${file.name}");
+        debugPrint("File Processed: ${jsonEncode(processedData)}");
 
-          // Extract file name without extension for table_name
-          String fileNameNoExt = file.name;
-          if (fileNameNoExt.contains('.')) {
-            fileNameNoExt = fileNameNoExt.substring(
-              0,
-              fileNameNoExt.lastIndexOf('.'),
-            );
-          }
-
-          // Step: Data Insights API Call
-          try {
-            ApiResponse response = await apiService.request(
-              method: ApiMethod.post,
-              customUrl: true,
-              endpoint: Endpoints.insightBaseUrl + Endpoints.dataInsights,
-              body: {
-                "response_id": sessionId,
-                "table_name": fileNameNoExt.replaceAll(
-                  RegExp(r'[^a-zA-Z0-9]'),
-                  '',
-                ),
-                "data_table": jsonEncode([
-                  {"ID": "A4", "Value": 3},
-                  {"ID": "B2", "Value": 5},
-                ]),
-                // jsonEncode(processedData['body']),
-              },
-              useFormData: true,
-            );
-
-            if (response.code == ApiCode.success200.index) {
-              if (response.data != null && response.data != null) {
-                messages.add(
-                  ChatMessage(
-                    text: response.data,
-                    isUser: false,
-                    isLoading: false,
-                    hasRefresh: false,
-                  ),
-                );
-              }
-              _showToast("File processed and insights generated successfully.");
-            } else {
-              _showToast("File standardized, but insights API failed.");
-            }
-          } catch (e) {
-            debugPrint("Error calling Data Insights API: $e");
-            _showToast("Error during insights generation.");
-          }
-          scrollToBottom();
-        } else {
-          _showToast("Error: ${processedData['message']}");
-
-          // If encrypted, you might want to show a dialog for password
-          if (processedData['error_type'] == 'ENCRYPTED') {
-            _showPasswordDialog(context, file);
-          }
+        // Extract file name without extension for table_name
+        String fileNameNoExt = file.name;
+        if (fileNameNoExt.contains('.')) {
+          fileNameNoExt = fileNameNoExt.substring(
+            0,
+            fileNameNoExt.lastIndexOf('.'),
+          );
         }
+
+        // Step: Data Insights API Call
+        try {
+          ApiResponse response = await apiService.request(
+            method: ApiMethod.post,
+            customUrl: true,
+            endpoint: Endpoints.insightBaseUrl + Endpoints.dataInsights,
+            body: {
+              "response_id": sessionId,
+              "table_name": fileNameNoExt.replaceAll(
+                RegExp(r'[^a-zA-Z0-9]'),
+                '',
+              ),
+              "data_table": jsonEncode(processedData),
+            },
+            useFormData: true,
+          );
+
+          if (response.code == ApiCode.success200.index) {
+            if (response.data != null) {
+              messages.add(
+                ChatMessage(
+                  text: response.data,
+                  isUser: false,
+                  isLoading: false,
+                  hasRefresh: false,
+                ),
+              );
+            }
+            _showToast("File processed and insights generated successfully.", context);
+          } else {
+            _showToast("File standardized, but insights API failed.", context);
+          }
+        } catch (e) {
+          debugPrint("Error calling Data Insights API: $e");
+          _showToast("Error during insights generation.", context);
+        }
+        scrollToBottom();
       }
     } catch (e) {
-      _showToast("Error: ${e.toString()}");
+      _showToast("Error: ${e.toString()}", context);
     } finally {
       isLoading.value = false;
     }
   }
 
-  void _showPasswordDialog(BuildContext context, PlatformFile file) {
-    final TextEditingController passwordController = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Protected File"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              "This file is password protected. Please enter the password:",
-            ),
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(hintText: "Password"),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _showToast("Manual password handling would go here.");
-            },
-            child: const Text("Unlock"),
-          ),
-        ],
-      ),
-    );
-  }
 
   Future<void> scanQRCode(BuildContext context) async {
     final status = await Permission.camera.request();
@@ -763,30 +718,116 @@ class HomeController extends GetxController {
   }
 
   Future<void> openCamera(BuildContext context) async {
-    final status = await Permission.camera.request();
-    if (status.isGranted) {
-      _showToast('Camera feature coming soon');
-      // TODO: Implement camera functionality
-    } else if (status.isPermanentlyDenied) {
-      _showPermissionDialog(
-        'Camera Permission Required',
-        'Please enable camera permission in settings to use the camera.',
-      );
-    }
+    // final status = await Permission.camera.request();
+    // if (status.isGranted) {
+      _showToast('Camera feature coming soon', context);
+    // } else if (status.isPermanentlyDenied) {
+    //   _showPermissionDialog(
+    //     'Camera Permission Required',
+    //     'Please enable camera permission in settings to use the camera.',
+    //   );
+    // }
     // If denied, native dialog already shown - no need for custom message
   }
 
   Future<void> openPhotos(BuildContext context) async {
-    final status = await Permission.photos.request();
-    if (status.isGranted) {
-      _showToast('Photo picker feature coming soon');
-      // TODO: Implement photo picker functionality
-    } else if (status.isPermanentlyDenied) {
-      _showPermissionDialog(
-        'Photos Permission Required',
-        'Please enable photos permission in settings to access your photo library.',
-      );
-    }
+    // final status = await Permission.photos.request();
+    // if (status.isGranted) {
+      _showToast('Photo picker feature coming soon', context);
+    //   // TODO: Implement photo picker functionality
+    // } else if (status.isPermanentlyDenied) {
+    //   _showPermissionDialog(
+    //     'Photos Permission Required',
+    //     'Please enable photos permission in settings to access your photo library.',
+    //   );
+    // }
     // If denied, native dialog already shown - no need for custom message
+  }
+  Future<void> askQuestionApi(BuildContext context) async {
+    if (searchController.text.trim().isEmpty) {
+      _showToast("Please enter text before generating document", context);
+      return;
+    }
+
+    final userMessage = searchController.text;
+    messages.add(
+      ChatMessage(
+        text: {'answer': userMessage},
+        isUser: true,
+        isLoading: false,
+      ),
+    );
+
+    // Capture prompt and clear input
+    String prompt = searchController.text;
+    searchController.clear();
+    scrollToBottom();
+
+    isLoading.value = true;
+    try {
+      final url = Uri.parse(Endpoints.askQuestionBaseUrl + Endpoints.askQuestion.replaceAll(RegExp(r'/$'), ''));
+      
+      final response = await http.post(
+        url,
+        headers: {
+          "Accept": "application/json",
+        },
+        body: {
+          "Question": prompt
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final bytes = response.bodyBytes;
+
+        // Determine save directory (Downloads folder)
+        Directory? downloadDir;
+        if (Platform.isAndroid) {
+          // Attempt to use the public Downloads folder on Android
+          downloadDir = Directory('/storage/emulated/0/Download');
+          if (!await downloadDir.exists()) {
+            downloadDir = await getExternalStorageDirectory();
+          }
+        } else {
+          // For Windows, macOS, Linux
+          downloadDir = await getDownloadsDirectory();
+        }
+        
+        // Fallback to documents directory if downloads is inaccessible
+        downloadDir ??= await getApplicationDocumentsDirectory();
+
+        // Sanitize filename from prompt
+        String safeName = prompt.replaceAll(RegExp(r'[^\w\s-]'), '').split(' ').take(3).join('_');
+        if (safeName.isEmpty) safeName = "generated_doc";
+        String fileName = "${safeName}_${DateTime.now().millisecondsSinceEpoch}.docx";
+        
+        final filePath = "${downloadDir.path}/$fileName";
+        final file = File(filePath);
+
+        await file.writeAsBytes(bytes);
+
+        messages.add(
+          ChatMessage(
+            text: {'answer': "Document generated and saved to Downloads as **$fileName**"},
+            isUser: false,
+            isLoading: false,
+            hasRefresh: false,
+          ),
+        );
+        
+        _showToast("Document saved to ${downloadDir.path}", context);
+        
+        // Open the file
+        await OpenFile.open(filePath);
+      } else {
+        _showToast("Failed to generate document. Status: ${response.statusCode}", context);
+      }
+    } catch (e) {
+      debugPrint("Error generating/downloading document: $e");
+      _showToast("Error during document generation.", context);
+    } finally {
+      isLoading.value = false;
+      scrollToBottom();
+    }
   }
 }

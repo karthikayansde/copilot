@@ -293,11 +293,11 @@ class HomeScreen extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: labelIndex == 2
-            ? () => controller.pickAndProcessFile(context)
-            : () => controller.addSuggestion(
-          controller.searchOptions[labelIndex],
-        ),
+      onTap: labelIndex == 2
+          ? () => controller.pickAndProcessFile(context)
+          : () => controller.addSuggestion(
+        controller.searchOptions[labelIndex],
+      ),
         borderRadius: BorderRadius.circular(20),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -810,7 +810,12 @@ class HomeScreen extends StatelessWidget {
   if (controller.hasText.value) {
     debugPrint('🔘 Has text, sending message');
     FocusScope.of(context).unfocus();
-    await controller.sendMessage(context);
+    if(controller.selectedSuggestions[0] == controller.searchOptions[3]){
+      await controller.askQuestionApi(context);
+      // await controller.downloadDoc();
+    }else{
+      await controller.sendMessage(context);
+    }
     
     // Add these lines to ensure the field is cleared
     controller.searchController.clear();
@@ -1599,6 +1604,7 @@ class HomeScreen extends StatelessWidget {
           icon: Icons.camera_alt_outlined,
           label: 'Camera',
           onTap: () {
+
             controller.openCamera(context);
           },
         ),
@@ -1609,13 +1615,13 @@ class HomeScreen extends StatelessWidget {
             controller.openPhotos(context);
           },
         ),
-        PopoverItem(
-          icon: Icons.insert_drive_file_outlined,
-          label: 'Files',
-          onTap: () {
-            controller.pickAndProcessFile(context);
-          },
-        ),
+        // PopoverItem(
+        //   icon: Icons.insert_drive_file_outlined,
+        //   label: 'Files',
+        //   onTap: () {
+        //     controller.pickAndProcessFile(context);
+        //   },
+        // ),
       ],
       width: 200,
       borderRadius: 16,
@@ -1814,7 +1820,7 @@ class HomeScreen extends StatelessWidget {
     if (status.isGranted) {
       // Already granted, just start listening
       debugPrint('🎤 Permission already granted, starting voice input...');
-      await controller.startListening();
+      await controller.startListening(context);
       return;
     }
 
@@ -1835,7 +1841,7 @@ class HomeScreen extends StatelessWidget {
 
     // Permission granted - start listening
     debugPrint('🎤 Permission granted, starting voice input...');
-    await controller.startListening();
+    await controller.startListening(context);
   }
 
   void _showPermissionDialog(

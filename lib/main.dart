@@ -63,7 +63,7 @@ class _AuthScreenState extends State<AuthScreen> {
   Future<void> _checkLoginStatus() async {
     // Add a small delay for splash effect
     await Future.delayed(const Duration(milliseconds: 500));
-    
+
     final isLoggedIn = await SharedPrefManager.instance.getBoolAsync(SharedPrefManager.isLoggedIn) ?? false;
     if (!mounted) return;
 
@@ -165,7 +165,7 @@ class _AuthScreenState extends State<AuthScreen> {
             if (_canCheckBiometrics)
               BasicButtonWidget(
                 width: 250,
-                onPressed: _authenticate, 
+                onPressed: _authenticate,
                 label: 'Unlock with Biometrics',
               )
             else
@@ -174,7 +174,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.red),
               ),
-            
+
             const SizedBox(height: 16),
             TextButton(
               onPressed: () async {
@@ -194,4 +194,3 @@ class _AuthScreenState extends State<AuthScreen> {
     );
   }
 }
-

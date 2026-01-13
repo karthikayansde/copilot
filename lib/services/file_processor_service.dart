@@ -1,132 +1,116 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:csv/csv.dart';
 import 'package:excel/excel.dart';
-import 'package:syncfusion_flutter_pdf/pdf.dart';
-import 'package:docx_to_text/docx_to_text.dart';
 import 'package:file_picker/file_picker.dart';
 
 class FileProcessorService {
-  /// Entry point to process the selected file following the 5-step flow.
-  static Future<Map<String, dynamic>> processFile(PlatformFile file) async {
+  /// Processes xlsx, xls, or csv and returns:
+  /// { "key1": [val1, val2], "key2": [val3, val4] }
+  static Future<Map<String, List<dynamic>>> processFile(PlatformFile file) async {
     final extension = file.extension?.toLowerCase();
     
-    try {
-      // Step 1: Format Categorization
-      if (['xlsx', 'xls', 'csv'].contains(extension)) {
-        return await _processTabularTrack(file);
-      } else if (['pdf', 'docx', 'doc', 'txt'].contains(extension)) {
-        return await _processNarrativeTrack(file);
-      } else {
-        throw Exception('Unsupported file format: .$extension');
-      }
-    } catch (e) {
-      // Step 5: Handling Exceptions (Corrupt/Encrypted/Empty)
-      if (e.toString().contains('password') || e.toString().contains('encrypted') || e.toString().contains('locked')) {
-        return {
-          'status': 'error',
-          'error_type': 'ENCRYPTED',
-          'message': 'This file is password-protected. Please provide the password.',
-        };
-      }
-      return {
-        'status': 'error',
-        'error_type': 'PROCESSING_ERROR',
-        'message': e.toString(),
-      };
+    // Get bytes safely from either memory or disk
+    final List<int>? rawBytes = file.bytes ?? (file.path != null ? await File(file.path!).readAsBytes() : null);
+
+    if (rawBytes == null || rawBytes.isEmpty) {
+      throw Exception('File is empty or could not be read.');
     }
-  }
 
-  // Step 2: Parsing Engines - Track A (Tabular)
-  static Future<Map<String, dynamic>> _processTabularTrack(PlatformFile file) async {
-    final bytes = file.bytes ?? (file.path != null ? await File(file.path!).readAsBytes() : null);
-    if (bytes == null || bytes.isEmpty) throw Exception('File is empty or could not be read.');
-
-    final extension = file.extension?.toLowerCase();
-    List<Map<String, dynamic>> rows = [];
-    String? firstSheetName;
+    // Convert to Uint8List for better library compatibility
+    final Uint8List bytes = Uint8List.fromList(rawBytes);
 
     if (extension == 'csv') {
+      return _processCsv(bytes);
+    } else if (extension == 'xlsx' || extension == 'xls') {
+      // Check for legacy .xls magic numbers (D0 CF 11 E0)
+      if (bytes.length > 4 && 
+          bytes[0] == 0xD0 && bytes[1] == 0xCF && 
+          bytes[2] == 0x11 && bytes[3] == 0xE0) {
+        throw Exception('Legacy .xls format is not supported. Please save as .xlsx and try again.');
+      }
+      return _processExcel(bytes);
+    } else {
+      throw Exception('Unsupported format: $extension');
+    }
+  }
+
+  static Map<String, List<dynamic>> _processCsv(Uint8List bytes) {
+    try {
       final csvString = utf8.decode(bytes);
       final csvData = const CsvToListConverter().convert(csvString);
-      if (csvData.isEmpty) throw Exception('No data found in CSV.');
-      
-      final headers = csvData[0].map((e) => e.toString()).toList();
+      if (csvData.isEmpty) return {};
+
+      final rawHeaders = csvData[0].map((e) => e?.toString() ?? '').toList();
+      final headers = _sanitizeHeaders(rawHeaders);
+      final Map<String, List<dynamic>> result = {for (var h in headers) h: []};
+
       for (var i = 1; i < csvData.length; i++) {
         final row = csvData[i];
-        final map = <String, dynamic>{};
         for (var j = 0; j < headers.length; j++) {
-          map[headers[j]] = j < row.length ? row[j] : null;
+          final val = j < row.length ? row[j] : null;
+          result[headers[j]]?.add(val?.toString() ?? "");
         }
-        rows.add(map);
       }
-      firstSheetName = 'Default';
-    } else {
-      // Excel (xls, xlsx)
+      return result;
+    } catch (e) {
+      throw Exception('Error parsing CSV: $e');
+    }
+  }
+
+  static Map<String, List<dynamic>> _processExcel(Uint8List bytes) {
+    try {
+      // Safe decoding
       final excel = Excel.decodeBytes(bytes);
-      firstSheetName = excel.tables.keys.first;
-      final sheet = excel.tables[firstSheetName]!;
-      
-      if (sheet.maxRows == 0) throw Exception('No data found in Excel sheet.');
 
-      // Get headers from first row
-      final headers = sheet.rows[0].map((e) => e?.value?.toString() ?? '').toList();
+      if (excel.tables.isEmpty) {
+        throw Exception('Excel file has no visible sheets.');
+      }
+
+      // Access the first table safely
+      final String firstSheetName = excel.tables.keys.first;
+      final sheet = excel.tables[firstSheetName];
       
-      for (var i = 1; i < sheet.maxRows; i++) {
-        final row = sheet.rows[i];
-        final map = <String, dynamic>{};
+      if (sheet == null || sheet.rows.isEmpty) {
+        return {};
+      }
+
+      final rows = sheet.rows;
+      final rawHeaders = rows[0].map((e) => e?.value?.toString() ?? '').toList();
+      final headers = _sanitizeHeaders(rawHeaders);
+      final Map<String, List<dynamic>> result = {for (var h in headers) h: []};
+
+      for (var i = 1; i < rows.length; i++) {
+        final row = rows[i];
         for (var j = 0; j < headers.length; j++) {
-          map[headers[j]] = j < row.length ? row[j]?.value : null;
+          final cell = j < row.length ? row[j] : null;
+          result[headers[j]]?.add(cell?.value?.toString() ?? "");
         }
-        rows.add(map);
+      }
+      return result;
+    } catch (e) {
+      // Catching the null check operator error from the library
+      if (e.toString().contains('null')) {
+        throw Exception('File structure is incompatible. Ensure it is a valid .xlsx file.');
+      }
+      throw Exception('Excel processing failed: $e');
+    }
+  }
+
+  static List<String> _sanitizeHeaders(List<String> raw) {
+    List<String> cleaned = [];
+    Map<String, int> seen = {};
+    for (var h in raw) {
+      String name = h.trim().isEmpty ? "Column" : h.trim();
+      if (seen.containsKey(name)) {
+        seen[name] = seen[name]! + 1;
+        cleaned.add("${name}_${seen[name]}");
+      } else {
+        seen[name] = 0;
+        cleaned.add(name);
       }
     }
-
-    return _consolidateJson(file, rows, sheetName: firstSheetName);
-  }
-
-  // Step 2: Parsing Engines - Track B (Narrative)
-  static Future<Map<String, dynamic>> _processNarrativeTrack(PlatformFile file) async {
-    final bytes = file.bytes ?? (file.path != null ? await File(file.path!).readAsBytes() : null);
-    if (bytes == null || bytes.isEmpty) throw Exception('File is empty or could not be read.');
-
-    final extension = file.extension?.toLowerCase();
-    String content = '';
-
-    if (extension == 'txt') {
-      content = utf8.decode(bytes);
-    } else if (extension == 'pdf') {
-      final PdfDocument document = PdfDocument(inputBytes: bytes);
-      content = PdfTextExtractor(document).extractText();
-      document.dispose();
-    } else if (extension == 'docx' || extension == 'doc') {
-      content = docxToText(bytes);
-    }
-
-    if (content.trim().isEmpty) throw Exception('Empty Files: Returns an error if no text is found.');
-
-    // Stream Extraction: ignores page breaks and formatting, collapses into continuous text string
-    content = content.replaceAll(RegExp(r'\f'), ' ').replaceAll(RegExp(r'\s+'), ' ').trim();
-
-    return _consolidateJson(file, [content]);
-  }
-
-  // Step 3 & 4: Metadata Attachment & JSON Consolidation
-  static Map<String, dynamic> _consolidateJson(PlatformFile file, dynamic body, {String? sheetName}) {
-    return {
-      'status': 'success',
-      'header': {
-        'name': file.name,
-        'size': file.size,
-        'format': file.extension,
-        'upload_timestamp': DateTime.now().toIso8601String(),
-        'sheet_name': sheetName,
-        'intel_metadata': {
-          'detected_language': 'en', // Optional placeholder
-          'track': (body is List) ? 'Tabular' : 'Narrative',
-        }
-      },
-      'body': body // Either List of Rows or String of Text
-    };
+    return cleaned;
   }
 }
