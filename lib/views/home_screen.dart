@@ -750,50 +750,72 @@ class HomeScreen extends StatelessWidget {
                             onPressed: () => controller.scanQRCode(context),
                             tooltip: 'Scan QR Code',
                           ),
-                        Container(
-                          margin: const EdgeInsets.only(right: 6),
-                          decoration: BoxDecoration(
-                            color: controller.isLoading.value
-                                ? Colors.grey
-                                : controller.isListening.value
-                                ? Colors.red
-                                : Colors.black,
-                            shape: BoxShape.circle,
-                          ),
-                          child: IconButton(
-                            icon: controller.hasText.value
-                                ? Icon(
-                              Icons.arrow_upward_rounded,
-                              color: controller.hasText.value
-                                  ? Colors.white
-                                  : Colors.black.withOpacity(0.3),
-                              size: 22,
-                            )
-                                : Image.asset(
-                              "assets/images/mic_icon.png",
-                              width: 24,
-                              height: 24,
+                        if ((controller.selectedSuggestions.length != 0 && controller.selectedSuggestions[0] == controller.searchOptions[1]))
+                          Container(
+                            margin: const EdgeInsets.only(right: 6),
+                            decoration: BoxDecoration(
+                              color: controller.isLoading.value
+                                  ? Colors.grey
+                                  : Colors.black,
+                              shape: BoxShape.circle,
                             ),
-                            onPressed: () =>
-                                handleSendMessage(controller, context),
-                            tooltip: controller.hasText.value
-                                ? 'Send message'
-                                : controller.isListening.value
-                                ? 'Stop listening'
-                                : 'Start voice',
+                            child: IconButton(
+                              icon: Icon(
+    Icons.arrow_upward_rounded,
+    color: Colors.white,
+    size: 22,
+    ),
+                              onPressed: (){},
+                              tooltip: 'Send message'
+                            ),
                           ),
-                        ),
-                      ],
+
+                        //---------------------------------------
+                        if (!(controller.selectedSuggestions.length != 0 && controller.selectedSuggestions[0] == controller.searchOptions[1]))
+                          Container(
+                            margin: const EdgeInsets.only(right: 6),
+                            decoration: BoxDecoration(
+                              color: controller.isLoading.value
+                                  ? Colors.grey
+                                  : controller.isListening.value
+                                  ? Colors.red
+                                  : Colors.black,
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              icon: controller.hasText.value
+                                  ? Icon(
+                                Icons.arrow_upward_rounded,
+                                color: controller.hasText.value
+                                    ? Colors.white
+                                    : Colors.black.withOpacity(0.3),
+                                size: 22,
+                              )
+                                  : Image.asset(
+                                "assets/images/mic_icon.png",
+                                width: 24,
+                                height: 24,
+                              ),
+                              onPressed: () =>
+                                  handleSendMessage(controller, context),
+                              tooltip: controller.hasText.value
+                                  ? 'Send message'
+                                  : controller.isListening.value
+                                  ? 'Stop listening'
+                                  : 'Start voice',
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 16,
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 16,
+                    ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
       ),
@@ -810,7 +832,11 @@ class HomeScreen extends StatelessWidget {
   if (controller.hasText.value) {
     debugPrint('🔘 Has text, sending message');
     FocusScope.of(context).unfocus();
-    if(controller.selectedSuggestions[0] == controller.searchOptions[3]){
+    if(controller.selectedSuggestions.length == 0){
+
+      await controller.sendMessage(context);
+    }
+    else if(controller.selectedSuggestions[0] == controller.searchOptions[3]){
       await controller.askQuestionApi(context);
       // await controller.downloadDoc();
     }else{

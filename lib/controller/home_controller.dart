@@ -620,6 +620,91 @@ class HomeController extends GetxController {
     hasText.value = false;
   }
 
+  // Future<void> pickAndProcessFile(BuildContext context) async {
+  //   try {
+  //     FilePickerResult? result = await FilePicker.platform.pickFiles(
+  //       type: FileType.custom,
+  //       allowedExtensions: ['xlsx', 'xls', 'csv'],
+  //     );
+  //
+  //     if (result != null) {
+  //       isLoading.value = true;
+  //       PlatformFile file = result.files.first;
+  //
+  //       messages.add(
+  //         ChatMessage(
+  //           text: {
+  //             'answer': "Uploaded file: ${file.name} (Ready for analysis)",
+  //           },
+  //           isUser: true,
+  //           isLoading: false,
+  //         ),
+  //       );
+  //       // Use the simplified processing flow from FileProcessorService
+  //       final processedData = await FileProcessorService.processFile(file);
+  //
+  //       debugPrint("File Processed: ${jsonEncode(processedData)}");
+  //
+  //       // Extract file name without extension for table_name
+  //       String fileNameNoExt = file.name;
+  //       if (fileNameNoExt.contains('.')) {
+  //         fileNameNoExt = fileNameNoExt.substring(
+  //           0,
+  //           fileNameNoExt.lastIndexOf('.'),
+  //         );
+  //       }
+  //
+  //       // Step: Data Insights API Call
+  //       try {
+  //         ApiResponse response = await apiService.request(
+  //           method: ApiMethod.post,
+  //           customUrl: true,
+  //           endpoint: Endpoints.insightBaseUrl + Endpoints.dataInsights,
+  //           // body: {
+  //           //   "response_id": "SALES_DEMO",
+  //           //   "table_name": "UNITED_DATA",
+  //           //   "data_table": {"NO":["RAGUL","YADAV"],"NAMES":["KARTHI","KAYAN"]},
+  //           // },
+  //           body: {
+  //             "response_id": sessionId.toUpperCase(),
+  //             "table_name": fileNameNoExt.replaceAll(
+  //               RegExp(r'[^a-zA-Z0-9]'),
+  //               '_',
+  //             ).toUpperCase(),
+  //             "data_table": processedData,
+  //           },
+  //           useFormData: true,
+  //         );
+  //
+  //         if (response.code == ApiCode.success200.index) {
+  //           if (response.data != null) {
+  //             messages.add(
+  //               ChatMessage(
+  //                 text: {"answer": response.data},
+  //                 isUser: false,
+  //                 isLoading: false,
+  //                 hasRefresh: false,
+  //               ),
+  //             );
+  //           }
+  //           _showToast("File processed and insights generated successfully.", context);
+  //         } else {
+  //           _showToast("File standardized, but insights API failed.", context);
+  //         }
+  //       } catch (e) {
+  //         debugPrint("Error calling Data Insights API: $e");
+  //         _showToast("Error during insights generation.", context);
+  //       }
+  //       scrollToBottom();
+  //     }
+  //   } catch (e) {
+  //     _showToast("Error: ${e.toString()}", context);
+  //   } finally {
+  //     isLoading.value = false;
+  //   }
+  // }
+
+
   Future<void> pickAndProcessFile(BuildContext context) async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -661,11 +746,11 @@ class HomeController extends GetxController {
             customUrl: true,
             endpoint: Endpoints.insightBaseUrl + Endpoints.dataInsights,
             body: {
-              "response_id": sessionId,
+              "response_id": sessionId.toUpperCase(),
               "table_name": fileNameNoExt.replaceAll(
                 RegExp(r'[^a-zA-Z0-9]'),
-                '',
-              ),
+                '_',
+              ).toUpperCase(),
               "data_table": jsonEncode(processedData),
             },
             useFormData: true,
@@ -675,7 +760,7 @@ class HomeController extends GetxController {
             if (response.data != null) {
               messages.add(
                 ChatMessage(
-                  text: response.data,
+                  text: {"answer": response.data},
                   isUser: false,
                   isLoading: false,
                   hasRefresh: false,
@@ -698,7 +783,6 @@ class HomeController extends GetxController {
       isLoading.value = false;
     }
   }
-
 
   Future<void> scanQRCode(BuildContext context) async {
     final status = await Permission.camera.request();
