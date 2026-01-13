@@ -1683,7 +1683,37 @@ class HomeScreen extends StatelessWidget {
     return Html(
       data: htmlContent,
       shrinkWrap: true,
-      extensions: [const TableHtmlExtension()],
+      extensions: [
+        const TableHtmlExtension(),
+        TagExtension(
+          tagsToExtend: {"svg"},
+          builder: (extensionContext) {
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                  color: Colors.blue,
+                    width: 1,
+                  ),
+                  borderRadius: BorderRadius.circular(10)
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: const Text(
+                    "Download",
+                    style: TextStyle(
+                      color: Colors.blue,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ],
       style: {
         "body": Style(
           margin: Margins.zero,

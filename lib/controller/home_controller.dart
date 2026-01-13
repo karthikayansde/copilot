@@ -621,7 +621,7 @@ class HomeController extends GetxController {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['pdf', 'xlsx', 'xls', 'csv', 'docx', 'doc', 'txt'],
+        allowedExtensions: ['xlsx', 'xls', 'csv'],
       );
 
       if (result != null) {
