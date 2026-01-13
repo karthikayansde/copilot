@@ -5,6 +5,7 @@ class ChatMessage {
   String? feedbackStatus; // 'liked', 'disliked', or null
   final bool isLoading;
   final bool hasRefresh;
+  final List<String>? suggestions;
 
   ChatMessage({
     required this.text,
@@ -13,5 +14,6 @@ class ChatMessage {
     this.feedbackStatus,
     this.isLoading = false,
     this.hasRefresh = true,
+    this.suggestions,
   }) : timestamp = timestamp ?? DateTime.now();
 }

@@ -914,4 +914,112 @@ class HomeController extends GetxController {
       scrollToBottom();
     }
   }
+
+  Future<void> sellNowApi(BuildContext context) async {
+    String questionText = searchController.text.trim();
+
+    // Add user message to chat if there's text
+    if (questionText.isNotEmpty) {
+      messages.add(
+        ChatMessage(
+          text: {'answer': questionText},
+          isUser: true,
+          isLoading: false,
+        ),
+      );
+      searchController.clear();
+      hasText.value = false;
+      scrollToBottom();
+    }
+
+    isLoading.value = true;
+    try {
+      ApiResponse response = await apiService.request(
+        method: ApiMethod.post,
+        customUrl: true,
+        endpoint: Endpoints.chatWithDataMobBaseUrl + Endpoints.chatWithDataMob,
+        body: {
+          "question": questionText,
+          "sellnow": questionText.isNotEmpty ?"": "sell",
+        },
+        useFormData: true,
+      );
+
+      if (response.code == ApiCode.success200.index) {
+        if (response.data != null) {
+          // Case A: Suggestion list
+          if (response.data is List) {
+            List<String> suggestions = List<String>.from(response.data);
+            messages.add(
+              ChatMessage(
+                text: {'answer': "Choose a question or type your own:"},
+                isUser: false,
+                isLoading: false,
+                suggestions: suggestions,
+                hasRefresh: false,
+              ),
+            );
+          }
+          // Case B: Data Table (ANSWER object)
+          else if (response.data is Map) {
+            Map<String, dynamic> data = response.data;
+            if (data.containsKey("ANSWER")) {
+              Map<String, dynamic> answer = data["ANSWER"];
+              String displayText = "";
+
+              if (answer.containsKey("OPP_TYPE") && answer["OPP_TYPE"] is List) {
+                List<dynamic> values = answer["OPP_TYPE"];
+                displayText = values.map((v) => "• $v").join("<br/>");
+              } else {
+                // Fallback for other data if OPP_TYPE is missing
+                List<String> lines = [];
+                answer.forEach((key, value) {
+                  if (value is List) {
+                    lines.add("<b>$key:</b> ${value.join(', ')}");
+                  }
+                });
+                displayText = lines.join("<br/>");
+              }
+
+              messages.add(
+                ChatMessage(
+                  text: {"answer": displayText},
+                  isUser: false,
+                  isLoading: false,
+                  hasRefresh: false,
+                ),
+              );
+            } else {
+              messages.add(
+                ChatMessage(
+                  text: {"answer": jsonEncode(data)},
+                  isUser: false,
+                  isLoading: false,
+                  hasRefresh: false,
+                ),
+              );
+            }
+          }
+        }
+      } else {
+        _showToast("No response from SellNow service.", context);
+      }
+    } catch (e) {
+      debugPrint("Error in sellNowApi: $e");
+      _showToast("Network error in SellNow service.", context);
+    } finally {
+      isLoading.value = false;
+      scrollToBottom();
+    }
+  }
+
+  void addTextToSearch(String text) {
+    bool wasSellNow = selectedSuggestions.contains(searchOptions[1]);
+    searchController.text = text;
+    hasText.value = true;
+    selectedSuggestions.clear();
+    if (wasSellNow) {
+      selectedSuggestions.add(searchOptions[1]);
+    }
+  }
 }

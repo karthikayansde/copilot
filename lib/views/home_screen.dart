@@ -465,7 +465,41 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
             )
-                : _buildHtmlWithDownloadSupport(context, message.text),
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildHtmlWithDownloadSupport(context, message.text),
+                      if (message.suggestions != null && message.suggestions!.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: message.suggestions!.map<Widget>((suggestion) {
+                            return InkWell(
+                              onTap: () => controller.addTextToSearch(suggestion),
+                              borderRadius: BorderRadius.circular(16),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.05),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: Colors.black.withOpacity(0.1)),
+                                ),
+                                child: Text(
+                                  suggestion,
+                                  style: const TextStyle(
+                                    color: Colors.black87,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ],
+                  ),
           ),
           if (message.isLoading != true) ...[
             const SizedBox(height: 8),
@@ -765,7 +799,7 @@ class HomeScreen extends StatelessWidget {
     color: Colors.white,
     size: 22,
     ),
-                              onPressed: (){},
+                              onPressed: () => handleSendMessage(controller, context),
                               tooltip: 'Send message'
                             ),
                           ),
@@ -823,36 +857,44 @@ class HomeScreen extends StatelessWidget {
   }
 
   Future<void> handleSendMessage(controller, BuildContext context) async {
-  debugPrint('🔘 handleSendMessage called');
-  if (controller.isLoading.value) {
-    debugPrint('🔘 Loading, returning');
-    return;
-  }
-
-  if (controller.hasText.value) {
-    debugPrint('🔘 Has text, sending message');
-    FocusScope.of(context).unfocus();
-    if(controller.selectedSuggestions.length == 0){
-
-      await controller.sendMessage(context);
+    debugPrint('🔘 handleSendMessage called');
+    if (controller.isLoading.value) {
+      debugPrint('🔘 Loading, returning');
+      return;
     }
-    else if(controller.selectedSuggestions[0] == controller.searchOptions[3]){
-      await controller.askQuestionApi(context);
-      // await controller.downloadDoc();
-    }else{
-      await controller.sendMessage(context);
-    }
-    
-    // Add these lines to ensure the field is cleared
-    controller.searchController.clear();
-    controller.hasText.value = false;
-    
-    return;
-  }
 
-  // Handle microphone input with permission check
-  await _handleMicrophoneInput(controller, context);
-}
+    // Case: SellNow selected but NO text (to get initial questions)
+    if (!controller.hasText.value &&
+        controller.selectedSuggestions.isNotEmpty &&
+        controller.selectedSuggestions[0] == controller.searchOptions[1]) {
+      debugPrint('🔘 SellNow selected, empty text - fetching initial questions');
+      await controller.sellNowApi(context);
+      return;
+    }
+
+    if (controller.hasText.value) {
+      debugPrint('🔘 Has text, sending message');
+      FocusScope.of(context).unfocus();
+      if (controller.selectedSuggestions.length == 0) {
+        await controller.sendMessage(context);
+      } else if (controller.selectedSuggestions[0] == controller.searchOptions[3]) {
+        await controller.askQuestionApi(context);
+      } else if (controller.selectedSuggestions[0] == controller.searchOptions[1]) {
+        await controller.sellNowApi(context);
+      } else {
+        await controller.sendMessage(context);
+      }
+
+      // Add these lines to ensure the field is cleared
+      controller.searchController.clear();
+      controller.hasText.value = false;
+
+      return;
+    }
+
+    // Handle microphone input with permission check
+    await _handleMicrophoneInput(controller, context);
+  }
 
   void _showNegativeFeedbackDialog(
       BuildContext context,
