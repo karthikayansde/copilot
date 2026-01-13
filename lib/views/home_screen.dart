@@ -801,22 +801,27 @@ class HomeScreen extends StatelessWidget {
   }
 
   Future<void> handleSendMessage(controller, BuildContext context) async {
-    debugPrint('🔘 handleSendMessage called');
-    if (controller.isLoading.value) {
-      debugPrint('🔘 Loading, returning');
-      return;
-    }
-
-    if (controller.hasText.value) {
-      debugPrint('🔘 Has text, sending message');
-      FocusScope.of(context).unfocus();
-      await controller.sendMessage(context);
-      return;
-    }
-
-    // Handle microphone input with permission check
-    await _handleMicrophoneInput(controller, context);
+  debugPrint('🔘 handleSendMessage called');
+  if (controller.isLoading.value) {
+    debugPrint('🔘 Loading, returning');
+    return;
   }
+
+  if (controller.hasText.value) {
+    debugPrint('🔘 Has text, sending message');
+    FocusScope.of(context).unfocus();
+    await controller.sendMessage(context);
+    
+    // Add these lines to ensure the field is cleared
+    controller.searchController.clear();
+    controller.hasText.value = false;
+    
+    return;
+  }
+
+  // Handle microphone input with permission check
+  await _handleMicrophoneInput(controller, context);
+}
 
   void _showNegativeFeedbackDialog(
       BuildContext context,
@@ -829,11 +834,11 @@ class HomeScreen extends StatelessWidget {
     final TextEditingController otherReasonController = TextEditingController();
     final List<String> reasons = [
       'Incorrect Information',
-      'Incomplete Answer',
-      'Irrelevant Response',
-      'Formatting Issue',
-      'Too Generic',
-      'Other',
+      'Data Inaccuracy',
+      'Lack of Relevance',
+      'Presentation & Formatting Deficiency',
+      'Insufficient Specificity',
+      'Others',
     ];
 
     showDialog(
