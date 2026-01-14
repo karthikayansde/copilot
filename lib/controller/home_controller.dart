@@ -828,91 +828,110 @@ class HomeController extends GetxController {
     // If denied, native dialog already shown - no need for custom message
   }
   Future<void> askQuestionApi(BuildContext context) async {
-    if (searchController.text.trim().isEmpty) {
-      _showToast("Please enter text before generating document", context);
-      return;
-    }
+  if (searchController.text.trim().isEmpty) {
+    _showToast("Please enter text before generating document", context);
+    return;
+  }
 
-    final userMessage = searchController.text;
-    messages.add(
-      ChatMessage(
-        text: {'answer': userMessage},
-        isUser: true,
-        isLoading: false,
-      ),
+  final userMessage = searchController.text;
+  messages.add(
+    ChatMessage(
+      text: {'answer': userMessage},
+      isUser: true,
+      isLoading: false,
+    ),
+  );
+
+  String prompt = searchController.text;
+  searchController.clear();
+  scrollToBottom();
+
+  isLoading.value = true;
+
+  try {
+    final url = Uri.parse(
+      Endpoints.askQuestionBaseUrl +
+          Endpoints.askQuestion.replaceAll(RegExp(r'/$'), ''),
     );
 
-    // Capture prompt and clear input
-    String prompt = searchController.text;
-    searchController.clear();
-    scrollToBottom();
+    final response = await http.post(
+      url,
+      headers: {"Accept": "application/json"},
+      body: {"Question": prompt},
+    );
 
-    isLoading.value = true;
-    try {
-      final url = Uri.parse(Endpoints.askQuestionBaseUrl + Endpoints.askQuestion.replaceAll(RegExp(r'/$'), ''));
-      
-      final response = await http.post(
-        url,
-        headers: {
-          "Accept": "application/json",
-        },
-        body: {
-          "Question": prompt
-        },
+    if (response.statusCode == 200) {
+      final bytes = response.bodyBytes;
+
+      // ================== DIRECTORY LOGIC (FIXED) ==================
+      Directory baseDir;
+
+      if (Platform.isAndroid) {
+        baseDir = Directory('/storage/emulated/0/Download');
+        if (!await baseDir.exists()) {
+          baseDir = (await getExternalStorageDirectory())!;
+        }
+      } else if (Platform.isIOS) {
+        baseDir = await getApplicationDocumentsDirectory();
+      } else {
+        baseDir = (await getDownloadsDirectory()) ??
+            await getApplicationDocumentsDirectory();
+      }
+
+      // Create "pilog" folder
+      final pilogDir = Directory('${baseDir.path}/pilog');
+      if (!await pilogDir.exists()) {
+        await pilogDir.create(recursive: true);
+      }
+
+      debugPrint('📁 Saving file to: ${pilogDir.path}');
+      // ============================================================
+
+      // ================== FILE NAME ==================
+      String safeName = prompt
+          .replaceAll(RegExp(r'[^\w\s-]'), '')
+          .split(' ')
+          .take(3)
+          .join('_');
+
+      if (safeName.isEmpty) safeName = "generated_doc";
+
+      String fileName =
+          "${safeName}_${DateTime.now().millisecondsSinceEpoch}.docx";
+      // ============================================================
+
+      final filePath = "${pilogDir.path}/$fileName";
+      final file = File(filePath);
+
+      await file.writeAsBytes(bytes);
+
+      messages.add(
+        ChatMessage(
+          text: {
+            'answer':
+                "✅ Document saved as **$fileName**\n📁 Location: pilog folder"
+          },
+          isUser: false,
+          isLoading: false,
+          hasRefresh: false,
+        ),
       );
 
-      if (response.statusCode == 200) {
-        final bytes = response.bodyBytes;
+      _showToast("Document saved in pilog folder", context);
 
-        // Determine save directory (Downloads folder)
-        Directory? downloadDir;
-        if (Platform.isAndroid) {
-          // Attempt to use the public Downloads folder on Android
-          downloadDir = Directory('/storage/emulated/0/Download');
-          if (!await downloadDir.exists()) {
-            downloadDir = await getExternalStorageDirectory();
-          }
-        } else {
-          // For Windows, macOS, Linux
-          downloadDir = await getDownloadsDirectory();
-        }
-        
-        // Fallback to documents directory if downloads is inaccessible
-        downloadDir ??= await getApplicationDocumentsDirectory();
-
-        // Sanitize filename from prompt
-        String safeName = prompt.replaceAll(RegExp(r'[^\w\s-]'), '').split(' ').take(3).join('_');
-        if (safeName.isEmpty) safeName = "generated_doc";
-        String fileName = "${safeName}_${DateTime.now().millisecondsSinceEpoch}.docx";
-        
-        final filePath = "${downloadDir.path}/$fileName";
-        final file = File(filePath);
-
-        await file.writeAsBytes(bytes);
-
-        messages.add(
-          ChatMessage(
-            text: {'answer': "Document generated and saved to Downloads as **$fileName**"},
-            isUser: false,
-            isLoading: false,
-            hasRefresh: false,
-          ),
-        );
-        
-        _showToast("Document saved to ${downloadDir.path}", context);
-        
-        // Open the file
-        await OpenFile.open(filePath);
-      } else {
-        _showToast("Failed to generate document. Status: ${response.statusCode}", context);
-      }
-    } catch (e) {
-      debugPrint("Error generating/downloading document: $e");
-      _showToast("Error during document generation.", context);
-    } finally {
-      isLoading.value = false;
-      scrollToBottom();
+      await OpenFile.open(filePath);
+    } else {
+      _showToast(
+        "Failed to generate document. Status: ${response.statusCode}",
+        context,
+      );
     }
+  } catch (e) {
+    debugPrint("❌ Error generating document: $e");
+    _showToast("Error during document generation.", context);
+  } finally {
+    isLoading.value = false;
+    scrollToBottom();
   }
 
   Future<void> sellNowApi(BuildContext context) async {
@@ -1022,4 +1041,5 @@ class HomeController extends GetxController {
       selectedSuggestions.add(searchOptions[1]);
     }
   }
+}
 }
