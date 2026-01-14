@@ -1807,13 +1807,13 @@ class HomeScreen extends StatelessWidget {
           // margin: Margins.symmetric(vertical: 10),
         ),
         "th": Style(
-          // padding: HtmlPaddings.all(12),
+          padding: HtmlPaddings.symmetric(horizontal: 12, vertical: 8),
           backgroundColor: Colors.grey.shade100,
           fontWeight: FontWeight.bold,
           border: Border.all(color: Colors.black12, width: 0.5),
         ),
         "td": Style(
-          // padding: HtmlPaddings.all(12),
+          padding: HtmlPaddings.symmetric(horizontal: 12, vertical: 8),
           border: Border.all(color: Colors.black12, width: 0.5),
           alignment: Alignment.centerLeft,
         ),

@@ -832,6 +832,7 @@ class HomeController extends GetxController {
 
   Future<void> sellNowApi(BuildContext context) async {
     String questionText = searchController.text.trim();
+    String originalQuestion = questionText;
 
     // Add user message to chat if there's text
     if (questionText.isNotEmpty) {
@@ -849,79 +850,133 @@ class HomeController extends GetxController {
 
     isLoading.value = true;
     try {
-      ApiResponse response = await apiService.request(
-        method: ApiMethod.post,
-        customUrl: true,
-        endpoint: Endpoints.chatWithDataMobBaseUrl + Endpoints.chatWithDataMob,
-        body: {
-          "question": '',
-          "sellnow": "sell",
-        },
-        useFormData: true,
-      );
+      ApiResponse response;
+      if (originalQuestion.isEmpty) {
+        // Use existing chatWithDataMob api
+        response = await apiService.request(
+          method: ApiMethod.post,
+          customUrl: true,
+          endpoint: Endpoints.chatWithDataMobBaseUrl + Endpoints.chatWithDataMob,
+          body: {
+            "question": '',
+            "sellnow": "sell",
+          },
+          useFormData: true,
+        );
+      } else {
+        // Hit new chatWithData API
+        response = await apiService.request(
+          method: ApiMethod.post,
+          customUrl: true,
+          endpoint: Endpoints.chatWithDataBaseUrl + Endpoints.chatWithData,
+          body: {
+            "SESSION_ID": sessionId,
+            "QUESTION": originalQuestion,
+          },
+          useFormData: true,
+        );
+      }
 
-      if (response.code == ApiCode.success200.index) {
-        if (response.data != null) {
-          // Case A: Suggestion list
-          if (response.data is List) {
-            List<String> suggestions = List<String>.from(response.data);
+      if (response.code == ApiCode.success200.index && response.data != null) {
+        // Case A: Suggestion list (Usually from empty question call)
+        if (response.data is List) {
+          List<String> suggestions = List<String>.from(response.data);
+          messages.add(
+            ChatMessage(
+              text: {'answer': "Choose a question or type your own:"},
+              isUser: false,
+              isLoading: false,
+              suggestions: suggestions,
+              hasRefresh: false,
+            ),
+          );
+        }
+        // Case B: Data or Map
+        else if (response.data is Map) {
+          Map<String, dynamic> data = response.data;
+          
+          if (data.containsKey("ANSWER")) {
+            var answer = data["ANSWER"];
+            String displayText = "";
+
+            if (answer is List) {
+              // If it is list means we need to show like a text message (normal)
+              displayText = answer.join("\n");
+            } else if (answer is Map) {
+              // Convert Map to HTML Table for better visualization
+              Map<String, dynamic> answerMap = Map<String, dynamic>.from(answer);
+              List<String> headers = answerMap.keys.toList();
+
+              // Find maximum number of rows among all columns
+              int maxRows = 0;
+              for (var value in answerMap.values) {
+                if (value is List) {
+                  if (value.length > maxRows) maxRows = value.length;
+                } else {
+                  if (1 > maxRows) maxRows = 1;
+                }
+              }
+
+              StringBuffer htmlBuffer = StringBuffer();
+              htmlBuffer.write("<table border='1'>");
+
+              // Table Headers
+              htmlBuffer.write("<tr>");
+              for (String header in headers) {
+                htmlBuffer.write("<th>$header</th>");
+              }
+              htmlBuffer.write("</tr>");
+
+              // Table Data Rows
+              for (int i = 0; i < maxRows; i++) {
+                htmlBuffer.write("<tr>");
+                for (String header in headers) {
+                  var value = answerMap[header];
+                  String cellValue = "";
+                  if (value is List) {
+                    if (i < value.length) {
+                      cellValue = value[i].toString();
+                    }
+                  } else if (i == 0) {
+                    // Single value (not a list), show in first row
+                    cellValue = value.toString();
+                  }
+                  htmlBuffer.write("<td>$cellValue</td>");
+                }
+                htmlBuffer.write("</tr>");
+              }
+              htmlBuffer.write("</table>");
+              displayText = htmlBuffer.toString();
+            } else {
+              displayText = answer.toString();
+            }
+
             messages.add(
               ChatMessage(
-                text: {'answer': "Choose a question or type your own:"},
+                text: {"answer": displayText},
                 isUser: false,
                 isLoading: false,
-                suggestions: suggestions,
+                hasRefresh: false,
+              ),
+            );
+          } else {
+            // Fallback if ANSWER key is missing but it's a map
+            messages.add(
+              ChatMessage(
+                text: {"answer": jsonEncode(data)},
+                isUser: false,
+                isLoading: false,
                 hasRefresh: false,
               ),
             );
           }
-          // Case B: Data Table (ANSWER object)
-          else if (response.data is Map) {
-            Map<String, dynamic> data = response.data;
-            if (data.containsKey("ANSWER")) {
-              Map<String, dynamic> answer = data["ANSWER"];
-              String displayText = "";
-
-              if (answer.containsKey("OPP_TYPE") && answer["OPP_TYPE"] is List) {
-                List<dynamic> values = answer["OPP_TYPE"];
-                displayText = values.map((v) => "• $v").join("<br/>");
-              } else {
-                // Fallback for other data if OPP_TYPE is missing
-                List<String> lines = [];
-                answer.forEach((key, value) {
-                  if (value is List) {
-                    lines.add("<b>$key:</b> ${value.join(', ')}");
-                  }
-                });
-                displayText = lines.join("<br/>");
-              }
-
-              messages.add(
-                ChatMessage(
-                  text: {"answer": displayText},
-                  isUser: false,
-                  isLoading: false,
-                  hasRefresh: false,
-                ),
-              );
-            } else {
-              messages.add(
-                ChatMessage(
-                  text: {"answer": jsonEncode(data)},
-                  isUser: false,
-                  isLoading: false,
-                  hasRefresh: false,
-                ),
-              );
-            }
-          }
         }
-      } else {
-        _showToast("No response from SellNow service.", context);
+      } else if (response.code != ApiCode.success200.index) {
+        _showToast("No response from service.", context);
       }
     } catch (e) {
       debugPrint("Error in sellNowApi: $e");
-      _showToast("Network error in SellNow service.", context);
+      _showToast("Network error in service.", context);
     } finally {
       isLoading.value = false;
       scrollToBottom();
