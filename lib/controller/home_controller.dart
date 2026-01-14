@@ -848,7 +848,7 @@ class HomeController extends GetxController {
     isLoading.value = false;
     scrollToBottom();
   }
-
+  }
   Future<void> sellNowApi(BuildContext context) async {
     String questionText = searchController.text.trim();
     String originalQuestion = questionText;
@@ -1012,4 +1012,4 @@ class HomeController extends GetxController {
     }
   }
 }
-}
+

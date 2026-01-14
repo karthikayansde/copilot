@@ -13,11 +13,11 @@ import '../widgets/loading_widget.dart';
 import '../widgets/popover_dialog.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+ HomeScreen({super.key});
 
+    final controller = Get.put(HomeController());
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(HomeController());
 
     return SafeArea(
       child: Scaffold(
@@ -1583,12 +1583,13 @@ class HomeScreen extends StatelessWidget {
     });
 
     // Wrap in horizontal scroll view to handle wide tables
-    Widget htmlWidget =
-    // SingleChildScrollView(
-    //   scrollDirection: Axis.horizontal,
-    //   child:
-    Column(children: valuesList);
-    // );
+    Widget htmlWidget = !(controller.selectedSuggestions.length != 0 && (controller.selectedSuggestions[0] == controller.searchOptions[1])) ?
+    Column(children: valuesList):
+    SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: 
+    Column(children: valuesList)
+    );
     // if(htmlData['answer'])
 
     // If we found a download link, show a dedicated download button
