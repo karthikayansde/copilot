@@ -295,7 +295,12 @@ class HomeScreen extends StatelessWidget {
       child: InkWell(
       onTap: labelIndex == 2
           ? () => controller.pickAndProcessFile(context)
-          : () => controller.addSuggestion(
+          : labelIndex == 1? () async {
+      controller.addSuggestion(
+        controller.searchOptions[labelIndex],
+      );
+      await controller.sellNowApi(context);
+      } : () => controller.addSuggestion(
         controller.searchOptions[labelIndex],
       ),
         borderRadius: BorderRadius.circular(20),

@@ -898,8 +898,8 @@ class HomeController extends GetxController {
 
       if (response.code == ApiCode.success200.index && response.data != null) {
         // Case A: Suggestion list (Usually from empty question call)
-        if (response.data is List) {
-          List<String> suggestions = List<String>.from(response.data);
+        if (response.data['SUGGESTED_QUESTIONS'] is List) {
+          List<String> suggestions = List<String>.from(response.data['SUGGESTED_QUESTIONS']);
           messages.add(
             ChatMessage(
               text: {'answer': "Choose a question or type your own:"},
