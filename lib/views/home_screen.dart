@@ -294,7 +294,12 @@ class HomeScreen extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
       onTap: labelIndex == 2
-          ? () => controller.pickAndProcessFile(context)
+          ? () async {
+        controller.addSuggestion(
+          controller.searchOptions[labelIndex],
+        );
+        await controller.pickAndProcessFile(context);
+      }
           : labelIndex == 1? () async {
       controller.addSuggestion(
         controller.searchOptions[labelIndex],
@@ -886,6 +891,9 @@ class HomeScreen extends StatelessWidget {
         await controller.askQuestionApi(context);
       } else if (controller.selectedSuggestions[0] == controller.searchOptions[1]) {
         await controller.sellNowApi(context);
+      } else if (controller.selectedSuggestions[0] == controller.searchOptions[2]) {
+        // Get Insights - ask question with stored data
+        await controller.askDataInsightsQuestion(context);
       } else {
         await controller.sendMessage(context);
       }

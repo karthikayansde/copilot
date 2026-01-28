@@ -47,6 +47,9 @@ class HomeController extends GetxController {
   String sessionId = '';
   var sessionsList = SessionsModel().obs;
 
+  // Store processed Excel data for reuse with different questions
+  Map<String, dynamic>? storedDataJson;
+
   final apiService = ApiService();
 
   Future<void> init() async {
@@ -654,48 +657,92 @@ class HomeController extends GetxController {
           );
         }
 
-        // Step: Data Insights API Call
-        try {
-          ApiResponse response = await apiService.request(
-            method: ApiMethod.post,
-            customUrl: true,
-            endpoint: Endpoints.insightBaseUrl + Endpoints.dataInsights,
-            body: {
-              "response_id": sessionId,
-              "table_name": fileNameNoExt.replaceAll(
-                RegExp(r'[^a-zA-Z0-9]'),
-                '_',
-              ).toUpperCase(),
-              "data_table": jsonEncode(processedData),
-            },
-            useFormData: true,
-          );
+        // Store the processed data for reuse with different questions
+        storedDataJson = processedData;
+        addSuggestion(searchOptions[2]); // Automatically select "Get Insights"
 
-          if (response.code == ApiCode.success200.index) {
-            if (response.data != null) {
-              messages.add(
-                ChatMessage(
-                  text: {"answer": response.data},
-                  isUser: false,
-                  isLoading: false,
-                  hasRefresh: false,
-                ),
-              );
-            }
-            _showToast("File processed and insights generated successfully.", context);
-          } else {
-            _showToast("File standardized, but insights API failed.", context);
-          }
-        } catch (e) {
-          debugPrint("Error calling Data Insights API: $e");
-          _showToast("Error during insights generation.", context);
-        }
+        messages.add(
+          ChatMessage(
+            text: {
+              "answer": "File *${file.name} uploaded and processed successfully!\n\nYou can now ask questions about the data in this file. (e.g., 'How many rows are there?')"
+            },
+            isUser: false,
+            isLoading: false,
+            hasRefresh: false,
+          ),
+        );
+
+        _showToast("File ready for analysis.", context);
         scrollToBottom();
       }
     } catch (e) {
       _showToast("Error: ${e.toString()}", context);
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<void> askDataInsightsQuestion(BuildContext context) async {
+    if (searchController.text.trim().isEmpty) {
+      _showToast("Please enter a question", context);
+      return;
+    }
+
+    if (storedDataJson == null) {
+      _showToast("Please upload an Excel file first", context);
+      return;
+    }
+
+    final userQuestion = searchController.text.trim();
+
+    // Add user message to chat
+    messages.add(
+      ChatMessage(
+        text: {'answer': userQuestion},
+        isUser: true,
+        isLoading: false,
+      ),
+    );
+
+    searchController.clear();
+    hasText.value = false;
+    scrollToBottom();
+
+    isLoading.value = true;
+    try {
+      ApiResponse response = await apiService.request(
+        method: ApiMethod.post,
+        customUrl: true,
+        endpoint: Endpoints.insightBaseUrl + Endpoints.dataInsights,
+        body: {
+          "SESSION_ID": sessionId,
+          "QUESTION": userQuestion,
+          "DATA_JSON": jsonEncode(storedDataJson),
+        },
+        useFormData: true,
+      );
+
+      if (response.code == ApiCode.success200.index) {
+        if (response.data != null) {
+          messages.add(
+            ChatMessage(
+              text: {"answer": _formatApiResponse(response.data)},
+              isUser: false,
+              isLoading: false,
+              hasRefresh: false,
+            ),
+          );
+        }
+        _showToast("Insights generated successfully.", context);
+      } else {
+        _showToast("Failed to get insights.", context);
+      }
+    } catch (e) {
+      debugPrint("Error calling Data Insights API: $e");
+      _showToast("Error during insights generation.", context);
+    } finally {
+      isLoading.value = false;
+      scrollToBottom();
     }
   }
 
@@ -912,83 +959,14 @@ class HomeController extends GetxController {
         }
         // Case B: Data or Map
         else if (response.data is Map) {
-          Map<String, dynamic> data = response.data;
-          
-          if (data.containsKey("ANSWER")) {
-            var answer = data["ANSWER"];
-            String displayText = "";
-
-            if (answer is List) {
-              // If it is list means we need to show like a text message (normal)
-              displayText = answer.join("\n");
-            } else if (answer is Map) {
-              // Convert Map to HTML Table for better visualization
-              Map<String, dynamic> answerMap = Map<String, dynamic>.from(answer);
-              List<String> headers = answerMap.keys.toList();
-
-              // Find maximum number of rows among all columns
-              int maxRows = 0;
-              for (var value in answerMap.values) {
-                if (value is List) {
-                  if (value.length > maxRows) maxRows = value.length;
-                } else {
-                  if (1 > maxRows) maxRows = 1;
-                }
-              }
-
-              StringBuffer htmlBuffer = StringBuffer();
-              htmlBuffer.write("<table border='1'>");
-
-              // Table Headers
-              htmlBuffer.write("<tr>");
-              for (String header in headers) {
-                htmlBuffer.write("<th>$header</th>");
-              }
-              htmlBuffer.write("</tr>");
-
-              // Table Data Rows
-              for (int i = 0; i < maxRows; i++) {
-                htmlBuffer.write("<tr>");
-                for (String header in headers) {
-                  var value = answerMap[header];
-                  String cellValue = "";
-                  if (value is List) {
-                    if (i < value.length) {
-                      cellValue = value[i].toString();
-                    }
-                  } else if (i == 0) {
-                    // Single value (not a list), show in first row
-                    cellValue = value.toString();
-                  }
-                  htmlBuffer.write("<td>$cellValue</td>");
-                }
-                htmlBuffer.write("</tr>");
-              }
-              htmlBuffer.write("</table>");
-              displayText = htmlBuffer.toString();
-            } else {
-              displayText = answer.toString();
-            }
-
-            messages.add(
-              ChatMessage(
-                text: {"answer": displayText},
-                isUser: false,
-                isLoading: false,
-                hasRefresh: false,
-              ),
-            );
-          } else {
-            // Fallback if ANSWER key is missing but it's a map
-            messages.add(
-              ChatMessage(
-                text: {"answer": jsonEncode(data)},
-                isUser: false,
-                isLoading: false,
-                hasRefresh: false,
-              ),
-            );
-          }
+          messages.add(
+            ChatMessage(
+              text: {"answer": _formatApiResponse(response.data)},
+              isUser: false,
+              isLoading: false,
+              hasRefresh: false,
+            ),
+          );
         }
       } else if (response.code != ApiCode.success200.index) {
         _showToast("No response from service.", context);
@@ -1010,6 +988,67 @@ class HomeController extends GetxController {
     if (wasSellNow) {
       selectedSuggestions.add(searchOptions[1]);
     }
+  }
+  String _formatApiResponse(dynamic data) {
+    if (data == null) return "";
+
+    if (data is Map && data.containsKey("ANSWER")) {
+      var answer = data["ANSWER"];
+      if (answer is List) {
+        return answer.join("\n");
+      } else if (answer is Map) {
+        return _convertMapToHtmlTable(Map<String, dynamic>.from(answer));
+      } else {
+        return answer.toString();
+      }
+    }
+
+    if (data is Map) {
+      return jsonEncode(data);
+    }
+
+    return data.toString();
+  }
+
+  String _convertMapToHtmlTable(Map<String, dynamic> answerMap) {
+    if (answerMap.isEmpty) return "No data available";
+    
+    List<String> headers = answerMap.keys.toList();
+    int maxRows = 0;
+    for (var value in answerMap.values) {
+      if (value is List) {
+        if (value.length > maxRows) maxRows = value.length;
+      } else {
+        if (1 > maxRows) maxRows = 1;
+      }
+    }
+
+    StringBuffer htmlBuffer = StringBuffer();
+    htmlBuffer.write("<table border='1'>");
+    htmlBuffer.write("<tr>");
+    for (String header in headers) {
+      htmlBuffer.write("<th>$header</th>");
+    }
+    htmlBuffer.write("</tr>");
+
+    for (int i = 0; i < maxRows; i++) {
+      htmlBuffer.write("<tr>");
+      for (String header in headers) {
+        var value = answerMap[header];
+        String cellValue = "";
+        if (value is List) {
+          if (i < value.length) {
+            cellValue = value[i].toString();
+          }
+        } else if (i == 0) {
+          cellValue = value.toString();
+        }
+        htmlBuffer.write("<td>$cellValue</td>");
+      }
+      htmlBuffer.write("</tr>");
+    }
+    htmlBuffer.write("</table>");
+    return htmlBuffer.toString();
   }
 }
 
