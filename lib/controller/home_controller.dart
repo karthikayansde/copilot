@@ -58,6 +58,7 @@ class HomeController extends GetxController {
           SharedPrefManager.username,
         ) ??
             '';
+    print("aski"+userName);
     // await _initSpeech();
     await _getSessionId();
     await getSessionsApi();
@@ -347,13 +348,13 @@ class HomeController extends GetxController {
 
     isLoading.value = true;
     try {
-      ApiResponse response = await apiService.request(
-        method: ApiMethod.post,
+      ApiResponse response = await apiService.multipartRequest(
         endpoint: Endpoints.ask,
-        body: {
+        fields: {
           "question": userMessage,
           "sessionId": sessionId,
           "username": userName,
+          "File": '',
         },
       );
 
@@ -434,13 +435,13 @@ class HomeController extends GetxController {
     messages.refresh();
 
     try {
-      ApiResponse response = await apiService.request(
-        method: ApiMethod.post,
+      ApiResponse response = await apiService.multipartRequest(
         endpoint: Endpoints.ask,
-        body: {
-          "question": userMessage,
+        fields: {
+          "question": userMessage['answer']?.toString() ?? "",
           "sessionId": sessionId,
           "username": userName,
+          "File": '',
         },
       );
 

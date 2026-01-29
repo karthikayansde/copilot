@@ -8,6 +8,7 @@ class AppStrings {
   static const String register = "Register";
   static const String name = "Name";
   static const String nameValidator = "Please enter name";
+  static const String email = "Email";
   static const String emailEMTValidator = "Please enter email";
   static const String emailValidator = "Please enter a valid email";
   static const String newPasswordEMTValidator = "Please enter a new password";

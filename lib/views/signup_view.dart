@@ -29,6 +29,7 @@ class _SignupViewState extends State<SignupView> {
     // TODO: implement initState
     super.initState();
     controller.nameController.text = "";
+    controller.userNameController.text = "";
     controller.emailController.text = "";
     controller.passwordController.text = "";
     controller.confirmPasswordController.text = "";
@@ -111,6 +112,18 @@ class _SignupViewState extends State<SignupView> {
                               // inputFormatters: AppInputFormatters.email(),
                               validator: AppValidators.name,
                               hint: AppStrings.userName,
+                              controller: controller.userNameController,
+                            ),
+                            TextFieldWidget(
+                              isBorderNeeded: true,
+                              hasHindOnTop: true,
+                              suffixIcon: Padding(
+                                padding: const EdgeInsets.only(left: 10, right: 10),
+                                child: Icon(Icons.email_outlined, size: 18),
+                              ),
+                              maxLines: 1,
+                              validator: AppValidators.email,
+                              hint: AppStrings.email,
                               controller: controller.emailController,
                             ),
                             TextFieldWidget(

@@ -12,6 +12,7 @@ class SignupController extends GetxController {
   // data members
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController nameController = TextEditingController();
+  final TextEditingController userNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
@@ -37,7 +38,8 @@ class SignupController extends GetxController {
         endpoint: Endpoints.signUp,
         body: {
           "name": nameController.text,
-          "username": emailController.text,
+          "username": userNameController.text,
+          "email": emailController.text,
           "password": passwordController.text
         },
         useFormData: true
@@ -54,7 +56,8 @@ class SignupController extends GetxController {
       if (result) {
         isLoading.value = false;
         await SharedPrefManager.instance.setBoolAsync(SharedPrefManager.isLoggedIn, true);
-        await SharedPrefManager.instance.setStringAsync(SharedPrefManager.username, emailController.text);
+        await SharedPrefManager.instance.setStringAsync(SharedPrefManager.username, userNameController.text);
+        await SharedPrefManager.instance.setStringAsync(SharedPrefManager.mail, emailController.text);
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => HomeScreen(),),

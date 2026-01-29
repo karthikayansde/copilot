@@ -1,10 +1,14 @@
 
 class Endpoints {
-  static String get baseUrl => 'http://apihub.pilogcloud.com:6735';
+  // static String get baseUrl => 'http://apihub.pilogcloud.com:6735';
   static String get insightBaseUrl => 'http://apihub.pilogcloud.com:6730';
   static String get askQuestionBaseUrl => 'http://apihub.pilogcloud.com:6732';
   static String get chatWithDataMobBaseUrl => 'http://apihub.pilogcloud.com:6730';
   static String get chatWithDataBaseUrl => 'http://apihub.pilogcloud.com:6730';
+
+  static String get baseUrl => 'https://mirai.pilogcloud.com:6735';
+  // static String get chatWithDataMobBaseUrl => 'https://mirai.pilogcloud.com:6735';
+
   static String get login => '/auth/login';
   static String get signUp => '/auth/register';
   static String get ask => '/ask';
