@@ -11,7 +11,7 @@ class Endpoints {
 
   static String get login => '/auth/login';
   static String get signUp => '/auth/register';
-  static String get ask => '/ask';
+  static String get ask => '/ask?role=viewer';
   static String get sessions => '/chat/sessions?username=';
 
   static String get updateSessionTitle => '/session/rename';

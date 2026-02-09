@@ -265,10 +265,7 @@ class ApiService {
     }
     
     try {
-      var streamedResponse = await request.send().timeout(
-        Duration(seconds: 30),
-        onTimeout: () => throw Exception('Request timeout'),
-      );
+      var streamedResponse = await request.send();
       var response = await http.Response.fromStream(streamedResponse);
       return _handleResponse(response);
     } on http.ClientException {

@@ -366,7 +366,7 @@ class HomeController extends GetxController {
 
       if (result && response.data != null) {
         messages.add(
-          ChatMessage(text: response.data!, isUser: false, isLoading: false),
+          ChatMessage(text: {'answer': response.data!["answer"]}, isUser: false, isLoading: false),
         );
         scrollToBottom();
 
@@ -453,7 +453,7 @@ class HomeController extends GetxController {
 
       if (result && response.data != null) {
         messages[index] = ChatMessage(
-          text: response.data!,
+          text: {'answer': response.data!["answer"]},
           isUser: false,
           isLoading: false,
         );
