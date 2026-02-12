@@ -4,7 +4,7 @@ class AppValidators {
 
   static String? name(String? value) {
     if (value == null || value.isEmpty) {
-      return AppStrings.nameValidator;
+      return AppStrings.nameValidator;  
     }
     return null;
   }
