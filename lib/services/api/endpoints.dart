@@ -5,6 +5,7 @@ class Endpoints {
   static String get askQuestionBaseUrl => 'http://apihub.pilogcloud.com:6732';
   static String get chatWithDataMobBaseUrl => 'http://apihub.pilogcloud.com:6730';
   static String get chatWithDataBaseUrl => 'http://apihub.pilogcloud.com:6730';
+  static String get registerBaseUrl => 'https://mirai.pilogcloud.com:6734';
 
   static String get baseUrl => 'https://mirai.pilogcloud.com:6735';
   // static String get chatWithDataMobBaseUrl => 'https://mirai.pilogcloud.com:6735';

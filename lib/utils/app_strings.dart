@@ -25,4 +25,9 @@ class AppStrings {
   static const String alreadyHaveAnAccount = "Already have an account?";
   static const String passwordMatch = "Password and Confirm Password must match";
   static const String logout = "Logout";
+  static const String selectOrganization = "Select Organization";
+  static const String organizationName = "Enter your organization name";
+  static const String selectReferringAdmin = "Select Referring Admin";
+  static const String organizationNameValidator = "Please enter organization name";
+  static const String referringAdminValidator = "Please select a referring admin";
 }

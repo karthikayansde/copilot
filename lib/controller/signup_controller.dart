@@ -17,9 +17,25 @@ class SignupController extends GetxController {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
       TextEditingController();
+  final TextEditingController otherOrgNameController = TextEditingController();
   var isPasswordHidden = true.obs;
   var isConfirmPasswordHidden = true.obs;
   var isLoading = false.obs;
+  final List<String> organizations = ['Select organization', 'PiLog', 'Others'];
+  final List<String> referringAdmins = [
+    'Select referring admin',
+    'IMAD SYED',
+    'ASIF AHMED',
+    'SHOUKAT ALI',
+    'PARDHA SARADHI',
+    'SALEEM KHAN',
+    'KESHAV MODUGU',
+    'SASI KRISHNA',
+    'KOTI AZMIRA',
+  ];
+
+  late var selectedOrganization = organizations[0].obs;
+  late var selectedAdmin = referringAdmins[0].obs;
   final apiService = ApiService();
 
   // data methods
@@ -35,12 +51,16 @@ class SignupController extends GetxController {
     try {
       ApiResponse response = await apiService.request(
         method: ApiMethod.post,
-        endpoint: Endpoints.signUp,
+        customUrl: true,
+        endpoint: Endpoints.registerBaseUrl+Endpoints.signUp,
         body: {
           "name": nameController.text,
           "username": userNameController.text,
           "email": emailController.text,
-          "password": passwordController.text
+          "password": passwordController.text,
+          "organization": selectedOrganization.value == "Others" ? otherOrgNameController.text : "PiLog",
+          "referred_admin": selectedOrganization.value == "Others" ? selectedAdmin.value : "",
+          "registration_type": selectedOrganization.value == "Others" ? "ADMIN_APPROVAL" : "DIRECT",
         },
         useFormData: true
       );
@@ -55,13 +75,25 @@ class SignupController extends GetxController {
 
       if (result) {
         isLoading.value = false;
-        await SharedPrefManager.instance.setBoolAsync(SharedPrefManager.isLoggedIn, true);
-        await SharedPrefManager.instance.setStringAsync(SharedPrefManager.username, userNameController.text);
-        await SharedPrefManager.instance.setStringAsync(SharedPrefManager.mail, emailController.text);
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => HomeScreen(),),
-          (Route<dynamic> route) => false,
+        
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Success"),
+              content: Text(response.data['message'] ?? "Request submitted. You will receive an activation link once approved."),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close dialog
+                    Navigator.of(context).pop(); // Go back to login screen
+                  },
+                  child: const Text("OK"),
+                ),
+              ],
+            );
+          },
         );
       }
     } catch (e) {

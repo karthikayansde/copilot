@@ -89,7 +89,10 @@ class _LoginViewState extends State<LoginView> {
                                     child: Icon(Icons.person_2_outlined, size: 18),
                                   ),
                                   maxLines: 1,
-                                  maxLength: 50,
+
+                                  inputFormatters: [
+                                    AppInputFormatters.limitedText(maxLength: 50)
+                                  ],
                                   // inputFormatters: AppInputFormatters.email(),
                                   validator: AppValidators.name,
                                   hint: AppStrings.userName,

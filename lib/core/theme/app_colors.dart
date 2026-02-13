@@ -24,6 +24,7 @@ class AppColors {
 
   // Text Colors
   static Color textPrimary = Colors.black;
+  static Color black = Colors.black;
   static Color textSecondary = Colors.black87;
   static Color textGrey = Colors.black54;
   static Color textLight = Colors.black45;

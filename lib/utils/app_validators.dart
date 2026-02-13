@@ -40,4 +40,11 @@ class AppValidators {
     }
     return null;
   }
+
+  static String? organizationName(String? value) {
+    if (value == null || value.isEmpty) {
+      return AppStrings.organizationNameValidator;
+    }
+    return null;
+  }
 }

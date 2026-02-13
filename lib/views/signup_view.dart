@@ -33,6 +33,9 @@ class _SignupViewState extends State<SignupView> {
     controller.emailController.text = "";
     controller.passwordController.text = "";
     controller.confirmPasswordController.text = "";
+    controller.otherOrgNameController.text = "";
+    controller.selectedOrganization.value = "Select organization";
+    controller.selectedAdmin.value = "Select referring admin";
     controller.isPasswordHidden.value = true;
     controller.isConfirmPasswordHidden.value = true;
   }
@@ -79,6 +82,7 @@ class _SignupViewState extends State<SignupView> {
                             ),
                             const SizedBox(height: 20),
                             TextFieldWidget(
+                              key: ValueKey('1'),
                               isBorderNeeded: true,
                               hasHindOnTop: true,
                               suffixIcon: Padding(
@@ -92,9 +96,8 @@ class _SignupViewState extends State<SignupView> {
                                 ),
                               ),
                               maxLines: 1,
-                              maxLength: 50,
                               inputFormatters: [
-                                AppInputFormatters.lettersNumbersSpaceSymbolsFormat,
+                                AppInputFormatters.limitedText(maxLength: 50)
                               ],
                               validator: AppValidators.name,
                               controller: controller.nameController,
@@ -102,6 +105,7 @@ class _SignupViewState extends State<SignupView> {
                             ),
                   
                             TextFieldWidget(
+                              key: ValueKey('2'),
                               isBorderNeeded: true,
                               hasHindOnTop: true,
                               suffixIcon: Padding(
@@ -109,7 +113,9 @@ class _SignupViewState extends State<SignupView> {
                                 child: Icon(Icons.person_2_outlined, size: 18),
                               ),
                               maxLines: 1,
-                              maxLength: 50,
+                              inputFormatters: [
+                                AppInputFormatters.limitedText(maxLength: 50)
+                              ],
                               // inputFormatters: AppInputFormatters.email(),
                               validator: AppValidators.name,
                               hint: AppStrings.userName,
@@ -199,8 +205,227 @@ class _SignupViewState extends State<SignupView> {
                               validator: AppValidators.confirmPassword,
                               hint: AppStrings.confirmPassword,
                               controller:
-                              controller.confirmPasswordController,
+                            controller.confirmPasswordController,
+                          ),
+                          const SizedBox(height: 5),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 5.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(1.0),
+                                  child: Text(
+                                    AppStrings.selectOrganization,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.black,
+                                    ),
+                                  ),
+                                ),
+                                ConstrainedBox(
+                                  constraints:
+                                      const BoxConstraints(maxWidth: 450),
+                                  child: Obx(
+                                    () => DropdownButtonFormField<String>(
+                                      initialValue:
+                                       controller
+                                      .selectedOrganization.value,
+                                      elevation: 0,
+                                      icon: Icon(
+                                        Icons.keyboard_arrow_down_rounded,
+                                        size: 18,
+                                        color: AppColors.black,
+                                      ),
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                        color: AppColors.black,
+                                      ),
+                                      validator: (value) {
+                                        if (value == null ||
+                                            value.isEmpty ||
+                                            value == controller.organizations[0]) {
+                                          return AppStrings.selectOrganization;
+                                        }
+                                        return null;
+                                      },
+                                      decoration: InputDecoration(
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 12,
+                                        ),
+                                        filled: true,
+                                        fillColor: AppColors.white,
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                          borderSide: BorderSide(
+                                            color: AppColors.black,
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                          borderSide: BorderSide(
+                                            color: AppColors.primary,
+                                          ),
+                                        ),
+                                      ),
+                                      items: controller.organizations
+                                          .map((String org) {
+                                        return DropdownMenuItem<String>(
+                                          value: org,
+                                          child: Text(org),
+                                        );
+                                      }).toList(),
+                                      onChanged: (String? newValue) {
+                                        if (newValue != null) {
+                                          controller.selectedOrganization
+                                              .value = newValue;
+                                          if (newValue == "PiLog") {
+                                            controller.otherOrgNameController.clear();
+                                          }
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
+                          ),
+
+                            const SizedBox(height: 5),
+                            Obx(() {
+                              if (controller.selectedOrganization.value ==
+                                  "Others") {
+                                return Column(
+                                  children: [
+                                    TextFieldWidget(
+                                      isBorderNeeded: true,
+                                      hasHindOnTop: true,
+                                      maxLines: 1,
+                                      validator:
+                                      AppValidators.organizationName,
+                                      controller:
+                                      controller.otherOrgNameController,
+                                      hint: AppStrings.organizationName,
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 5.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                        children: [
+                                          Padding(
+                                            padding:
+                                            const EdgeInsets.all(1.0),
+                                            child: Text(
+                                              AppStrings
+                                                  .selectReferringAdmin,
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w500,
+                                                color: AppColors.black,
+                                              ),
+                                            ),
+                                          ),
+                                          ConstrainedBox(
+                                            constraints:
+                                            const BoxConstraints(
+                                                maxWidth: 450),
+                                            child: Obx(
+                                                  () => DropdownButtonFormField<
+                                                  String>(
+                                                initialValue: controller
+                                                    .selectedAdmin.value,
+                                                elevation: 0,
+                                                icon: Icon(
+                                                  Icons
+                                                      .keyboard_arrow_down_rounded,
+                                                  size: 18,
+                                                  color: AppColors.black,
+                                                ),
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight:
+                                                  FontWeight.w500,
+                                                  color: AppColors.black,
+                                                ),
+                                                 validator: (value) {
+                                                   if (value == null ||
+                                                       value.isEmpty ||
+                                                       value ==
+                                                           "Select referring admin") {
+                                                     return AppStrings
+                                                         .referringAdminValidator;
+                                                   }
+                                                   return null;
+                                                 },
+                                                decoration: InputDecoration(
+                                                  contentPadding:
+                                                  const EdgeInsets
+                                                      .symmetric(
+                                                    horizontal: 16,
+                                                    vertical: 12,
+                                                  ),
+                                                  filled: true,
+                                                  fillColor:
+                                                  AppColors.white,
+                                                  enabledBorder:
+                                                  OutlineInputBorder(
+                                                    borderRadius:
+                                                    BorderRadius
+                                                        .circular(20),
+                                                    borderSide:
+                                                    BorderSide(
+                                                      color:
+                                                      AppColors.black,
+                                                    ),
+                                                  ),
+                                                  focusedBorder:
+                                                  OutlineInputBorder(
+                                                    borderRadius:
+                                                    BorderRadius
+                                                        .circular(20),
+                                                    borderSide:
+                                                    BorderSide(
+                                                      color:
+                                                      AppColors.primary,
+                                                    ),
+                                                  ),
+                                                ),
+                                                items: controller
+                                                    .referringAdmins
+                                                    .map((String admin) {
+                                                  return DropdownMenuItem<
+                                                      String>(
+                                                    value: admin,
+                                                    child: Text(admin),
+                                                  );
+                                                }).toList(),
+                                                onChanged:
+                                                    (String? newValue) {
+                                                  if (newValue != null) {
+                                                    controller.selectedAdmin
+                                                        .value = newValue;
+                                                  }
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              } else {
+                                return const SizedBox.shrink();
+                              }
+                            }),
                             const SizedBox(height: 10),
                             InkWell(
                               onTap: () {
