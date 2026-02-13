@@ -27,6 +27,7 @@ import 'package:file_picker/file_picker.dart';
 class HomeController extends GetxController {
   final stt.SpeechToText _speech = stt.SpeechToText();
   final TextEditingController searchController = TextEditingController();
+  final TextEditingController historySearchController = TextEditingController();
   final ScrollController scrollController = ScrollController();
 
   var isLoading = false.obs;
@@ -46,6 +47,18 @@ class HomeController extends GetxController {
   var userName = '';
   String sessionId = '';
   var sessionsList = SessionsModel().obs;
+  var historySearchQuery = ''.obs;
+
+  List<Sessions> get filteredSessions {
+    if (sessionsList.value.sessions == null) return [];
+    if (historySearchQuery.value.isEmpty) return sessionsList.value.sessions!;
+    return sessionsList.value.sessions!
+        .where((session) =>
+            (session.title ?? 'Untitled Chat')
+                .toLowerCase()
+                .contains(historySearchQuery.value.toLowerCase()))
+        .toList();
+  }
 
   // Store processed Excel data for reuse with different questions
   Map<String, dynamic>? storedDataJson;
@@ -65,6 +78,9 @@ class HomeController extends GetxController {
     searchController.addListener(() {
       hasText.value = searchController.text.isNotEmpty;
     });
+    historySearchController.addListener(() {
+      historySearchQuery.value = historySearchController.text;
+    });
   }
 
   @override
@@ -72,6 +88,7 @@ class HomeController extends GetxController {
     _speech.stop();
 
     searchController.dispose();
+    historySearchController.dispose();
 
     super.onClose();
   }

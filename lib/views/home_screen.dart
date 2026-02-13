@@ -81,41 +81,94 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                   ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: TextField(
+                      controller: controller.historySearchController,
+                      style: const TextStyle(fontSize: 14),
+                      decoration: InputDecoration(
+                        hintText: 'Search conversation...',
+                        hintStyle: TextStyle(
+                          color: Colors.black.withOpacity(0.3),
+                          fontSize: 14,
+                        ),
+                        prefixIcon: Icon(
+                          Icons.search,
+                          size: 20,
+                          color: Colors.black.withOpacity(0.3),
+                        ),
+                        filled: true,
+                        fillColor: Colors.black.withOpacity(0.03),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   Expanded(
                     child: RefreshIndicator(
                       onRefresh: () => controller.getSessionsApi(),
                       child: Obx(() {
-                        return ListView(
+                        final sessions = controller.filteredSessions;
+                        if (sessions.isEmpty) {
+                          return ListView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            children: [
+                              // SizedBox(height: MediaQuery.of(context).size.height * 0.2),
+                              Column(
+                                children: [
+                                  Icon(
+                                    Icons.chat_bubble_outline_rounded,
+                                    size: 40,
+                                    color: Colors.black.withOpacity(0.2),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'No chat found',
+                                    style: TextStyle(
+                                      color: Colors.black.withOpacity(0.4),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          );
+                        }
+                        return ListView.builder(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 8,
                           ),
                           physics: const AlwaysScrollableScrollPhysics(),
-                          children: [
-                            if (controller.sessionsList.value.sessions != null)
-                              ...controller.sessionsList.value.sessions!.map((
-                                  session,
-                                  ) {
-                                return _buildDrawerItem(
-                                  icon: Icons.chat_bubble_outline_rounded,
-                                  label: session.title ?? 'Untitled Chat',
-                                  onTap: () {
-                                    Navigator.pop(context);
-                                    if (session.sessionId != null) {
-                                      controller.getSessionChatsApi(
-                                        session.sessionId!,
-                                      );
-                                    }
-                                  },
-                                  onLongPress: () => _showSessionOptions(
-                                    context,
-                                    session,
-                                    controller,
-                                  ),
-                                );
-                              }),
-                          ],
+                          itemCount: sessions.length,
+                          itemBuilder: (context, index) {
+                            final session = sessions[index];
+                            return _buildDrawerItem(
+                              icon: Icons.chat_bubble_outline_rounded,
+                              label: session.title ?? 'Untitled Chat',
+                              onTap: () {
+                                Navigator.pop(context);
+                                if (session.sessionId != null) {
+                                  controller.getSessionChatsApi(
+                                    session.sessionId!,
+                                  );
+                                }
+                              },
+                              onLongPress: () => _showSessionOptions(
+                                context,
+                                session,
+                                controller,
+                              ),
+                            );
+                          },
                         );
                       }),
                     ),
