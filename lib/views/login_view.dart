@@ -89,6 +89,7 @@ class _LoginViewState extends State<LoginView> {
                                     child: Icon(Icons.person_2_outlined, size: 18),
                                   ),
                                   maxLines: 1,
+                                  maxLength: 50,
                                   // inputFormatters: AppInputFormatters.email(),
                                   validator: AppValidators.name,
                                   hint: AppStrings.userName,
@@ -118,13 +119,13 @@ class _LoginViewState extends State<LoginView> {
                                   ),
                                   maxLines: 1,
                                   inputFormatters: [
-                                    AppInputFormatters.limitedText(maxLength: 16),
+                                    AppInputFormatters.limitedText(maxLength: 100),
                                     AppInputFormatters.lettersNumbersSymbolsFormat,
                                   ],
                                   validator: AppValidators.password,
                                   hint: AppStrings.password,
                                   controller: controller.passwordController,
-                                ),
+                                ),  
                                 const SizedBox(height: 15),
                                 InkWell(
                                   onTap: () {
