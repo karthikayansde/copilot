@@ -48,6 +48,12 @@ class HomeController extends GetxController {
   String sessionId = '';
   var sessionsList = SessionsModel().obs;
   var historySearchQuery = ''.obs;
+  var totalCredits = 20.0.obs;
+  var usedCredits = 0.0.obs;
+  var creditsLeft = 0.0.obs;
+  var isCreditsLoading = false.obs;
+
+
 
   List<Sessions> get filteredSessions {
     if (sessionsList.value.sessions == null) return [];
@@ -1068,5 +1074,26 @@ class HomeController extends GetxController {
     htmlBuffer.write("</table>");
     return htmlBuffer.toString();
   }
+
+  Future<void> getCreditsUsageApi() async {
+    try {
+      isCreditsLoading.value = true;
+      ApiResponse response = await apiService.request(
+        method: ApiMethod.get,
+        endpoint: "${Endpoints.creditsUsage}$userName",
+      );
+      if (response.code == ApiCode.success200.index && response.data != null) {
+        totalCredits.value = (response.data!["total_credits"] ?? 0.0).toDouble();
+        creditsLeft.value = (response.data!["credits_left"] ?? 0.0).toDouble();
+        usedCredits.value = (response.data!["credits_used"] ?? 0.0).toDouble();
+      }
+    } catch (e) {
+      debugPrint("Error fetching credits: $e");
+    } finally {
+      isCreditsLoading.value = false;
+    }
+  }
+
+
 }
 

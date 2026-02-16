@@ -23,4 +23,5 @@ class Endpoints {
   static String get askQuestion => '/ask_question';
   static String get chatWithDataMob => '/suggested_questions';
   static String get chatWithData => '/chat_with_data';
+  static String get creditsUsage => '/credits/usage?username=';
 }

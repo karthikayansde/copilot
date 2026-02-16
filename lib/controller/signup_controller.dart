@@ -23,15 +23,18 @@ class SignupController extends GetxController {
   var isLoading = false.obs;
   final List<String> organizations = ['Select organization', 'PiLog', 'Others'];
   final List<String> referringAdmins = [
-    'Select referring admin',
-    'IMAD SYED',
-    'ASIF AHMED',
-    'SHOUKAT ALI',
-    'PARDHA SARADHI',
-    'SALEEM KHAN',
-    'KESHAV MODUGU',
-    'SASI KRISHNA',
-    'KOTI AZMIRA',
+    "Select referring admin",
+    "IMAD SYED",
+    "ASIF AHMED",
+    "SHOUKAT ALI",
+    "PARDHA SARADHI",
+    "SALEEM KHAN",
+    "KESHAV MODUGU",
+    "SASI KRISHNA",
+    "KOTI AZMIRA",
+    "ALLAPARTHI HARITHA",
+    "SHAIK FATHIMUNNISA",
+    "NAZIMA YASMEEN"
   ];
 
   late var selectedOrganization = organizations[0].obs;
