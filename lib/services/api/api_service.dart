@@ -25,6 +25,7 @@ enum ApiCode {
   unauthorized401,
   notFound404,
   conflict409,
+  forbidden403,
 }
 
 class ApiErrorConfig {
@@ -85,6 +86,11 @@ final Map<ApiCode, ApiErrorConfig> apiResponseConfig = {
   ApiCode.conflict409: ApiErrorConfig(
     title: "Conflict",
     message: "There is a conflict with your request. Please try again.",
+    contentType: ContentType.warning,
+  ),
+  ApiCode.forbidden403: ApiErrorConfig(
+    title: "Access Denied",
+    message: "Account not activated. Please check your email or resend activation link.",
     contentType: ContentType.warning,
   ),
 };
@@ -366,6 +372,17 @@ class ApiService {
           : 'Conflict';
       return ApiResponse(
         code: ApiCode.conflict409.index,
+        message: message,
+        data: decodedBody,
+      );
+    } else if (response.statusCode == 403) {
+      // Forbidden (HTTP 403)
+      String message =
+          (decodedBody is Map && decodedBody.containsKey('message'))
+          ? decodedBody['message']
+          : 'Forbidden';
+      return ApiResponse(
+        code: ApiCode.forbidden403.index,
         message: message,
         data: decodedBody,
       );

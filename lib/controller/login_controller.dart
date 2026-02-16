@@ -42,6 +42,7 @@ class LoginController extends GetxController {
         response: response,
         codes: {
           ApiCode.requestTimeout1: true,
+          ApiCode.forbidden403: true,
         },
       );
 
