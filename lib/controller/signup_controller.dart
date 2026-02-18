@@ -1,3 +1,4 @@
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -73,8 +74,27 @@ class SignupController extends GetxController {
         response: response,
         codes: {
           ApiCode.requestTimeout1: true,
+          // ApiCode.conflict409: true
         },
       );
+
+      if(response.code == ApiCode.conflict409.index){
+        if(response.data['detail'] == "USERNAME_EXISTS"){
+          SnackBarWidget.show(
+            context,
+            title: response.message,
+            message: "Username already exists",
+            contentType: ContentType.warning,
+          );
+        }else{
+          SnackBarWidget.show(
+            context,
+            title: response.message,
+            message: "This email is already registered. Try logging in instead.",
+            contentType: ContentType.warning,
+          );
+        }
+      }
 
       if (result) {
         isLoading.value = false;

@@ -85,7 +85,7 @@ final Map<ApiCode, ApiErrorConfig> apiResponseConfig = {
   ),
   ApiCode.conflict409: ApiErrorConfig(
     title: "Conflict",
-    message: "There is a conflict with your request. Please try again.",
+    message: "This email is already registered. Try logging in instead.",
     contentType: ContentType.warning,
   ),
   ApiCode.forbidden403: ApiErrorConfig(

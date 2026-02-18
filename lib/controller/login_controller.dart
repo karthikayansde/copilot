@@ -1,6 +1,8 @@
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:iMirAI/utils/app_strings.dart';
 
 import '../main.dart';
 import '../services/api/api_service.dart';
@@ -43,8 +45,28 @@ class LoginController extends GetxController {
         codes: {
           ApiCode.requestTimeout1: true,
           ApiCode.forbidden403: true,
+          ApiCode.notFound404: false
         },
       );
+
+
+      if(response.code == ApiCode.notFound404.index){
+        if(response.data['detail'] == "User not found"){
+          SnackBarWidget.show(
+            context,
+            title: AppStrings.warning,
+            message: "User not found",
+            contentType: ContentType.warning,
+          );
+        }else{
+          SnackBarWidget.show(
+            context,
+            title: response.message,
+            message: "The requested resource could not be found.",
+            contentType: ContentType.failure,
+          );
+        }
+      }
 
       if(result){
         await SharedPrefManager.instance.setBoolAsync(SharedPrefManager.isLoggedIn, true);

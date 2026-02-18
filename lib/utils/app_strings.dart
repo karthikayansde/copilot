@@ -30,4 +30,5 @@ class AppStrings {
   static const String selectReferringAdmin = "Select Referring Admin";
   static const String organizationNameValidator = "Please enter organization name";
   static const String referringAdminValidator = "Please select a referring admin";
+  static const String warning = "Warning";
 }
