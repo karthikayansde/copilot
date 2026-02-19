@@ -399,47 +399,32 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildLoadingMessage() {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        margin: const EdgeInsets.only(right: 80),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.black.withOpacity(0.1), width: 1.5),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 20,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.5,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  Colors.black.withOpacity(0.7),
-                ),
+    return Padding(
+      padding: const EdgeInsets.only(left: 12, top: 8),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 14,
+            height: 14,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Colors.black.withOpacity(0.4),
               ),
             ),
-            const SizedBox(width: 12),
-            Text(
-              'Thinking...',
-              style: TextStyle(
-                color: Colors.black.withOpacity(0.7),
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-              ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            'Thinking...',
+            style: TextStyle(
+              color: Colors.black.withOpacity(0.5),
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              fontStyle: FontStyle.italic,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -453,115 +438,104 @@ class HomeScreen extends StatelessWidget {
     final isUser = message.isUser;
 
     if (!isUser) {
+      final String answer = message.text['answer']?.toString() ?? "";
+      final bool hasAnswer = answer.trim().isNotEmpty;
+
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            height: 37,
-            width: 37,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Colors.black, Color(0xFF2D2D2D)],
-              ),
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.15),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+          if (hasAnswer || message.isLoading) ...[
+            Container(
+              height: 37,
+              width: 37,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Colors.black, Color(0xFF2D2D2D)],
                 ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                "AI",
-                style: TextStyle(
-                  color: AppColors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: Colors.black.withOpacity(0.1),
-                width: 1.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.06),
-                  blurRadius: 20,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: message.isLoading == true
-                ? Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Row(
-                children: [
-                  const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.black54,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    "Thinking...",
-                    style: TextStyle(
-                      color: Colors.black.withOpacity(0.5),
-                      fontSize: 14,
-                    ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
-            )
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildHtmlWithDownloadSupport(context, message.text),
-                      if (message.suggestions != null && message.suggestions!.isNotEmpty) ...[
-                        const SizedBox(height: 12),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: message.suggestions!.map<Widget>((suggestion) {
-                            return InkWell(
-                              onTap: () => controller.addTextToSearch(suggestion),
-                              borderRadius: BorderRadius.circular(16),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.05),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.black.withOpacity(0.1)),
-                                ),
-                                child: Text(
-                                  suggestion,
-                                  style: const TextStyle(
-                                    color: Colors.black87,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+              child: const Center(
+                child: Text(
+                  "AI",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            if (hasAnswer)
+              Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.black.withOpacity(0.1),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 20,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHtmlWithDownloadSupport(context, message.text),
+                    if (message.suggestions != null &&
+                        message.suggestions!.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children:
+                            message.suggestions!.map<Widget>((suggestion) {
+                          return InkWell(
+                            onTap: () => controller.addTextToSearch(suggestion),
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.05),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                    color: Colors.black.withOpacity(0.1)),
+                              ),
+                              child: Text(
+                                suggestion,
+                                style: const TextStyle(
+                                  color: Colors.black87,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
-                            );
-                          }).toList(),
-                        ),
-                      ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
                     ],
-                  ),
-          ),
+                  ],
+                ),
+              )
+            else if (message.isLoading)
+              _buildLoadingMessage(),
+          ],
           if (message.isLoading != true) ...[
             const SizedBox(height: 8),
             Padding(

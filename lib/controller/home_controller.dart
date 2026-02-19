@@ -365,17 +365,11 @@ class HomeController extends GetxController {
       ),
     );
 
-    // Add empty AI message that we will stream into
-    final aiMessage = ChatMessage(
-      text: {'answer': ''},
-      isUser: false,
-      isLoading: true,
-    );
-    messages.add(aiMessage);
-
     // Clear inputs
     searchController.clear();
     selectedSuggestions.clear();
+    
+    isLoading.value = true;
     scrollToBottom();
 
     try {
@@ -390,11 +384,16 @@ class HomeController extends GetxController {
       );
 
       String fullResponse = "";
+      ChatMessage? aiMessage;
 
       await for (final chunk in stream) {
         if (chunk.startsWith("||ERROR||")) {
-          aiMessage.text['answer'] = "An error occurred while connecting to the AI. Please try again.";
-          aiMessage.isLoading = false;
+          isLoading.value = false;
+          messages.add(ChatMessage(
+            text: {'answer': "An error occurred while connecting to the AI. Please try again."},
+            isUser: false,
+            isLoading: false,
+          ));
           messages.refresh();
           return;
         }
@@ -440,11 +439,22 @@ class HomeController extends GetxController {
           }
         }
 
-        fullResponse += actualChunk;
-        aiMessage.text['answer'] = fullResponse;
-        aiMessage.isLoading = false;
-        messages.refresh();
-        scrollToBottom();
+        if (aiMessage == null && actualChunk.trim().isNotEmpty) {
+          isLoading.value = false;
+          aiMessage = ChatMessage(
+            text: {'answer': ''},
+            isUser: false,
+            isLoading: false,
+          );
+          messages.add(aiMessage);
+        }
+
+        if (aiMessage != null) {
+          fullResponse += actualChunk;
+          aiMessage.text['answer'] = fullResponse;
+          messages.refresh();
+          scrollToBottom();
+        }
       }
 
       // Refresh sessions list if this was the first exchange in a new session
@@ -452,12 +462,16 @@ class HomeController extends GetxController {
         getSessionsApi();
       }
     } catch (e) {
-      aiMessage.text['answer'] = "Failed to get response. Please check your connection.";
-      aiMessage.isLoading = false;
+      isLoading.value = false;
+      messages.add(ChatMessage(
+        text: {'answer': "Failed to get response. Please check your connection."},
+        isUser: false,
+        isLoading: false,
+      ));
       messages.refresh();
       SnackBarWidget.showError(context);
     } finally {
-      aiMessage.isLoading = false;
+      isLoading.value = false;
       messages.refresh();
     }
   }
