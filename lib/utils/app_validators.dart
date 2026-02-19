@@ -22,14 +22,16 @@ class AppValidators {
 
   static String? password(String? value) {
     if (value == null || value.isEmpty) {
-      return AppStrings.newPasswordEMTValidator;
+      return AppStrings.passwordEMTValidator;
+    } else if (value.length < 8 || value.length > 100) {
+      return AppStrings.passwordValidator;
     }
     return null;
   }
   static String? newPassword(String? value) {
     if (value == null || value.isEmpty) {
       return AppStrings.passwordEMTValidator;
-    } else if (value.length < 6) {
+    } else if (value.length < 8 || value.length > 100) {
       return AppStrings.passwordValidator;
     }
     return null;
@@ -37,6 +39,8 @@ class AppValidators {
   static String? confirmPassword(String? value) {
     if (value == null || value.isEmpty) {
       return AppStrings.confirmPasswordEMTValidator;
+    } else if (value.length < 8 || value.length > 100) {
+      return AppStrings.confirmPasswordValidator;
     }
     return null;
   }

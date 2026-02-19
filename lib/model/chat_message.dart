@@ -3,8 +3,8 @@ class ChatMessage {
   final bool isUser;
   final DateTime timestamp;
   String? feedbackStatus; // 'liked', 'disliked', or null
-  final bool isLoading;
-  final bool hasRefresh;
+  bool isLoading;
+  bool hasRefresh;
   final List<String>? suggestions;
 
   ChatMessage({

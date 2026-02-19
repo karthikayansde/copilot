@@ -296,6 +296,49 @@ class ApiService {
     }
   }
 
+  /// Stream request for real-time data
+  Stream<String> streamRequest({
+    required String endpoint,
+    Map<String, dynamic>? body,
+    Map<String, String>? headers,
+    bool customUrl = false,
+    bool useFormData = true,
+  }) async* {
+    final Uri uri = Uri.parse('${customUrl ? "" : Endpoints.baseUrl}$endpoint');
+
+    final client = http.Client();
+    final request = http.Request('POST', uri);
+
+    request.headers.addAll({
+      'Accept': 'text/event-stream',
+      'Content-Type': useFormData
+          ? 'application/x-www-form-urlencoded'
+          : 'application/json',
+      ...(headers ?? {}),
+    });
+
+    if (useFormData) {
+      request.bodyFields = body?.map((key, value) => MapEntry(key, value.toString())) ?? {};
+    } else {
+      request.body = jsonEncode(body ?? {});
+    }
+
+    try {
+      final streamedResponse = await client.send(request);
+
+      if (streamedResponse.statusCode >= 200 && streamedResponse.statusCode < 300) {
+        yield* streamedResponse.stream
+            .transform(utf8.decoder);
+      } else {
+        yield "||ERROR||${streamedResponse.statusCode}";
+      }
+    } catch (e) {
+      yield "||ERROR||$e";
+    } finally {
+      // client.close(); // Don't close here, wait for caller to finish
+    }
+  }
+
   http.Response _createTimeoutResponse() {
     return http.Response(
       jsonEncode({"message": "The connection has timed out."}),

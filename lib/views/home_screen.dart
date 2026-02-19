@@ -179,17 +179,8 @@ class HomeScreen extends StatelessWidget {
                       }),
                     ),
                   ),
-                  _buildCreditsUI(),
-                  Divider(color: Colors.black.withOpacity(0.05), height: 1),
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: _buildDrawerItem(
-                      icon: Icons.logout_rounded,
-                      label: 'Logout',
-                      isDestructive: true,
-                      onTap: () => controller.logout(context),
-                    ),
-                  ),
+                  const Spacer(),
+                  _buildProfileFooter(context),
                 ],
               ),
               Obx(
@@ -440,7 +431,7 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Text(
-              'Analyzing...',
+              'Thinking...',
               style: TextStyle(
                 color: Colors.black.withOpacity(0.7),
                 fontSize: 15,
@@ -526,7 +517,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    "Reloading...",
+                    "Thinking...",
                     style: TextStyle(
                       color: Colors.black.withOpacity(0.5),
                       fontSize: 14,
@@ -706,12 +697,14 @@ class HomeScreen extends StatelessWidget {
               border: Border.all(color: AppColors.primaryIcon, width: 1.5),
             ),
             child: Center(
-              child: Text(
-                'U',
-                style: TextStyle(
-                  color: AppColors.white,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 15,
+              child: Obx(
+              ()=> Text(
+                  controller.userName.value[0].toString().toUpperCase(),
+                  style: TextStyle(
+                    color: AppColors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 15,
+                  ),
                 ),
               ),
             ),
@@ -2017,11 +2010,11 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-  Widget _buildCreditsUI() {
+  Widget _buildCreditsUI({bool inPopup = false}) {
     return Obx(() {
       if (controller.isCreditsLoading.value) {
         return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          margin: inPopup ? EdgeInsets.zero : const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           padding: const EdgeInsets.all(16),
           height: 80,
           decoration: BoxDecoration(
@@ -2046,7 +2039,7 @@ class HomeScreen extends StatelessWidget {
       }
 
       return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        margin: inPopup ? EdgeInsets.zero : const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: const Color(0xFFF8FAFC),
@@ -2068,7 +2061,7 @@ class HomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 const Text(
-                  'Credits Left',
+                  'Credits',
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -2103,6 +2096,140 @@ class HomeScreen extends StatelessWidget {
         ),
       );
     });
+  }
+
+  Widget _buildProfileFooter(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: InkWell(
+        onTap: () => _showProfileDialog(context),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          child: Row(
+            children: [
+              Obx(()=> _buildAvatar(controller.userName.value.isNotEmpty ? controller.userName.value : '')),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Obx(
+                  ()=> Text(
+                    controller.userName.value.isNotEmpty ? controller.userName.value : '',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                      color: Color(0xFF1E293B),
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAvatar(String name, {double size = 40}) {
+    String initial = name.isNotEmpty ? name[0].toUpperCase() : 'U';
+    return Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(
+        color: Color(0xFF334155),
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Text(
+          initial,
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: size * 0.45,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showProfileDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => Dialog(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          width: 320,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Obx(()=> _buildAvatar(controller.userName.value.isNotEmpty ? controller.userName.value : controller.userName.value, size: 50)),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Obx(
+                        ()=> Text(
+                            controller.userName.value.isNotEmpty ? controller.userName.value : '',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF1E293B),
+                            ),
+                          ),
+                        ),
+                        // Text(
+                        //   '@${controller.userName.toLowerCase()}',
+                        //   style: TextStyle(
+                        //     fontSize: 14,
+                        //     color: Colors.black.withOpacity(0.5),
+                        //     fontWeight: FontWeight.w500,
+                        //   ),
+                        // ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Divider(color: Colors.black.withOpacity(0.05), height: 1),
+              const SizedBox(height: 20),
+              _buildCreditsUI(inPopup: true),
+              const SizedBox(height: 16),
+              _buildDrawerItem(
+                icon: Icons.settings_outlined,
+                label: 'Settings',
+                onTap: () {
+                  Navigator.pop(dialogContext);
+                  Get.snackbar(
+                    'Settings',
+                    'Coming soon...',
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: Colors.black87,
+                    colorText: Colors.white,
+                  );
+                },
+              ),
+              _buildDrawerItem(
+                icon: Icons.logout_rounded,
+                label: 'Logout',
+                isDestructive: true,
+                onTap: () {
+                  Navigator.pop(dialogContext); // Close the profile dialog
+                  controller.logout(context); // Use outer context for stable dialog tree
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
 }

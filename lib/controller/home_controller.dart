@@ -44,7 +44,7 @@ class HomeController extends GetxController {
     'Generate Document',
   ];
   var selectedSuggestions = <String>[].obs;
-  var userName = '';
+  var userName = ''.obs;
   String sessionId = '';
   var sessionsList = SessionsModel().obs;
   var historySearchQuery = ''.obs;
@@ -72,12 +72,12 @@ class HomeController extends GetxController {
   final apiService = ApiService();
 
   Future<void> init() async {
-    userName =
+    userName.value =
         await SharedPrefManager.instance.getStringAsync(
           SharedPrefManager.username,
         ) ??
             '';
-    print("aski"+userName);
+    print("aski"+userName.value);
     // await _initSpeech();
     await _getSessionId();
     await getSessionsApi();
@@ -303,13 +303,13 @@ class HomeController extends GetxController {
         messages.clear();
         searchController.clear();
         sessionId = '';
-        userName = '';
+        userName.value = '';
         isListening.value = false;
         speechEnabled.value = false;
         hasText.value = false;
         isLoading.value = false;
         _speech.stop();
-        // ... (logout methods remain same)
+
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -346,8 +346,9 @@ class HomeController extends GetxController {
   }
 
   Future<void> sendMessage(BuildContext context) async {
-    if (searchController.text.trim().isEmpty && selectedSuggestions.isEmpty)
+    if (searchController.text.trim().isEmpty && selectedSuggestions.isEmpty) {
       return;
+    }
 
     String prompt = '';
     if (selectedSuggestions.isNotEmpty) {
@@ -364,44 +365,100 @@ class HomeController extends GetxController {
       ),
     );
 
+    // Add empty AI message that we will stream into
+    final aiMessage = ChatMessage(
+      text: {'answer': ''},
+      isUser: false,
+      isLoading: true,
+    );
+    messages.add(aiMessage);
+
     // Clear inputs
     searchController.clear();
     selectedSuggestions.clear();
     scrollToBottom();
 
-    isLoading.value = true;
     try {
-      ApiResponse response = await apiService.multipartRequest(
+      final stream = apiService.streamRequest(
         endpoint: Endpoints.ask,
-        fields: {
+        body: {
           "question": userMessage,
           "sessionId": sessionId,
-          "username": userName,
+          "username": userName.value,
           "File": '',
         },
       );
 
-      bool result = apiService.showApiResponse(
-        context: context,
-        response: response,
-        codes: {ApiCode.requestTimeout1: true},
-      );
+      String fullResponse = "";
 
-      if (result && response.data != null) {
-        messages.add(
-          ChatMessage(text: {'answer': response.data!["answer"]}, isUser: false, isLoading: false),
-        );
-        scrollToBottom();
-
-        // Refresh sessions list if this was the first exchange in a new session
-        if (messages.length <= 2) {
-          getSessionsApi();
+      await for (final chunk in stream) {
+        if (chunk.startsWith("||ERROR||")) {
+          aiMessage.text['answer'] = "An error occurred while connecting to the AI. Please try again.";
+          aiMessage.isLoading = false;
+          messages.refresh();
+          return;
         }
+
+        String actualChunk = chunk;
+        if (chunk.contains("||METADATA||")) {
+          try {
+            final parts = chunk.split("||METADATA||");
+            if (parts.length > 1) {
+              final metadataPart = parts[1];
+              int braceCount = 0;
+              int metadataEndIndex = -1;
+              
+              for (int i = 0; i < metadataPart.length; i++) {
+                if (metadataPart[i] == '{') braceCount++;
+                else if (metadataPart[i] == '}') {
+                  braceCount--;
+                  if (braceCount == 0) {
+                    metadataEndIndex = i;
+                    break;
+                  }
+                }
+              }
+
+              if (metadataEndIndex != -1) {
+                final metadataJson = metadataPart.substring(0, metadataEndIndex + 1);
+                final metadata = jsonDecode(metadataJson);
+                
+                // Update usage if available
+                if (metadata['usage'] != null) {
+                  final usage = metadata['usage'];
+                  totalCredits.value = (usage['total_credits'] ?? 20.0).toDouble();
+                  creditsLeft.value = (usage['credits_left'] ?? 0.0).toDouble();
+                  usedCredits.value = (usage['credits_used'] ?? 0.0).toDouble();
+                }
+
+                if (parts[0].isNotEmpty) fullResponse += parts[0];
+                actualChunk = metadataPart.substring(metadataEndIndex + 1);
+              }
+            }
+          } catch (e) {
+            debugPrint("Error parsing metadata: $e");
+          }
+        }
+
+        fullResponse += actualChunk;
+        aiMessage.text['answer'] = fullResponse;
+        aiMessage.isLoading = false;
+        messages.refresh();
+        scrollToBottom();
+      }
+
+      // Refresh sessions list if this was the first exchange in a new session
+      if (messages.length <= 2) {
+        getSessionsApi();
       }
     } catch (e) {
+      aiMessage.text['answer'] = "Failed to get response. Please check your connection.";
+      aiMessage.isLoading = false;
+      messages.refresh();
       SnackBarWidget.showError(context);
     } finally {
-      isLoading.value = false;
+      aiMessage.isLoading = false;
+      messages.refresh();
     }
   }
 
@@ -422,7 +479,7 @@ class HomeController extends GetxController {
       isSessionsLoading.value = true;
       ApiResponse response = await apiService.request(
         method: ApiMethod.get,
-        endpoint: "${Endpoints.sessions}$userName",
+        endpoint: "${Endpoints.sessions}${userName.value}",
       );
       if (response.code == ApiCode.success200.index) {
         SessionsModel model = SessionsModel.fromJson(response.data);
@@ -450,54 +507,85 @@ class HomeController extends GetxController {
     final userMessage = messages[index - 1].text;
 
     // Set message to loading state
-    messages[index] = ChatMessage(
-      text: {'answer': ''},
-      isUser: false,
-      isLoading: true,
-    );
+    final aiMessage = messages[index];
+    aiMessage.text['answer'] = '';
+    aiMessage.isLoading = true;
     messages.refresh();
 
     try {
-      ApiResponse response = await apiService.multipartRequest(
+      final stream = apiService.streamRequest(
         endpoint: Endpoints.ask,
-        fields: {
+        body: {
           "question": userMessage['answer']?.toString() ?? "",
           "sessionId": sessionId,
-          "username": userName,
+          "username": userName.value,
           "File": '',
         },
       );
 
-      bool result = apiService.showApiResponse(
-        context: context,
-        response: response,
-        codes: {ApiCode.requestTimeout1: true},
-      );
+      String fullResponse = "";
 
-      if (result && response.data != null) {
-        messages[index] = ChatMessage(
-          text: {'answer': response.data!["answer"]},
-          isUser: false,
-          isLoading: false,
-        );
+      await for (final chunk in stream) {
+        if (chunk.startsWith("||ERROR||")) {
+          aiMessage.text['answer'] = "An error occurred while reloading. Please try again.";
+          aiMessage.isLoading = false;
+          messages.refresh();
+          return;
+        }
+
+        String actualChunk = chunk;
+        if (chunk.contains("||METADATA||")) {
+          try {
+            final parts = chunk.split("||METADATA||");
+            if (parts.length > 1) {
+              final metadataPart = parts[1];
+              int braceCount = 0;
+              int metadataEndIndex = -1;
+              
+              for (int i = 0; i < metadataPart.length; i++) {
+                if (metadataPart[i] == '{') braceCount++;
+                else if (metadataPart[i] == '}') {
+                  braceCount--;
+                  if (braceCount == 0) {
+                    metadataEndIndex = i;
+                    break;
+                  }
+                }
+              }
+
+              if (metadataEndIndex != -1) {
+                final metadataJson = metadataPart.substring(0, metadataEndIndex + 1);
+                final metadata = jsonDecode(metadataJson);
+                
+                if (metadata['usage'] != null) {
+                  final usage = metadata['usage'];
+                  totalCredits.value = (usage['total_credits'] ?? 20.0).toDouble();
+                  creditsLeft.value = (usage['credits_left'] ?? 0.0).toDouble();
+                  usedCredits.value = (usage['credits_used'] ?? 0.0).toDouble();
+                }
+
+                if (parts[0].isNotEmpty) fullResponse += parts[0];
+                actualChunk = metadataPart.substring(metadataEndIndex + 1);
+              }
+            }
+          } catch (e) {
+            debugPrint("Error parsing metadata: $e");
+          }
+        }
+
+        fullResponse += actualChunk;
+        aiMessage.text['answer'] = fullResponse;
+        aiMessage.isLoading = false;
         messages.refresh();
-      } else {
-        // Restore original message if failed or handle error
-        // For now just stop loading
-        messages[index] = ChatMessage(
-          text: {'answer': "Failed to reload. Please try again."},
-          isUser: false,
-          isLoading: false,
-        );
-        messages.refresh();
+        scrollToBottom();
       }
     } catch (e) {
+      aiMessage.text['answer'] = "Error occurred during reload.";
+      aiMessage.isLoading = false;
+      messages.refresh();
       SnackBarWidget.showError(context);
-      messages[index] = ChatMessage(
-        text: {'answer': "Error occurred during reload."},
-        isUser: false,
-        isLoading: false,
-      );
+    } finally {
+      aiMessage.isLoading = false;
       messages.refresh();
     }
   }
@@ -512,7 +600,7 @@ class HomeController extends GetxController {
       ApiResponse response = await apiService.request(
         method: ApiMethod.post,
         endpoint: Endpoints.updateSessionTitle,
-        body: {"name": newTitle, "username": userName, "session_id": sessionId},
+        body: {"name": newTitle, "username": userName.value, "session_id": sessionId},
         useFormData: true,
       );
 
@@ -537,7 +625,7 @@ class HomeController extends GetxController {
       ApiResponse response = await apiService.request(
         method: ApiMethod.post,
         endpoint: Endpoints.deleteSession,
-        body: {"username": userName, "session_id": sessionId},
+        body: {"username": userName.value, "session_id": sessionId},
         useFormData: true,
       );
 
@@ -1080,7 +1168,7 @@ class HomeController extends GetxController {
       isCreditsLoading.value = true;
       ApiResponse response = await apiService.request(
         method: ApiMethod.get,
-        endpoint: "${Endpoints.creditsUsage}$userName",
+        endpoint: "${Endpoints.creditsUsage}${userName.value}",
       );
       if (response.code == ApiCode.success200.index && response.data != null) {
         totalCredits.value = (response.data!["total_credits"] ?? 0.0).toDouble();

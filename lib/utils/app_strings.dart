@@ -13,9 +13,9 @@ class AppStrings {
   static const String emailValidator = "Please enter a valid email";
   static const String newPasswordEMTValidator = "Please enter a new password";
   static const String passwordEMTValidator = "Please enter a password";
-  static const String passwordValidator = "Password must be at least 6 characters";
+  static const String passwordValidator = "Password must be 8-100 characters";
   static const String confirmPasswordEMTValidator = "Please enter a confirm password";
-  static const String confirmPasswordValidator = "Confirm password must be at least 6 characters";
+  static const String confirmPasswordValidator = "Confirm password must be 8-100 characters";
   static const String noInternetConnection = "No Internet Connection";
   static const String noInternetConnectionMsg = "Please check your Wi-Fi or mobile data.";
   static const String somethingWentWrongTitle = "Request Failed";

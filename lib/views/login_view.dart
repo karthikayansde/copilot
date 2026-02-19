@@ -125,7 +125,7 @@ class _LoginViewState extends State<LoginView> {
                                     AppInputFormatters.limitedText(maxLength: 100),
                                     AppInputFormatters.lettersNumbersSymbolsFormat,
                                   ],
-                                  validator: AppValidators.password,
+                                  // validator: AppValidators.password,
                                   hint: AppStrings.password,
                                   controller: controller.passwordController,
                                 ),  
