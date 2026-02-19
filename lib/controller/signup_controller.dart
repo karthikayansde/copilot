@@ -25,6 +25,7 @@ class SignupController extends GetxController {
   final List<String> organizations = ['Select organization', 'PiLog', 'Others'];
   final List<String> referringAdmins = [
     "Select referring admin",
+    "Rahul",
     "IMAD SYED",
     "ASIF AHMED",
     "SHOUKAT ALI",
