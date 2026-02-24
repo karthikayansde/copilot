@@ -445,32 +445,10 @@ class HomeScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (hasAnswer || message.isLoading) ...[
-            Container(
+            Image.asset(
+              'assets/images/logo_small.png',
               height: 37,
               width: 37,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Colors.black, Color(0xFF2D2D2D)],
-                ),
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: const Center(
-                child: Text(
-                  "AI",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
             ),
             const SizedBox(height: 8),
             if (hasAnswer)
@@ -673,7 +651,7 @@ class HomeScreen extends StatelessWidget {
             child: Center(
               child: Obx(
               ()=> Text(
-                  controller.userName.value[0].toString().toUpperCase(),
+                  controller.userName.value.isEmpty?"U":controller.userName.value[0].toString().toUpperCase(),
                   style: TextStyle(
                     color: AppColors.white,
                     fontWeight: FontWeight.w900,
@@ -1622,50 +1600,25 @@ class HomeScreen extends StatelessWidget {
       valuesList.add(commonHtmlWidget(htmlData[key]));
     });
 
-    // Wrap in horizontal scroll view to handle wide tables
-    Widget htmlWidget = !(controller.selectedSuggestions.length != 0 && (controller.selectedSuggestions[0] == controller.searchOptions[1])) ?
-    Column(children: valuesList):
-    SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: 
-    Column(children: valuesList)
-    );
-    // if(htmlData['answer'])
+    // Check if any value in the HTML data contains a table tag
+    final bool hasTable = htmlData.values.any((value) {
+      final str = value?.toString() ?? '';
+      return str.contains('<table') || str.contains('<TABLE');
+    });
 
-    // If we found a download link, show a dedicated download button
-    // if (downloadUrl != null && downloadFileName != null && downloadUrl.isNotEmpty) {
-    //   return Column(
-    //     crossAxisAlignment: CrossAxisAlignment.start,
-    //     children: [
-    //       htmlWidget,
-    //       const SizedBox(height: 12),
-    //       Align(
-    //         alignment: Alignment.centerLeft,
-    //         child: ElevatedButton.icon(
-    //           style: ElevatedButton.styleFrom(
-    //             backgroundColor: const Color(0xFF107C41),
-    //             foregroundColor: Colors.white,
-    //             shape: RoundedRectangleBorder(
-    //               borderRadius: BorderRadius.circular(24),
-    //             ),
-    //             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-    //           ),
-    //           onPressed: () {
-    //             _handleDownload(context, downloadUrl!, downloadFileName!);
-    //           },
-    //           icon: const Icon(Icons.download_rounded, size: 18),
-    //           label: Text(
-    //             'Download ${downloadFileName!}',
-    //             style: const TextStyle(
-    //               fontSize: 13,
-    //               fontWeight: FontWeight.w600,
-    //             ),
-    //           ),
-    //         ),
-    //       ),
-    //     ],
-    //   );
-    // }
+    // Wrap in horizontal scroll view only if content contains a table
+    Widget htmlWidget = hasTable
+        ? SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: valuesList,
+            ),
+          )
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: valuesList,
+          );
 
     // Default: just render the HTML
     return htmlWidget;
@@ -2082,12 +2035,12 @@ class HomeScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           child: Row(
             children: [
-              Obx(()=> _buildAvatar(controller.userName.value.isNotEmpty ? controller.userName.value : '')),
+              Obx(()=> _buildAvatar(controller.userName.value.isNotEmpty ? controller.userName.value : 'U')),
               const SizedBox(width: 12),
               Expanded(
                 child: Obx(
                   ()=> Text(
-                    controller.userName.value.isNotEmpty ? controller.userName.value : '',
+                    controller.userName.value.isNotEmpty ? controller.userName.value : 'U',
                     style: const TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 15,
@@ -2142,7 +2095,7 @@ class HomeScreen extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Obx(()=> _buildAvatar(controller.userName.value.isNotEmpty ? controller.userName.value : controller.userName.value, size: 50)),
+                  Obx(()=> _buildAvatar(controller.userName.value.isNotEmpty ? controller.userName.value : "U", size: 50)),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
@@ -2150,7 +2103,7 @@ class HomeScreen extends StatelessWidget {
                       children: [
                         Obx(
                         ()=> Text(
-                            controller.userName.value.isNotEmpty ? controller.userName.value : '',
+                            controller.userName.value.isNotEmpty ? controller.userName.value : "U",
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
