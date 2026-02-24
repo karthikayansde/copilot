@@ -458,7 +458,7 @@ class _SignupViewState extends State<SignupView> {
                             const SizedBox(height: 30),
                             BasicButtonWidget(
                               onPressed: () async {
-                                if (controller.emailController.text.contains("pilog") && controller.selectedOrganization.value == "PiLog") {
+                                if (controller.emailController.text.contains("piloggroup") && controller.selectedOrganization.value == "PiLog") {
                                 if (controller.formKey.currentState!
                                     .validate()) {
                                   if (controller.passwordController.text !=
