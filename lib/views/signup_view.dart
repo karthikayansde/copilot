@@ -458,6 +458,7 @@ class _SignupViewState extends State<SignupView> {
                             const SizedBox(height: 30),
                             BasicButtonWidget(
                               onPressed: () async {
+                                if (controller.emailController.text.contains("pilog") && controller.selectedOrganization.value == "PiLog") {
                                 if (controller.formKey.currentState!
                                     .validate()) {
                                   if (controller.passwordController.text !=
@@ -473,6 +474,15 @@ class _SignupViewState extends State<SignupView> {
                                     FocusScope.of(context).unfocus();
                                     await controller.signupApi(context);
                                   }
+                                }
+
+                                } else {
+                                  SnackBarWidget.show(
+                                    context,
+                                    title: "Invalid Email",
+                                    message: "Please enter a valid Pilog email.",
+                                    contentType: ContentType.failure,
+                                  );
                                 }
                               },
                               label: AppStrings.register,

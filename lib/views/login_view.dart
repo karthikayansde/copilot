@@ -1,8 +1,11 @@
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
+
 import '../utils/app_strings.dart';
 import '../utils/app_validators.dart';
 import '../views/signup_view.dart';
 import '../widgets/background_image_widget.dart';
 import '../widgets/button_widgets.dart';
+import '../widgets/snack_bar_widget.dart';
 import '../widgets/text_field_widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -167,10 +170,10 @@ class _LoginViewState extends State<LoginView> {
 
                                 BasicButtonWidget(
                                   onPressed: () async {
-                                    if (controller.formKey.currentState!.validate()) {
-                                      FocusScope.of(context).unfocus();
-                                      await controller.loginApi(context);
-                                    }
+                                      if (controller.formKey.currentState!.validate()) {
+                                        FocusScope.of(context).unfocus();
+                                        await controller.loginApi(context);
+                                      }
                                   },
                                   label: AppStrings.login,
                                 ),
