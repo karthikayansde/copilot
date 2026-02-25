@@ -103,7 +103,7 @@ class _SignupViewState extends State<SignupView> {
                               controller: controller.nameController,
                               hint: AppStrings.name,
                             ),
-                  
+
                             TextFieldWidget(
                               key: ValueKey('2'),
                               isBorderNeeded: true,
@@ -167,7 +167,7 @@ class _SignupViewState extends State<SignupView> {
                               hint: AppStrings.password,
                               controller: controller.passwordController,
                             ),
-                  
+
                             TextFieldWidget(
                               isBorderNeeded: true,
                               hasHindOnTop: true,
@@ -273,6 +273,22 @@ class _SignupViewState extends State<SignupView> {
                                             color: AppColors.primary,
                                           ),
                                         ),
+                                        focusedErrorBorder: OutlineInputBorder(
+                                          borderRadius:
+                                          BorderRadius.circular(20),
+
+                                          borderSide: BorderSide(
+                                            color: Theme.of(context).colorScheme.error,
+                                          ),
+                                        ),
+                                        errorBorder: OutlineInputBorder(
+                                          borderRadius:
+                                          BorderRadius.circular(20),
+
+                                          borderSide: BorderSide(
+                                            color: Theme.of(context).colorScheme.error,
+                                          ),
+                                    ),
                                       ),
                                       items: controller.organizations
                                           .map((String org) {
@@ -397,6 +413,23 @@ class _SignupViewState extends State<SignupView> {
                                                       AppColors.primary,
                                                     ),
                                                   ),
+
+                                                  focusedErrorBorder: OutlineInputBorder(
+                                                    borderRadius:
+                                                    BorderRadius.circular(20),
+
+                                                    borderSide: BorderSide(
+                                                      color: Theme.of(context).colorScheme.error,
+                                                    ),
+                                                  ),
+                                                  errorBorder: OutlineInputBorder(
+                                                    borderRadius:
+                                                    BorderRadius.circular(20),
+
+                                                    borderSide: BorderSide(
+                                                      color: Theme.of(context).colorScheme.error,
+                                                    ),),
+
                                                 ),
                                                 items: controller
                                                     .referringAdmins
@@ -458,7 +491,6 @@ class _SignupViewState extends State<SignupView> {
                             const SizedBox(height: 30),
                             BasicButtonWidget(
                               onPressed: () async {
-                                if (controller.emailController.text.contains("piloggroup") && controller.selectedOrganization.value == "PiLog") {
                                 if (controller.formKey.currentState!
                                     .validate()) {
                                   if (controller.passwordController.text !=
@@ -470,19 +502,20 @@ class _SignupViewState extends State<SignupView> {
                                       message: AppStrings.passwordMatch,
                                       contentType: ContentType.warning,
                                     );
+                                  }else
+                                  if (controller.selectedOrganization.value == "PiLog") {
+                                    if(!controller.emailController.text.toLowerCase().contains("piloggroup")){
+                                      SnackBarWidget.show(
+                                        context,
+                                        title: "Invalid Email",
+                                        message: "Please enter a valid Pilog email.",
+                                        contentType: ContentType.failure,
+                                      );
+                                    }
                                   } else {
                                     FocusScope.of(context).unfocus();
                                     await controller.signupApi(context);
                                   }
-                                }
-
-                                } else {
-                                  SnackBarWidget.show(
-                                    context,
-                                    title: "Invalid Email",
-                                    message: "Please enter a valid Pilog email.",
-                                    contentType: ContentType.failure,
-                                  );
                                 }
                               },
                               label: AppStrings.register,
