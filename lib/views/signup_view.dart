@@ -511,11 +511,12 @@ class _SignupViewState extends State<SignupView> {
                                         message: "Please enter a valid Pilog email.",
                                         contentType: ContentType.failure,
                                       );
+                                      return;
                                     }
-                                  } else {
-                                    FocusScope.of(context).unfocus();
-                                    await controller.signupApi(context);
                                   }
+
+                                  FocusScope.of(context).unfocus();
+                                  await controller.signupApi(context);
                                 }
                               },
                               label: AppStrings.register,
