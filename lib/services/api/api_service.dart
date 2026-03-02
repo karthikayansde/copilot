@@ -303,7 +303,8 @@ class ApiService {
     Map<String, String>? headers,
     bool customUrl = false,
     bool useFormData = true,
-  }) async* {
+  }) async*
+  {
     final Uri uri = Uri.parse('${customUrl ? "" : Endpoints.baseUrl}$endpoint');
 
     final client = http.Client();
@@ -388,8 +389,8 @@ class ApiService {
     } else if (response.statusCode == 401) {
       // Unauthorized (HTTP 401)
       String message =
-          (decodedBody is Map && decodedBody.containsKey('message'))
-          ? decodedBody['message']
+          (decodedBody is Map && decodedBody.containsKey('detail'))
+          ? decodedBody['detail']
           : 'Unauthorized.';
       return ApiResponse(
         code: ApiCode.unauthorized401.index,
@@ -453,7 +454,8 @@ class ApiService {
 
     Map<ApiCode, bool> codes = const {},
     Map<ApiCode, bool> customMessages = const {},
-      }) {
+      })
+  {
     ApiErrorConfig config = apiErrorConfigDefault;
 
     if (response.code != ApiCode.success200.index && useDefaultErrorConfig) {

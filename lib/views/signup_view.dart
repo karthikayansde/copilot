@@ -502,16 +502,19 @@ class _SignupViewState extends State<SignupView> {
                                       message: AppStrings.passwordMatch,
                                       contentType: ContentType.warning,
                                     );
-                                  }else
-                                  if (controller.selectedOrganization.value == "PiLog") {
-                                    if(!controller.emailController.text.toLowerCase().contains("piloggroup")){
-                                      SnackBarWidget.show(
-                                        context,
-                                        title: "Invalid Email",
-                                        message: "Please enter a valid Pilog email.",
-                                        contentType: ContentType.failure,
-                                      );
-                                      return;
+                                    return;
+                                  }else{
+
+                                    if (controller.selectedOrganization.value == "PiLog") {
+                                      if(!controller.emailController.text.toLowerCase().contains("piloggroup")){
+                                        SnackBarWidget.show(
+                                          context,
+                                          title: "Invalid Email",
+                                          message: "Please enter a valid Pilog email.",
+                                          contentType: ContentType.failure,
+                                        );
+                                        return;
+                                      }
                                     }
                                   }
 

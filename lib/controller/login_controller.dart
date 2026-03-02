@@ -45,12 +45,21 @@ class LoginController extends GetxController {
         codes: {
           ApiCode.requestTimeout1: true,
           ApiCode.forbidden403: true,
-          ApiCode.notFound404: false
+          ApiCode.notFound404: false,
+          ApiCode.unauthorized401: false,
         },
       );
 
 
-      if(response.code == ApiCode.notFound404.index){
+      if(response.code == ApiCode.unauthorized401.index){
+          SnackBarWidget.show(
+            context,
+            title: AppStrings.warning,
+            message: "INCORRECT PASSWORD",
+            contentType: ContentType.warning,
+          );
+        }
+        if(response.code == ApiCode.notFound404.index){
         if(response.data['detail'] == "User not found"){
           SnackBarWidget.show(
             context,
@@ -62,8 +71,8 @@ class LoginController extends GetxController {
           SnackBarWidget.show(
             context,
             title: response.message,
-            message: "The requested resource could not be found.",
-            contentType: ContentType.failure,
+            message: "Incorrect user name and password",
+            contentType: ContentType.warning,
           );
         }
       }
