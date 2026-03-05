@@ -117,7 +117,7 @@ class _SignupViewState extends State<SignupView> {
                                 AppInputFormatters.limitedText(maxLength: 50)
                               ],
                               // inputFormatters: AppInputFormatters.email(),
-                              validator: AppValidators.name,
+                              validator: AppValidators.userName,
                               hint: AppStrings.userName,
                               controller: controller.userNameController,
                             ),
@@ -511,7 +511,7 @@ class _SignupViewState extends State<SignupView> {
                                           context,
                                           title: "Invalid Email",
                                           message: "Please enter a valid Pilog email.",
-                                          contentType: ContentType.failure,
+                                          contentType: ContentType.warning,
                                         );
                                         return;
                                       }

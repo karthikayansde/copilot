@@ -9,6 +9,13 @@ class AppValidators {
     return null;
   }
 
+  static String? userName(String? value) {
+    if (value == null || value.isEmpty) {
+      return AppStrings.userNameValidator;
+    }
+    return null;
+  }
+
   static String? email(String? value) {
     if (value == null || value.isEmpty) {
       return AppStrings.emailEMTValidator;

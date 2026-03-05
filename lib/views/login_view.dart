@@ -3,6 +3,7 @@ import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import '../utils/app_strings.dart';
 import '../utils/app_validators.dart';
 import '../views/signup_view.dart';
+import '../views/resend_activation_view.dart';
 import '../widgets/background_image_widget.dart';
 import '../widgets/button_widgets.dart';
 import '../widgets/snack_bar_widget.dart';
@@ -177,6 +178,71 @@ class _LoginViewState extends State<LoginView> {
                                   },
                                   label: AppStrings.login,
                                 ),
+
+                                if (controller.showResendButton.value) ...[
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFDE8E8),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: const Color(0xFFE53935),
+                                        width: 0.5,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.error_outline,
+                                              color: const Color(0xFFE53935),
+                                              size: 20,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Text(
+                                                AppStrings.accountNotActivated,
+                                                style: bodyText14.copyWith(
+                                                  color: const Color(0xFFC62828),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Padding(
+                                          padding: const EdgeInsets.only(left: 28),
+                                          child: InkWell(
+                                            onTap: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) => ResendActivationView(
+                                                    initialUsername: controller.emailController.text,
+                                                    initialPassword: controller.passwordController.text,
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                            child: Text(
+                                              AppStrings.resendActivationLink,
+                                              style: bodyText14.copyWith(
+                                                color: AppColors.primary,
+                                                fontWeight: FontWeight.w600,
+                                                decoration: TextDecoration.underline,
+                                                decorationColor: AppColors.primary,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
 
                                 SizedBox(height: 16,),
                               ],

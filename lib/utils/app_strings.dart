@@ -1,6 +1,6 @@
 class AppStrings {
   static const String appName = "IntelAgent";
-  static const String userName = "User Name";
+  static const String userName = "Username";
   static const String password = "Password";
   static const String dontHaveAnAccount = "Don’t have an account?";
   static const String login = "Login";
@@ -8,6 +8,7 @@ class AppStrings {
   static const String register = "Register";
   static const String name = "Name";
   static const String nameValidator = "Please enter name";
+  static const String userNameValidator = "Please enter username";
   static const String email = "Email";
   static const String emailEMTValidator = "Please enter email";
   static const String emailValidator = "Please enter a valid email";
@@ -31,4 +32,9 @@ class AppStrings {
   static const String organizationNameValidator = "Please enter organization name";
   static const String referringAdminValidator = "Please select a referring admin";
   static const String warning = "Warning";
+  static const String resendActivationLink = "Resend activation link";
+  static const String accountNotActivated = "Account not activated. Please check your email or resend activation link.";
+  static const String activationLinkSentSuccess = "New activation link sent successfully. Please check your email.";
+  static const String rememberPassword = "Remember your password?";
+  static const String backToLogin = "Back to login";
 }

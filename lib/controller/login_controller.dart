@@ -18,10 +18,12 @@ class LoginController extends GetxController {
   final TextEditingController passwordController = TextEditingController();
   var isPasswordHidden = true.obs;
   var isLoading = false.obs;
+  var showResendButton = false.obs;
   final apiService = ApiService();
 
   // data methods
   Future<void> loginApi(BuildContext context) async {
+    showResendButton.value = false; // reset on each attempt
     isLoading.value = true;
     // bool isConnected = await NetworkController.checkConnectionShowSnackBar(context);
     // if(!isConnected){
@@ -51,14 +53,24 @@ class LoginController extends GetxController {
       );
 
 
+      if(response.code == ApiCode.forbidden403.index){
+        showResendButton.value = true;
+        SnackBarWidget.show(
+          context,
+          title: AppStrings.warning,
+          message: "Account not activated. Please check your email.",
+          contentType: ContentType.warning,
+        );
+      }
+
       if(response.code == ApiCode.unauthorized401.index){
-          SnackBarWidget.show(
-            context,
-            title: AppStrings.warning,
-            message: "INCORRECT PASSWORD",
-            contentType: ContentType.warning,
-          );
-        }
+        SnackBarWidget.show(
+          context,
+          title: AppStrings.warning,
+          message: "INCORRECT PASSWORD",
+          contentType: ContentType.warning,
+        );
+      }
         if(response.code == ApiCode.notFound404.index){
         if(response.data['detail'] == "User not found"){
           SnackBarWidget.show(
@@ -71,7 +83,7 @@ class LoginController extends GetxController {
           SnackBarWidget.show(
             context,
             title: response.message,
-            message: "Incorrect user name and password",
+            message: "Incorrect username and password",
             contentType: ContentType.warning,
           );
         }
@@ -93,4 +105,5 @@ class LoginController extends GetxController {
       isLoading.value = false;
     }
   }
+
 }
