@@ -1,7 +1,6 @@
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../controller/login_controller.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/styles.dart';
 import '../services/api/api_service.dart';
@@ -14,57 +13,62 @@ import '../widgets/loading_widget.dart';
 import '../widgets/snack_bar_widget.dart';
 import '../widgets/text_field_widgets.dart';
 
-class ResendActivationView extends StatefulWidget {
-  final String? initialUsername;
-  final String? initialPassword;
+class ForgotPasswordView extends StatefulWidget {
+  final String? initialEmail;
 
-  const ResendActivationView({
+  const ForgotPasswordView({
     super.key,
-    this.initialUsername,
-    this.initialPassword,
+    this.initialEmail,
   });
 
   @override
-  State<ResendActivationView> createState() => _ResendActivationViewState();
+  State<ForgotPasswordView> createState() => _ForgotPasswordViewState();
 }
 
-class _ResendActivationViewState extends State<ResendActivationView> {
+class _ForgotPasswordViewState extends State<ForgotPasswordView> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final _isPasswordHidden = true.obs;
+  final TextEditingController _emailController = TextEditingController();
   final _isLoading = false.obs;
   final _isSuccess = false.obs;
   final apiService = ApiService();
+
   @override
   void initState() {
     super.initState();
-    _usernameController.text = widget.initialUsername ?? '';
-    _passwordController.text = widget.initialPassword ?? '';
+    _emailController.text = widget.initialEmail ?? '';
   }
 
   @override
   void dispose() {
-    _usernameController.dispose();
-    _passwordController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
-  Future<void> _resendActivation() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    FocusScope.of(context).unfocus();
-    _isLoading.value = true;
-    _isSuccess.value = false;
-
+  Future<void> forgotPasswordApi(BuildContext context) async {
     try {
-      await resendActivationApi(context);
+      _isLoading.value = true;
+      ApiResponse response = await apiService.request(
+        method: ApiMethod.post,
+        customUrl: true,
+        useFormData: true,
+        endpoint: Endpoints.registerBaseUrl + Endpoints.forgotPassword,
+        body: {"email": _emailController.text}, // The user said "this api pass email as payload"
+      );
       _isSuccess.value = true;
     } catch (e) {
       SnackBarWidget.showError(context);
     } finally {
       _isLoading.value = false;
     }
+  }
+
+  Future<void> _sendResetLink() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    FocusScope.of(context).unfocus();
+    _isSuccess.value = false;
+
+    await forgotPasswordApi(context);
   }
 
   @override
@@ -105,13 +109,13 @@ class _ResendActivationViewState extends State<ResendActivationView> {
                               Align(
                                 alignment: Alignment.centerLeft,
                                 child: Text(
-                                  AppStrings.resendActivationLink,
+                                  AppStrings.forgotPasswordTitle,
                                   style: text28Bold.copyWith(fontSize: 24),
                                 ),
                               ),
                               const SizedBox(height: 20),
 
-                              // Username field
+                              // Email field
                               TextFieldWidget(
                                 isBorderNeeded: true,
                                 hasHindOnTop: true,
@@ -121,7 +125,7 @@ class _ResendActivationViewState extends State<ResendActivationView> {
                                     right: 10,
                                   ),
                                   child: Icon(
-                                    Icons.person_2_outlined,
+                                    Icons.email_outlined,
                                     size: 18,
                                   ),
                                 ),
@@ -129,45 +133,9 @@ class _ResendActivationViewState extends State<ResendActivationView> {
                                 inputFormatters: [
                                   AppInputFormatters.limitedText(maxLength: 50),
                                 ],
-                                validator: AppValidators.userName,
-                                hint: AppStrings.userName,
-                                controller: _usernameController,
-                              ),
-
-                              // Password field
-                              TextFieldWidget(
-                                isBorderNeeded: true,
-                                hasHindOnTop: true,
-                                isPassword: _isPasswordHidden.value,
-                                suffixIcon: InkWell(
-                                  onTap: () {
-                                    _isPasswordHidden.value =
-                                        !_isPasswordHidden.value;
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(
-                                      left: 10,
-                                      right: 10,
-                                    ),
-                                    child: _isPasswordHidden.value
-                                        ? Icon(
-                                            Icons.visibility_outlined,
-                                            size: 18,
-                                          )
-                                        : Icon(
-                                            Icons.visibility_off_outlined,
-                                            size: 18,
-                                          ),
-                                  ),
-                                ),
-                                maxLines: 1,
-                                inputFormatters: [
-                                  AppInputFormatters.limitedText(maxLength: 100),
-                                  AppInputFormatters.lettersNumbersSymbolsFormat,
-                                ],
-                                validator: AppValidators.password,
-                                hint: AppStrings.password,
-                                controller: _passwordController,
+                                validator: AppValidators.email,
+                                hint: AppStrings.email,
+                                controller: _emailController,
                               ),
 
                               const SizedBox(height: 15),
@@ -195,7 +163,7 @@ class _ResendActivationViewState extends State<ResendActivationView> {
                                       const SizedBox(width: 10),
                                       Expanded(
                                         child: Text(
-                                          AppStrings.activationLinkSentSuccess,
+                                          AppStrings.resetLinkSentSuccess,
                                           style: bodyText14.copyWith(
                                             color: const Color(0xFF2E7D32),
                                           ),
@@ -209,10 +177,10 @@ class _ResendActivationViewState extends State<ResendActivationView> {
 
                               const SizedBox(height: 15),
 
-                              // Resend activation link button
+                              // Send reset link button
                               BasicButtonWidget(
-                                onPressed: _resendActivation,
-                                label: AppStrings.resendActivationLink,
+                                onPressed: _sendResetLink,
+                                label: AppStrings.sendResetLink,
                               ),
 
                               const SizedBox(height: 20),
@@ -226,7 +194,7 @@ class _ResendActivationViewState extends State<ResendActivationView> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
-                                      AppStrings.rememberPassword,
+                                      AppStrings.rememberedPassword,
                                       style: bodyText16.copyWith(
                                         height: 1.6,
                                         color: AppColors.textPrimary,
@@ -267,24 +235,5 @@ class _ResendActivationViewState extends State<ResendActivationView> {
         ),
       ),
     );
-  }
-  Future<void> resendActivationApi(BuildContext context) async {
-    try {
-      ApiResponse response = await apiService.request(
-        method: ApiMethod.post,
-        customUrl: true,
-        useFormData: true,
-        endpoint: Endpoints.registerBaseUrl + Endpoints.resendActivation,
-        body: {"username": _usernameController.text, "password": _passwordController.text},
-      );
-      SnackBarWidget.show(
-        context,
-        title: "Success",
-        message: "Activation link sent! Please check your email.",
-        contentType: ContentType.success,
-      );
-    } catch (e) {
-      SnackBarWidget.showError(context);
-    }
   }
 }

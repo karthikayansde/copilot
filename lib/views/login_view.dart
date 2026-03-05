@@ -4,6 +4,7 @@ import '../utils/app_strings.dart';
 import '../utils/app_validators.dart';
 import '../views/signup_view.dart';
 import '../views/resend_activation_view.dart';
+import '../views/forgot_password_view.dart';
 import '../widgets/background_image_widget.dart';
 import '../widgets/button_widgets.dart';
 import '../widgets/snack_bar_widget.dart';
@@ -167,7 +168,30 @@ class _LoginViewState extends State<LoginView> {
                                     ],
                                   ),
                                 ),
-                                const SizedBox(height: 30),
+                                const SizedBox(height: 10),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: InkWell(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => ForgotPasswordView(
+                                            initialEmail: controller.emailController.text,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Text(
+                                      AppStrings.forgotPassword,
+                                      style: bodyText16.copyWith(
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
 
                                 BasicButtonWidget(
                                   onPressed: () async {

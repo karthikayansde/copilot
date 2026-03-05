@@ -12,6 +12,7 @@ class Endpoints {
 
   static String get login => '/auth/login';
   static String get resendActivation => '/auth/resend-activation';
+  static String get forgotPassword => '/auth/forgot-password';
   static String get signUp => '/auth/register';
   static String get ask => '/ask?role=viewer';
   static String get sessions => '/chat/sessions?username=';

@@ -37,4 +37,9 @@ class AppStrings {
   static const String activationLinkSentSuccess = "New activation link sent successfully. Please check your email.";
   static const String rememberPassword = "Remember your password?";
   static const String backToLogin = "Back to login";
+  static const String forgotPassword = "Forgot password?";
+  static const String forgotPasswordTitle = "Forgot password";
+  static const String sendResetLink = "Send reset link";
+  static const String resetLinkSentSuccess = "activation link sent successfully. You can now reset.";
+  static const String rememberedPassword = "Remembered Password?";
 }
