@@ -11,6 +11,7 @@ import '../core/theme/app_colors.dart';
 import '../utils/app_utils.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/popover_dialog.dart';
+import 'data_controls_view.dart';
 
 class HomeScreen extends StatelessWidget {
  HomeScreen({super.key});
@@ -2141,6 +2142,14 @@ class HomeScreen extends StatelessWidget {
                     backgroundColor: Colors.black87,
                     colorText: Colors.white,
                   );
+                },
+              ),
+              _buildDrawerItem(
+                icon: Icons.data_usage_rounded,
+                label: 'Data controls',
+                onTap: () {
+                  Navigator.pop(dialogContext);
+                  Get.to(() => const DataControlsView());
                 },
               ),
               _buildDrawerItem(
