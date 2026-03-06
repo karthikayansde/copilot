@@ -18,6 +18,7 @@ class DataControlsView extends StatefulWidget {
   State<DataControlsView> createState() => _DataControlsViewState();
 }
 
+
 class _DataControlsViewState extends State<DataControlsView> {
   final controller = Get.find<HomeController>();
   final RxBool isExporting = false.obs;
