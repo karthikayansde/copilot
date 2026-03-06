@@ -1458,6 +1458,14 @@ class HomeScreen extends StatelessWidget {
                 },
               ),
               _buildDialogOption(
+                icon: Icons.download_rounded,
+                label: 'Export Chat',
+                onTap: () {
+                  Navigator.pop(context);
+                  controller.exportSessionChatApi(context, session.sessionId);
+                },
+              ),
+              _buildDialogOption(
                 icon: Icons.delete_outline_rounded,
                 label: 'Delete Chat',
                 isDestructive: true,

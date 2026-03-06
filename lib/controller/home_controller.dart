@@ -23,6 +23,7 @@ import '../model/chat_message.dart';
 import '../services/file_processor_service.dart';
 import '../views/qr_scanner_view.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeController extends GetxController {
   final stt.SpeechToText _speech = stt.SpeechToText();
@@ -736,6 +737,71 @@ class HomeController extends GetxController {
       }
     } catch (e) {
       debugPrint('Error getting session chats: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> exportSessionChatApi(BuildContext context, String sessionID) async {
+    try {
+      isLoading.value = true;
+      final String username = userName.value;
+      if (username.isEmpty) {
+        _showToast('Username not found. Please login again.', context);
+        return;
+      }
+
+      final String url = '${Endpoints.baseUrl}${Endpoints.exportChats}$username/$sessionID';
+      debugPrint('Exporting session chats from: $url');
+
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        Directory? directory;
+        if (Platform.isAndroid) {
+          directory = await getExternalStorageDirectory();
+        } else {
+          directory = await getApplicationDocumentsDirectory();
+        }
+
+        if (directory == null) {
+          throw Exception('Could not access storage directory');
+        }
+
+        final String fileName = 'chat_${sessionID}_$username.docx';
+        final String filePath = '${directory.path}/$fileName';
+        final File file = File(filePath);
+
+        await file.writeAsBytes(response.bodyBytes);
+
+        try {
+          if (await canLaunchUrl(Uri.parse(url))) {
+            await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+          }
+        } catch (e) {
+          debugPrint('External download failed: $e');
+        }
+
+        Get.snackbar(
+          'Success',
+          'Chat history exported successfully!',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFF1E293B),
+          colorText: Colors.white,
+          mainButton: TextButton(
+            onPressed: () => OpenFile.open(filePath),
+            child: const Text(
+              'OPEN FILE',
+              style: TextStyle(color: Color(0xFF38BDF8), fontWeight: FontWeight.bold),
+            ),
+          ),
+        );
+      } else {
+        _showToast('Failed to export chat history. Server returned ${response.statusCode}', context);
+      }
+    } catch (e) {
+      debugPrint('Error exporting chats: $e');
+      _showToast('An error occurred while exporting chat history.', context);
     } finally {
       isLoading.value = false;
     }
