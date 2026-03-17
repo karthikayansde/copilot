@@ -34,7 +34,7 @@ class LoginController extends GetxController {
       ApiResponse response = await apiService.request(
         method: ApiMethod.post,
         customUrl: true,
-        endpoint: Endpoints.registerBaseUrl+Endpoints.login,
+        endpoint: Endpoints.loginBaseUrl+Endpoints.login,
         body: {
           "username": emailController.text,
           "password": passwordController.text
@@ -52,31 +52,46 @@ class LoginController extends GetxController {
         },
       );
 
-
       if(response.code == ApiCode.forbidden403.index){
-        showResendButton.value = true;
-        SnackBarWidget.show(
-          context,
-          title: AppStrings.warning,
-          message: "Account not activated. Please check your email.",
-          contentType: ContentType.warning,
-        );
+        if(response.data['detail'] == "APPROVAL REJECTED"){
+          SnackBarWidget.show(
+            context,
+            title: AppStrings.warning,
+            message: "Approval Rejected",
+            contentType: ContentType.warning,
+          );
+        } else if(response.data['detail'] == "APPROVAL PENDING"){
+          SnackBarWidget.show(
+            context,
+            title: AppStrings.warning,
+            message: "Approval Pending",
+            contentType: ContentType.warning,
+          );
+        }else if (response.data['detail'] == "ACCOUNT NOT ACTIVATED"){
+          showResendButton.value = true;
+          SnackBarWidget.show(
+            context,
+            title: AppStrings.warning,
+            message: "Account not activated. Please check your email.",
+            contentType: ContentType.warning,
+          );
+        }
       }
 
       if(response.code == ApiCode.unauthorized401.index){
         SnackBarWidget.show(
           context,
           title: AppStrings.warning,
-          message: "INCORRECT PASSWORD",
+          message: "Incorrect password",
           contentType: ContentType.warning,
         );
       }
         if(response.code == ApiCode.notFound404.index){
-        if(response.data['detail'] == "User not found"){
+        if(response.data['detail'] == "INCORRECT USERNAME"){
           SnackBarWidget.show(
             context,
             title: AppStrings.warning,
-            message: "User not found",
+            message: "Incorrect username",
             contentType: ContentType.warning,
           );
         }else{
@@ -92,6 +107,8 @@ class LoginController extends GetxController {
       if(result){
         await SharedPrefManager.instance.setBoolAsync(SharedPrefManager.isLoggedIn, true);
         await SharedPrefManager.instance.setStringAsync(SharedPrefManager.username, emailController.text);
+        await SharedPrefManager.instance.setStringAsync(SharedPrefManager.role, response.data['role']??"");
+        await SharedPrefManager.instance.setStringAsync(SharedPrefManager.contentAuth, response.data['CONTENT_AUTHORIZATION']??'');
         isLoading.value = false;
         Navigator.pushAndRemoveUntil(
           context,

@@ -1,12 +1,8 @@
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../main.dart';
 import '../services/api/api_service.dart';
 import '../services/api/endpoints.dart';
-import '../services/shared_pref_manager.dart';
-import '../views/home_screen.dart';
 import '../widgets/snack_bar_widget.dart';
 
 class SignupController extends GetxController {
@@ -80,18 +76,18 @@ class SignupController extends GetxController {
       );
 
       if(response.code == ApiCode.conflict409.index){
-        if(response.data['detail'] == "USERNAME_EXISTS"){
+        if(response.data['detail'] == "EMAIL EXISTS"){
+          SnackBarWidget.show(
+            context,
+            title: response.message,
+            message: "Email ID already exists",
+            contentType: ContentType.warning,
+          );
+        }else if(response.data['detail'] == "USERNAME EXISTS"){
           SnackBarWidget.show(
             context,
             title: response.message,
             message: "Username already exists",
-            contentType: ContentType.warning,
-          );
-        }else{
-          SnackBarWidget.show(
-            context,
-            title: response.message,
-            message: "This email is already registered. Try logging in instead.",
             contentType: ContentType.warning,
           );
         }

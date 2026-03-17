@@ -32,6 +32,7 @@ class AppInputFormatters {
   static final TextInputFormatter numbersFormat= FilteringTextInputFormatter.allow(numbersRegExp);
   static final TextInputFormatter decimalFormat= FilteringTextInputFormatter.allow(decimalRegExp);
   static final TextInputFormatter spaceFormat= FilteringTextInputFormatter.allow(spaceRegExp);
+  static final TextInputFormatter noSpaceFormat = FilteringTextInputFormatter.deny(RegExp(r'\s'));
   static final TextInputFormatter newLineFormat= FilteringTextInputFormatter.allow(newLineRegExp);
   static final TextInputFormatter punctuationAndSymbolsFormat = FilteringTextInputFormatter.allow(punctuationAndSymbolsRegExp);
   // combinations

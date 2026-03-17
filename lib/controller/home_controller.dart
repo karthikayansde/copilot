@@ -46,6 +46,8 @@ class HomeController extends GetxController {
   ];
   var selectedSuggestions = <String>[].obs;
   var userName = ''.obs;
+  var contentAuth = ''.obs;
+  var role = ''.obs;
   String sessionId = '';
   var sessionsList = SessionsModel().obs;
   var historySearchQuery = ''.obs;
@@ -76,6 +78,16 @@ class HomeController extends GetxController {
     userName.value =
         await SharedPrefManager.instance.getStringAsync(
           SharedPrefManager.username,
+        ) ??
+            '';
+    contentAuth.value =
+        await SharedPrefManager.instance.getStringAsync(
+          SharedPrefManager.contentAuth,
+        ) ??
+            '';
+    role.value =
+        await SharedPrefManager.instance.getStringAsync(
+          SharedPrefManager.role,
         ) ??
             '';
     print("aski"+userName.value);

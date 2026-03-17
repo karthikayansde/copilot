@@ -6,10 +6,10 @@ class Endpoints {
   static String get chatWithDataMobBaseUrl => 'http://apihub.pilogcloud.com:6730';
   static String get chatWithDataBaseUrl => 'http://apihub.pilogcloud.com:6730';
   static String get registerBaseUrl => 'https://mirai.pilogcloud.com:6734';
+  static String get loginBaseUrl => 'http://apihub.pilogcloud.com:6727';
 
   static String get baseUrl => 'https://mirai.pilogcloud.com:6735';
   // static String get chatWithDataMobBaseUrl => 'https://mirai.pilogcloud.com:6735';
-
   static String get login => '/auth/login';
   static String get resendActivation => '/auth/resend-activation';
   static String get forgotPassword => '/auth/forgot-password';
@@ -27,4 +27,5 @@ class Endpoints {
   static String get chatWithData => '/chat_with_data';
   static String get creditsUsage => '/credits/usage?username=';
   static String get exportChats => '/export-chats/';
+  static String get knowledgeSources => 'http://apihub.pilogcloud.com:6735/api/knowledge-sources?role=admin&user_name=Rahul';
 }

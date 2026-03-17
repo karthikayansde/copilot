@@ -14,11 +14,11 @@ import '../widgets/snack_bar_widget.dart';
 import '../widgets/text_field_widgets.dart';
 
 class ForgotPasswordView extends StatefulWidget {
-  final String? initialEmail;
+  final String? initialUsername;
 
   const ForgotPasswordView({
     super.key,
-    this.initialEmail,
+    this.initialUsername,
   });
 
   @override
@@ -27,7 +27,7 @@ class ForgotPasswordView extends StatefulWidget {
 
 class _ForgotPasswordViewState extends State<ForgotPasswordView> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
   final _isLoading = false.obs;
   final _isSuccess = false.obs;
   final apiService = ApiService();
@@ -35,12 +35,12 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
   @override
   void initState() {
     super.initState();
-    _emailController.text = widget.initialEmail ?? '';
+    _usernameController.text = widget.initialUsername ?? '';
   }
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _usernameController.dispose();
     super.dispose();
   }
 
@@ -51,9 +51,20 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
         method: ApiMethod.post,
         customUrl: true,
         useFormData: true,
-        endpoint: Endpoints.registerBaseUrl + Endpoints.forgotPassword,
-        body: {"email": _emailController.text}, // The user said "this api pass email as payload"
+        endpoint: Endpoints.loginBaseUrl + Endpoints.forgotPassword,
+        body: {"user_name": _usernameController.text},
       );
+        if(response.code == ApiCode.notFound404.index) {
+          if (response.data['detail'] == "USERNAME NOT REGISTERED") {
+            SnackBarWidget.show(
+              context,
+              title: AppStrings.warning,
+              message: "Username not registered",
+              contentType: ContentType.warning,
+            );
+            return;
+          }
+        }
       _isSuccess.value = true;
     } catch (e) {
       SnackBarWidget.showError(context);
@@ -115,7 +126,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                               ),
                               const SizedBox(height: 20),
 
-                              // Email field
+                              // Username field
                               TextFieldWidget(
                                 isBorderNeeded: true,
                                 hasHindOnTop: true,
@@ -125,7 +136,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                                     right: 10,
                                   ),
                                   child: Icon(
-                                    Icons.email_outlined,
+                                    Icons.person_outline,
                                     size: 18,
                                   ),
                                 ),
@@ -133,9 +144,9 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                                 inputFormatters: [
                                   AppInputFormatters.limitedText(maxLength: 50),
                                 ],
-                                validator: AppValidators.email,
-                                hint: AppStrings.email,
-                                controller: _emailController,
+                                validator: AppValidators.userName,
+                                hint: AppStrings.userName,
+                                controller: _usernameController,
                               ),
 
                               const SizedBox(height: 15),

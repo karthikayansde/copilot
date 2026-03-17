@@ -114,7 +114,8 @@ class _SignupViewState extends State<SignupView> {
                               ),
                               maxLines: 1,
                               inputFormatters: [
-                                AppInputFormatters.limitedText(maxLength: 50)
+                                AppInputFormatters.limitedText(maxLength: 50),
+                                AppInputFormatters.noSpaceFormat,
                               ],
                               // inputFormatters: AppInputFormatters.email(),
                               validator: AppValidators.userName,
@@ -161,7 +162,8 @@ class _SignupViewState extends State<SignupView> {
                               maxLines: 1,
                               inputFormatters: [
                                 AppInputFormatters.limitedText(maxLength: 100),
-                                AppInputFormatters.lettersNumbersSymbolsFormat
+                                AppInputFormatters.lettersNumbersSymbolsFormat,
+                                AppInputFormatters.noSpaceFormat,
                               ],
                               validator: AppValidators.password,
                               hint: AppStrings.password,
@@ -200,7 +202,8 @@ class _SignupViewState extends State<SignupView> {
                               maxLines: 1,
                               inputFormatters: [
                                 AppInputFormatters.limitedText(maxLength: 100),
-                                AppInputFormatters.lettersNumbersSymbolsFormat
+                                AppInputFormatters.lettersNumbersSymbolsFormat,
+                                AppInputFormatters.noSpaceFormat,
                               ],
                               validator: AppValidators.confirmPassword,
                               hint: AppStrings.confirmPassword,

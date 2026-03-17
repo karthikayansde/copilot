@@ -30,6 +30,8 @@ class SharedPrefManager {
   //constance
   static const String isLoggedIn = "isLoggedIn";
   static const String username = 'username';
+  static const String role = 'role';
+  static const String contentAuth = 'contentAuth';
   static const String name = 'name';
   static const String code = 'code';
   static const String id = 'id';
@@ -51,6 +53,9 @@ class SharedPrefManager {
   Future<void> logout() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove(SharedPrefManager.isLoggedIn);
+    await prefs.remove(SharedPrefManager.username);
+    await prefs.remove(SharedPrefManager.contentAuth);
+    await prefs.remove(SharedPrefManager.role);
     await prefs.remove(SharedPrefManager.username);
     await prefs.remove(SharedPrefManager.name);
     await prefs.remove(SharedPrefManager.code);

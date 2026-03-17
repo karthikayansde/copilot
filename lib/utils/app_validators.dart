@@ -13,6 +13,9 @@ class AppValidators {
     if (value == null || value.isEmpty) {
       return AppStrings.userNameValidator;
     }
+    if (value.contains(' ')) {
+      return AppStrings.userNameSpaceValidator;
+    }
     return null;
   }
 
@@ -30,6 +33,8 @@ class AppValidators {
   static String? password(String? value) {
     if (value == null || value.isEmpty) {
       return AppStrings.passwordEMTValidator;
+    } else if (value.contains(' ')) {
+      return AppStrings.passwordSpaceValidator;
     } else if (value.length < 8 || value.length > 100) {
       return AppStrings.passwordValidator;
     }
@@ -38,6 +43,8 @@ class AppValidators {
   static String? newPassword(String? value) {
     if (value == null || value.isEmpty) {
       return AppStrings.passwordEMTValidator;
+    } else if (value.contains(' ')) {
+      return AppStrings.passwordSpaceValidator;
     } else if (value.length < 8 || value.length > 100) {
       return AppStrings.passwordValidator;
     }
@@ -46,6 +53,8 @@ class AppValidators {
   static String? confirmPassword(String? value) {
     if (value == null || value.isEmpty) {
       return AppStrings.confirmPasswordEMTValidator;
+    } else if (value.contains(' ')) {
+      return AppStrings.confirmPasswordSpaceValidator;
     } else if (value.length < 8 || value.length > 100) {
       return AppStrings.confirmPasswordValidator;
     }

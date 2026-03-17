@@ -277,6 +277,59 @@ class _ResendActivationViewState extends State<ResendActivationView> {
         endpoint: Endpoints.registerBaseUrl + Endpoints.resendActivation,
         body: {"username": _usernameController.text, "password": _passwordController.text},
       );
+
+      if(response.code == ApiCode.notFound404.index){
+        if(response.data['detail'] == "INCORRECT USERNAME"){
+          SnackBarWidget.show(
+            context,
+            title: AppStrings.warning,
+            message: "Incorrect Username",
+            contentType: ContentType.warning,
+          );
+          return;
+        }
+      }
+      if(response.code == ApiCode.unauthorized401.index){
+        if(response.data['detail'] == "INCORRECT PASSWORD"){
+          SnackBarWidget.show(
+            context,
+            title: AppStrings.warning,
+            message: "Incorrect Password",
+            contentType: ContentType.warning,
+          );
+          return;
+        }
+      }
+      if(response.code == ApiCode.error400.index){
+        if(response.data['detail'] == "ACCOUNT ALREADY ACTIVATED"){
+          SnackBarWidget.show(
+            context,
+            title: AppStrings.warning,
+            message: "Account already activated",
+            contentType: ContentType.warning,
+          );
+          return;
+        }
+      }
+      if(response.code == ApiCode.forbidden403.index){
+        if(response.data['detail'] == "APPROVAL REJECTED"){
+          SnackBarWidget.show(
+            context,
+            title: AppStrings.warning,
+            message: "Approval Rejected",
+            contentType: ContentType.warning,
+          );
+          return;
+        }else if(response.data['detail'] == "APPROVAL PENDING"){
+          SnackBarWidget.show(
+            context,
+            title: AppStrings.warning,
+            message: "Approval Pending",
+            contentType: ContentType.warning,
+          );
+          return;
+        }
+      }
       SnackBarWidget.show(
         context,
         title: "Success",

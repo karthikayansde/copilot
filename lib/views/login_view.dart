@@ -96,9 +96,10 @@ class _LoginViewState extends State<LoginView> {
                                   maxLines: 1,
 
                                   inputFormatters: [
-                                    AppInputFormatters.limitedText(maxLength: 50)
+                                    AppInputFormatters.limitedText(maxLength: 50),
+                                    AppInputFormatters.noSpaceFormat,
                                   ],
-                                  // inputFormatters: AppInputFormatters.email(),
+                                  // inputFormatters: AppInputFormatters.email()
                                   validator: AppValidators.name,
                                   hint: AppStrings.userName,
                                   controller: controller.emailController,
@@ -129,8 +130,9 @@ class _LoginViewState extends State<LoginView> {
                                   inputFormatters: [
                                     AppInputFormatters.limitedText(maxLength: 100),
                                     AppInputFormatters.lettersNumbersSymbolsFormat,
+                                    AppInputFormatters.noSpaceFormat,
                                   ],
-                                  validator: AppValidators.password,
+                                  // validator: AppValidators.password,
                                   hint: AppStrings.password,
                                   controller: controller.passwordController,
                                 ),  
@@ -177,7 +179,7 @@ class _LoginViewState extends State<LoginView> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => ForgotPasswordView(
-                                            initialEmail: controller.emailController.text,
+                                            initialUsername: controller.emailController.text,
                                           ),
                                         ),
                                       );

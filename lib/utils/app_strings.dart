@@ -9,14 +9,17 @@ class AppStrings {
   static const String name = "Name";
   static const String nameValidator = "Please enter name";
   static const String userNameValidator = "Please enter username";
+  static const String userNameSpaceValidator = "Username cannot contain spaces. Try using underscores or hyphens instead.";
   static const String email = "Email";
   static const String emailEMTValidator = "Please enter email";
   static const String emailValidator = "Please enter a valid email";
   static const String newPasswordEMTValidator = "Please enter a new password";
   static const String passwordEMTValidator = "Please enter a password";
   static const String passwordValidator = "Password must be 8-100 characters";
+  static const String passwordSpaceValidator = "Password cannot contain spaces. Try using underscores or hyphens instead.";
   static const String confirmPasswordEMTValidator = "Please enter a confirm password";
   static const String confirmPasswordValidator = "Confirm password must be 8-100 characters";
+  static const String confirmPasswordSpaceValidator = "Confirm password cannot contain spaces. Try using underscores or hyphens instead.";
   static const String noInternetConnection = "No Internet Connection";
   static const String noInternetConnectionMsg = "Please check your Wi-Fi or mobile data.";
   static const String somethingWentWrongTitle = "Request Failed";
