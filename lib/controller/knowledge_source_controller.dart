@@ -5,6 +5,7 @@ import '../services/api/api_service.dart';
 import '../services/api/endpoints.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
+import '../services/shared_pref_manager.dart';
 
 class KnowledgeSourceController extends GetxController {
   final ApiService _apiService = ApiService();
@@ -43,24 +44,26 @@ class KnowledgeSourceController extends GetxController {
     'PM Data',
     'Other'
   ];
-  final statuses = ['COMPLETED', 'PENDING'];
+  final statuses = ['COMPLETED', 'PENDING', 'FAILED'];
   final inputTypes = ['File', 'Plain Text'];
   
   // Add New Entry Form States
   var selectedInputType = 'File'.obs;
   var uploadedFiles = <PlatformFile>[].obs;
   var selectedAddCategory = ''.obs;
-  var isTOCAvailable = 'No'.obs; // Yes, No, NA
+  var isTOCAvailable = 'N/A'.obs; // Yes, No, NA
   var tocHeadings = ''.obs;
   var plainTextContent = ''.obs;
+  var textFileName = ''.obs;
 
   void resetAddForm() {
     selectedInputType.value = 'File';
     uploadedFiles.clear();
     selectedAddCategory.value = '';
-    isTOCAvailable.value = 'No';
+    isTOCAvailable.value = 'N/A';
     tocHeadings.value = '';
     plainTextContent.value = '';
+    textFileName.value = '';
   }
 
   List<KnowledgeSourceModel> get filteredKnowledgeSources {
@@ -146,52 +149,134 @@ class KnowledgeSourceController extends GetxController {
     );
   }
 
-  void updateKnowledgeSource(KnowledgeSourceModel updatedItem) {
-    int index = knowledgeSources.indexWhere((item) => item.contentId == updatedItem.contentId);
-    if (index != -1) {
-      knowledgeSources[index] = updatedItem;
-      knowledgeSources.refresh();
+  Future<void> updateKnowledgeSource(KnowledgeSourceModel updatedItem) async {
+    try {
+      isLoading.value = true;
+      final userName = await SharedPrefManager.instance.getStringAsync(SharedPrefManager.username) ?? 'Admin';
+
+      final response = await _apiService.request(
+        method: ApiMethod.put,
+        customUrl: true,
+        endpoint: 'http://apihub.pilogcloud.com:6735/api/knowledge-sources/edit/${updatedItem.contentId}',
+        body: {
+          'CONTENT_ID': updatedItem.contentId,
+          'DOCUMENT_CONTENT': updatedItem.documentContent,
+          'CATEGORY': updatedItem.category,
+          'STATUS': updatedItem.status,
+          'user_name': userName,
+        },
+      );
+
+      if (response.code == ApiCode.success200.index || 
+          (response.data != null && (response.data['status'] == 'success' || response.data['message'] != null || response.data['CONTENT_ID'] != null))) {
+        
+        int index = knowledgeSources.indexWhere((item) => item.contentId == updatedItem.contentId);
+        if (index != -1) {
+          knowledgeSources[index] = updatedItem;
+          knowledgeSources.refresh();
+          Get.snackbar(
+            'Success',
+            'Knowledge source updated successfully.',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+          );
+        }
+      } else {
+        Get.snackbar(
+          'Error',
+          'Failed to update item: ${response.data?['message'] ?? 'Unknown error'}',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
       Get.snackbar(
-        'Success',
-        'Knowledge source updated successfully.',
+        'Error',
+        'An error occurred: $e',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
+        backgroundColor: Colors.red,
         colorText: Colors.white,
       );
+    } finally {
+      isLoading.value = false;
     }
   }
 
-  void performDelete() {
+  Future<void> performDelete() async {
     print('Deleting selected IDs: ${selectedIds.toList()}');
     
-    // Filter out the selected items from the list
-    knowledgeSources.value = knowledgeSources
-        .where((item) => !selectedIds.contains(item.contentId))
-        .toList();
+    try {
+      isLoading.value = true;
+      final userName = await SharedPrefManager.instance.getStringAsync(SharedPrefManager.username) ?? 'Admin';
 
-    // Clear selection after deletion
-    selectedIds.clear();
-    Get.snackbar(
-      'Success',
-      'Selected items deleted successfully.',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
-    );
+      final response = await _apiService.request(
+        method: ApiMethod.delete,
+        customUrl: true,
+        endpoint: 'http://apihub.pilogcloud.com:6735/api/knowledge-sources/delete',
+        body: {
+          'content_ids': selectedIds.toList(),
+          'user_name': userName,
+        },
+      );
+
+      if (response.code == ApiCode.success200.index || 
+          (response.data != null && (response.data['status'] == 'success' || response.data['message'] != null))) {
+        
+        // Filter out the selected items from the list
+        knowledgeSources.value = knowledgeSources
+            .where((item) => !selectedIds.contains(item.contentId))
+            .toList();
+
+        // Clear selection after deletion
+        selectedIds.clear();
+        Get.snackbar(
+          'Success',
+          'Selected items deleted successfully.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+      } else {
+        Get.snackbar(
+          'Error',
+          'Failed to delete items: ${response.data?['message'] ?? 'Unknown error'}',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'An error occurred: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   void clearAnalysis() {
     analysisResult.value = null;
+    previewResult.value = null;
     currentProcessingIndex.value = 0;
   }
 
   // Analysis states
   var currentProcessingIndex = 0.obs;
   var analysisResult = Rxn<Map<String, dynamic>>();
+  var previewResult = Rxn<Map<String, dynamic>>();
 
   Future<void> analyzeFile(PlatformFile file) async {
     try {
       isLoading.value = true;
+      analysisResult.value = null; // Clear previous result
+      debugPrint('Starting analysis for: ${file.name}');
+      
       final response = await _apiService.multipartRequest(
         customUrl: true,
         endpoint: 'http://apihub.pilogcloud.com:6735/training_data_document_analysis',
@@ -201,13 +286,136 @@ class KnowledgeSourceController extends GetxController {
         ],
       );
 
-      if (response.code == ApiCode.success200.index || response.data['status'] == 'success') {
+      debugPrint('API Response Code: ${response.code}');
+      debugPrint('API Response Data: ${response.data}');
+
+      if (response.code == ApiCode.success200.index || 
+          (response.data != null && response.data['status'] == 'success')) {
         analysisResult.value = response.data;
+        debugPrint('Analysis result updated successfully');
       } else {
-        Get.snackbar('Error', 'Analysis failed: ${response.data['message'] ?? 'Unknown error'}');
+        analysisResult.value = null;
+        Get.snackbar('Error', 'Analysis failed: ${response.data?['message'] ?? 'Unknown error'}');
       }
     } catch (e) {
+      analysisResult.value = null;
+      debugPrint('Error during analyzeFile: $e');
       Get.snackbar('Error', 'An error occurred during analysis: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> trainPreviewQuestions(PlatformFile file) async {
+    try {
+      isLoading.value = true;
+      previewResult.value = null;
+      debugPrint('Starting train preview for: ${file.name}');
+
+      final response = await _apiService.multipartRequest(
+        customUrl: true,
+        endpoint: 'http://apihub.pilogcloud.com:6735/finance_data_detection',
+        fields: {
+          'category': selectedAddCategory.value,
+          'has_tables': isTOCAvailable.value.toLowerCase() == 'n/a'?'na':isTOCAvailable.value.toLowerCase(),
+          'user_name': await SharedPrefManager.instance.getStringAsync(SharedPrefManager.username) ?? 'Admin',
+        },
+        files: [
+          await http.MultipartFile.fromPath('file', file.path!),
+        ],
+      );
+
+      debugPrint('Preview API Response: ${response.data}');
+
+      if (response.code == ApiCode.success200.index || 
+          (response.data != null && response.data['qa_pairs'] != null)) {
+        previewResult.value = response.data;
+      } else {
+        previewResult.value = null;
+        Get.snackbar('Error', 'Failed to fetch preview: ${response.data?['message'] ?? 'Unknown error'}');
+      }
+    } catch (e) {
+      previewResult.value = null;
+      debugPrint('Error during trainPreviewQuestions: $e');
+      Get.snackbar('Error', 'An error occurred: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<bool> addDocument(PlatformFile file) async {
+    try {
+      isLoading.value = true;
+      debugPrint('Adding document for training: ${file.name}');
+
+      final manualToc = isTOCAvailable.value == 'No' ?tocHeadings.value: 'AUTO_EXTRACT';
+      
+      final response = await _apiService.multipartRequest(
+        customUrl: true,
+        endpoint: 'http://apihub.pilogcloud.com:6735/add-documents',
+        fields: {
+          'type': 'file',
+          'category': selectedAddCategory.value,
+          'has_toc': isTOCAvailable.value.toLowerCase() == 'n/a'?'na':isTOCAvailable.value.toLowerCase(),
+          'manual_toc': manualToc.isEmpty ? 'AUTO_EXTRACT' : manualToc,
+          'user_name': await SharedPrefManager.instance.getStringAsync(SharedPrefManager.username) ?? 'Admin',
+          'skip_sensitive': 'false', 
+        },
+        files: [
+          await http.MultipartFile.fromPath('file', file.path!),
+        ],
+      );
+
+      debugPrint('Add Document Response: ${response.data}');
+
+      if (response.code == ApiCode.success200.index || 
+          (response.data != null && response.data['message'] != null)) {
+        Get.snackbar('Success', response.data['message'] ?? 'Training started.',
+            backgroundColor: Colors.green, colorText: Colors.white);
+        return true;
+      } else {
+        Get.snackbar('Error', 'Failed to start training: ${response.data?['message'] ?? 'Unknown error'}');
+        return false;
+      }
+    } catch (e) {
+      debugPrint('Error during addDocument: $e');
+      Get.snackbar('Error', 'An error occurred: $e');
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<Map<String, dynamic>?> addPlainText() async {
+    try {
+      isLoading.value = true;
+      debugPrint('Adding plain text knowledge source directly');
+
+      final response = await _apiService.multipartRequest(
+        customUrl: true,
+        endpoint: 'http://apihub.pilogcloud.com:6735/train_plain_text',
+        fields: {
+          'text_data': plainTextContent.value,
+          'text_data_name': textFileName.value,
+          'category': selectedAddCategory.value,
+          'user_name': await SharedPrefManager.instance.getStringAsync(SharedPrefManager.username) ?? 'Rahul',
+        },
+        files: [],
+      );
+
+      debugPrint('Add Text Response: ${response.data}');
+
+      if (response.code == ApiCode.success200.index || 
+          (response.data != null && response.data['message'] != null)) {
+        return response.data;
+      } else {
+        Get.snackbar('Error', 'Failed to start training: ${response.data?['message'] ?? 'Unknown error'}');
+        return null;
+      }
+    } catch (e) {
+      debugPrint('Error during addPlainText: $e');
+      Get.snackbar('Error', 'An error occurred: $e');
+      return null;
     } finally {
       isLoading.value = false;
     }

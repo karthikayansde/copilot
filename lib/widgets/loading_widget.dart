@@ -5,6 +5,7 @@ import '../utils/app_colors.dart';
 
 class LoadingWidget {
   static void showLoader(BuildContext context) {
+    if (Get.isDialogOpen == true) return;
     Get.dialog(
       PopScope(
         canPop: false,
@@ -30,8 +31,16 @@ class LoadingWidget {
   }
 
   static void closeLoader(BuildContext context) {
+    // Attempt standard GetX back first
     if (Get.isDialogOpen == true) {
       Get.back();
+    } else {
+      // Fallback: If GetX state is out of sync, try manual pop if possible
+      try {
+        if (context.mounted && Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+      } catch (_) {}
     }
   }
 }
