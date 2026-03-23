@@ -72,19 +72,19 @@ class HomeScreen extends StatelessWidget {
                         },
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    if (controller.contentAuth.value.toUpperCase() == "Y" && ["viewer", "admin"].contains(controller.role.toLowerCase()))
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 2),
-                        child: _buildDrawerItem(
-                          icon: Icons.library_books_outlined,
-                          label: 'Training Information',
-                          onTap: () {
-                            Navigator.pop(context);
-                            Get.to(() => const KnowledgeSourceView());
-                          },
-                        ),
-                      ),
+                    // const SizedBox(height: 2),
+                    // if (controller.contentAuth.value.toUpperCase() == "Y" && ["viewer", "admin"].contains(controller.role.toLowerCase()))
+                    //   Padding(
+                    //     padding: const EdgeInsets.fromLTRB(16, 0, 16, 2),
+                    //     child: _buildDrawerItem(
+                    //       icon: Icons.library_books_outlined,
+                    //       label: 'Training Information',
+                    //       onTap: () {
+                    //         Navigator.pop(context);
+                    //         Get.to(() => const KnowledgeSourceView());
+                    //       },
+                    //     ),
+                    //   ),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(32, 0, 0, 0),
                       child: Align(
