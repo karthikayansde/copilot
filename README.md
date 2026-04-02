@@ -14,3 +14,14 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+keytool -genkey -v -keystore $env:USERPROFILE\upload-keystore.jks `
+        -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 `
+-alias upload
+password: Pilog@123
+distinguished name: Pilog
+organizational unit: mobile development
+organization: Pilog
+City or Locality: hyderabad
+state or province: telangana
+2 letter country code for this unit: IN
