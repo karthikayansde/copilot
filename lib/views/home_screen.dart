@@ -41,8 +41,7 @@ class HomeScreen extends StatelessWidget {
           ),
           child: Stack(
             children: [
-              Obx(
-              ()=> Column(
+               Column(
                   children: [
                     DrawerHeader(
                       decoration: BoxDecoration(
@@ -201,7 +200,7 @@ class HomeScreen extends StatelessWidget {
                     _buildProfileFooter(context),
                   ],
                 ),
-              ),
+              
               Obx(
                 () => controller.isSessionsLoading.value
                     ? Positioned.fill(
