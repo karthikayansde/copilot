@@ -25,6 +25,7 @@ void main() {
   HttpOverrides.global = MyHttpOverrides();
   runApp(const MyApp());
 }
+
 // 1. Create this class to bypass SSL checks
 class MyHttpOverrides extends HttpOverrides {
   @override
