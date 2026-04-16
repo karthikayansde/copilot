@@ -51,7 +51,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
         method: ApiMethod.post,
         customUrl: true,
         useFormData: true,
-        endpoint: Endpoints.loginBaseUrl + Endpoints.forgotPassword,
+        endpoint: Endpoints.registerBaseUrl + Endpoints.forgotPassword,
         body: {"user_name": _usernameController.text},
       );
         if(response.code == ApiCode.notFound404.index) {

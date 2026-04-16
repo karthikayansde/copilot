@@ -34,7 +34,7 @@ class LoginController extends GetxController {
       ApiResponse response = await apiService.request(
         method: ApiMethod.post,
         customUrl: true,
-        endpoint: Endpoints.loginBaseUrl+Endpoints.login,
+        endpoint: Endpoints.registerBaseUrl+Endpoints.login,
         body: {
           "username": emailController.text,
           "password": passwordController.text
