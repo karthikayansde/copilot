@@ -1,7 +1,7 @@
 name: iMirAI
 description: "The Smart AI for your business."
 publish_to: 'none'
-version: 1.0.2+3
+version: 1.0.5+6
 environment:
   sdk: ^3.10.4
 
