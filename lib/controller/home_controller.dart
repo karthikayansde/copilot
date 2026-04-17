@@ -390,9 +390,9 @@ class HomeController extends GetxController {
         endpoint: Endpoints.ask,
         body: {
           "question": userMessage,
+          "user_name": userName.value,
           "sessionId": sessionId,
-          "username": userName.value,
-          "File": '',
+          "temporaryChat": false,
         },
       );
 
@@ -544,9 +544,9 @@ class HomeController extends GetxController {
         endpoint: Endpoints.ask,
         body: {
           "question": userMessage['answer']?.toString() ?? "",
+          "user_name": userName.value,
           "sessionId": sessionId,
-          "username": userName.value,
-          "File": '',
+          "temporaryChat": false,
         },
       );
 
