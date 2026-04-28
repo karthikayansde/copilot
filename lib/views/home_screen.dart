@@ -13,6 +13,7 @@ import '../widgets/loading_widget.dart';
 import '../widgets/popover_dialog.dart';
 import 'data_controls_view.dart';
 import 'knowledge_source_view.dart';
+import '../services/shared_pref_manager.dart';
 
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
@@ -1877,6 +1878,48 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  Future<bool> _showAIConsentDialog(BuildContext context) async {
+    bool consent = false;
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: const Text(
+            'We use AI to process your input',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          content: const Text(
+            'When you use this feature, your voice or text input will be sent to OpenAI to generate responses. We do not store your personal data.\n\nDo you allow us to share your data for this purpose?',
+            style: TextStyle(fontSize: 15, height: 1.4),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                consent = false;
+                Navigator.of(context).pop();
+              },
+              child: const Text('Not Now', style: TextStyle(color: Colors.black54)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () {
+                consent = true;
+                Navigator.of(context).pop();
+              },
+              child: const Text('Allow'),
+            ),
+          ],
+        );
+      },
+    );
+    return consent;
+  }
+
   Future<void> _handleMicrophoneInput(
     HomeController controller,
     BuildContext context,
@@ -1888,6 +1931,14 @@ class HomeScreen extends StatelessWidget {
       debugPrint('🎤 Stopping listening');
       await controller.stopListening();
       return;
+    }
+
+    // STEP 1: AI consent
+    bool hasConsent = await SharedPrefManager.instance.getBoolAsync('hasAIConsent') ?? false;
+    if (!hasConsent) {
+      bool consent = await _showAIConsentDialog(context);
+      if (!consent) return;
+      await SharedPrefManager.instance.setBoolAsync('hasAIConsent', true);
     }
 
     // Check current permission status first
