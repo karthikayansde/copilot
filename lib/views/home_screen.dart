@@ -5,6 +5,7 @@ import 'package:flutter_html_table/flutter_html_table.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../controller/home_controller.dart';
 import '../core/theme/app_colors.dart';
@@ -23,203 +24,254 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: Colors.white,
+    return Scaffold(
+      resizeToAvoidBottomInset: true,
+      backgroundColor: Colors.white,
         onDrawerChanged: (isOpen) {
           if (isOpen) {
             controller.getCreditsUsageApi();
           }
         },
-        drawer: Drawer(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-              topRight: Radius.circular(30),
-              bottomRight: Radius.circular(30),
+        drawer: SafeArea(
+          child: Drawer(
+            backgroundColor: Colors.white,
+            width: MediaQuery.of(context).size.width*.95,
+            elevation: 0,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                topRight: Radius.circular(30),
+                bottomRight: Radius.circular(30),
+              ),
             ),
-          ),
-          child: Stack(
-            children: [
-               Column(
-                  children: [
-                    DrawerHeader(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border(
-                          bottom: BorderSide(
-                            color: Colors.black.withOpacity(0.05),
-                            width: 1,
-                          ),
-                        ),
-                      ),
-                      child: Center(
-                        child: Image.asset(
-                          'assets/images/iMirAI-Logo1.png',
-                          height: 50,
-                          width: 180,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                      child: _buildDrawerItem(
-                        icon: Icons.add_comment_outlined,
-                        label: 'New Conversation',
-                        onTap: () {
-                          Navigator.pop(context);
-                          controller.startNewChat();
-                        },
-                      ),
-                    ),
-                    // const SizedBox(height: 2),
-                    // if (controller.contentAuth.value.toUpperCase() == "Y" && ["viewer", "admin"].contains(controller.role.toLowerCase()))
-                    //   Padding(
-                    //     padding: const EdgeInsets.fromLTRB(16, 0, 16, 2),
-                    //     child: _buildDrawerItem(
-                    //       icon: Icons.library_books_outlined,
-                    //       label: 'Training Information',
-                    //       onTap: () {
-                    //         Navigator.pop(context);
-                    //         Get.to(() => const KnowledgeSourceView());
-                    //       },
-                    //     ),
-                    //   ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(32, 0, 0, 0),
-                      child: Align(
-                        alignment: AlignmentGeometry.centerLeft,
-                        child: Text(
-                          'Your Conversations',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.black.withOpacity(0.4),
-                            letterSpacing: 1.2,
-                            height: 1.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      child: TextField(
-                        controller: controller.historySearchController,
-                        style: const TextStyle(fontSize: 14),
-                        decoration: InputDecoration(
-                          hintText: 'Search conversation...',
-                          hintStyle: TextStyle(
-                            color: Colors.black.withOpacity(0.3),
-                            fontSize: 14,
-                          ),
-                          prefixIcon: Icon(
-                            Icons.search,
-                            size: 20,
-                            color: Colors.black.withOpacity(0.3),
-                          ),
-                          filled: true,
-                          fillColor: Colors.black.withOpacity(0.03),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Expanded(
-                      child: RefreshIndicator(
-                        onRefresh: () => controller.getSessionsApi(),
-                        child: Obx(() {
-                          final sessions = controller.filteredSessions;
-                          if (sessions.isEmpty) {
-                            return ListView(
-                              physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+              child: Stack(
+                children: [
+                 Column(
+                    children: [
+                      _buildProfileFooter(context),
+                      InkWell(
+                        splashColor: Colors.transparent,
+                        onTap: () => controller.isConversationsExpanded.toggle(),
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(32, 0, 24, 8),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
                               children: [
-                                // SizedBox(height: MediaQuery.of(context).size.height * 0.2),
-                                Column(
-                                  children: [
-                                    Icon(
-                                      Icons.chat_bubble_outline_rounded,
-                                      size: 40,
-                                      color: Colors.black.withOpacity(0.2),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Text(
-                                      'No chat found',
-                                      style: TextStyle(
-                                        color: Colors.black.withOpacity(0.4),
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
+                                Text(
+                                  'Conversations',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.black.withOpacity(0.4),
+                                    letterSpacing: 1.2,
+                                    height: 1.5,
+                                  ),
                                 ),
+                                const Spacer(),
+                                Obx(() => Icon(
+                                  controller.isConversationsExpanded.value
+                                      ? CupertinoIcons.chevron_down
+                                      : CupertinoIcons.chevron_up,
+                                  size: 16,
+                                  color: Colors.black.withOpacity(0.3),
+                                )),
                               ],
-                            );
-                          }
-                          return ListView.builder(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
                             ),
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            itemCount: sessions.length,
-                            itemBuilder: (context, index) {
-                              final session = sessions[index];
-                              return _buildDrawerItem(
-                                icon: Icons.chat_bubble_outline_rounded,
-                                label: session.title ?? 'Untitled Chat',
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  if (session.sessionId != null) {
-                                    controller.getSessionChatsApi(
-                                      session.sessionId!,
+                          ),
+                        ),
+                      ),
+                      Obx(() => controller.isConversationsExpanded.value
+                          ? Expanded(
+                              child: RefreshIndicator(
+                                onRefresh: () => controller.getSessionsApi(),
+                                child: Obx(() {
+                                  final sessions = controller.filteredSessions;
+                                  if (sessions.isEmpty) {
+                                    return ListView(
+                                      physics:
+                                          const AlwaysScrollableScrollPhysics(),
+                                      children: [
+                                        // SizedBox(height: MediaQuery.of(context).size.height * 0.2),
+                                        Column(
+                                          children: [
+                                            Icon(
+                                              Icons.chat_bubble_outline_rounded,
+                                              size: 40,
+                                              color: Colors.black.withOpacity(0.2),
+                                            ),
+                                            const SizedBox(height: 12),
+                                            Text(
+                                              'No chat found',
+                                              style: TextStyle(
+                                                color:
+                                                    Colors.black.withOpacity(0.4),
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     );
                                   }
-                                },
-                                onLongPress: () => _showSessionOptions(
-                                  context,
-                                  session,
-                                  controller,
-                                ),
-                              );
-                            },
-                          );
-                        }),
-                      ),
-                    ),
-                    const Spacer(),
-                    _buildProfileFooter(context),
-                  ],
-                ),
-              
-              Obx(
-                () => controller.isSessionsLoading.value
-                    ? Positioned.fill(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.shadowMedium,
-                            borderRadius: const BorderRadius.only(
-                              topRight: Radius.circular(30),
-                              bottomRight: Radius.circular(30),
-                            ),
-                          ),
-                          child: LoadingWidget.loader(),
+                                  return ListView.builder(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 8,
+                                    ),
+                                    physics: const AlwaysScrollableScrollPhysics(),
+                                    itemCount: sessions.length,
+                                    itemBuilder: (context, index) {
+                                      final session = sessions[index];
+                                      return _buildSessionItem(
+                                        title: session.title ?? 'Untitled Chat',
+                                        date: _formatDate(session.updatedAt),
+                                        onTap: () {
+                                          Navigator.pop(context);
+                                          if (session.sessionId != null) {
+                                            controller.getSessionChatsApi(
+                                              session.sessionId!,
+                                            );
+                                          }
+                                        },
+                                        onMenuPressed: () => _showSessionOptions(
+                                          context,
+                                          session,
+                                          controller,
+                                        ),
+                                      );
+                                    },
+                                  );
+                                }),
+                              ),
+                            )
+                          : const SizedBox.shrink()),
+                      Obx(() => controller.isConversationsExpanded.value
+                          ? const SizedBox.shrink()
+                          : const Spacer()),
+
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 16,
                         ),
-                      )
-                    : const SizedBox.shrink(),
-              ),
-            ],
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: controller.historySearchController,
+                                style: const TextStyle(fontSize: 14),
+                                onTap: () => controller.isConversationsExpanded.value = true,
+                                decoration: InputDecoration(
+                                  hintText: 'Search conversation...',
+                                  hintStyle: TextStyle(
+                                    color: Colors.black.withOpacity(0.3),
+                                    fontSize: 14,
+                                  ),
+                                  prefixIcon: Icon(
+                                    Icons.search,
+                                    size: 20,
+                                    color: Colors.black.withOpacity(0.3),
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.black.withOpacity(0.03),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(28),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                              ),
+                            ),
+          
+                            Padding(
+                              padding: const EdgeInsets.only(left: 12),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.03),
+                                  borderRadius: BorderRadius.circular(28),
+                                ),
+                                child: IconButton(
+                                  icon: Padding(
+                                    padding: const EdgeInsets.only(left: 2.0,bottom: 4),
+                                    child: const Icon(
+                                      CupertinoIcons.square_pencil_fill,
+                                      size: 20,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  tooltip: 'New Conversation',
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                    controller.startNewChat();
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+          
+                      // DrawerHeader(
+                      //   decoration: BoxDecoration(
+                      //     color: Colors.white,
+                      //     border: Border(
+                      //       bottom: BorderSide(
+                      //         color: Colors.black.withOpacity(0.05),
+                      //         width: 1,
+                      //       ),
+                      //     ),
+                      //   ),
+                      //   child: Center(
+                      //     child: Image.asset(
+                      //       'assets/images/iMirAI-Logo1.png',
+                      //       height: 50,
+                      //       width: 180,
+                      //     ),
+                      //   ),
+                      // ),
+          
+                      // const SizedBox(height: 2),
+                      // if (controller.contentAuth.value.toUpperCase() == "Y" && ["viewer", "admin"].contains(controller.role.toLowerCase()))
+                      //   Padding(
+                      //     padding: const EdgeInsets.fromLTRB(16, 0, 16, 2),
+                      //     child: _buildDrawerItem(
+                      //       icon: Icons.library_books_outlined,
+                      //       label: 'Training Information',
+                      //       onTap: () {
+                      //         Navigator.pop(context);
+                      //         Get.to(() => const KnowledgeSourceView());
+                      //       },
+                      //     ),
+                      //   ),
+                    ],
+                  ),
+                
+                Obx(
+                  () => controller.isSessionsLoading.value
+                      ? Positioned.fill(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.shadowMedium,
+                              borderRadius: const BorderRadius.only(
+                                topRight: Radius.circular(30),
+                                bottomRight: Radius.circular(30),
+                              ),
+                            ),
+                            child: LoadingWidget.loader(),
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
+              ],
+            ),
           ),
+                ),
         ),
         body: Container(
           decoration: BoxDecoration(
@@ -251,37 +303,6 @@ class HomeScreen extends StatelessWidget {
                                     ),
                                   ),
                                   const SizedBox(height: 20),
-                                  Wrap(
-                                    spacing: 12,
-                                    runSpacing: 12,
-                                    alignment: WrapAlignment.center,
-                                    children: [
-                                      _buildSuggestionChip(
-                                        controller,
-                                        0,
-                                        Icons.psychology,
-                                        context,
-                                      ),
-                                      _buildSuggestionChip(
-                                        controller,
-                                        1,
-                                        Icons.shopping_cart_checkout,
-                                        context,
-                                      ),
-                                      _buildSuggestionChip(
-                                        controller,
-                                        2,
-                                        Icons.lightbulb_outline,
-                                        context,
-                                      ),
-                                      _buildSuggestionChip(
-                                        controller,
-                                        3,
-                                        Icons.description_outlined,
-                                        context,
-                                      ),
-                                    ],
-                                  ),
                                 ],
                               ),
                             ),
@@ -315,24 +336,81 @@ class HomeScreen extends StatelessWidget {
                         );
                       }),
                     ),
+                    if(controller.messages.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20.0, 0 , 20,10),
+                        child: SingleChildScrollView(
+                          scrollDirection: .horizontal,
+                          child: Row(
+                            spacing: 8,
+                            children: [
+                              _buildSuggestionChip(
+                                controller,
+                                0,
+                                Icons.psychology,
+                                context,
+                              ),
+                              _buildSuggestionChip(
+                                controller,
+                                1,
+                                Icons.shopping_cart_checkout,
+                                context,
+                              ),
+                              _buildSuggestionChip(
+                                controller,
+                                2,
+                                Icons.lightbulb_outline,
+                                context,
+                              ),
+                              _buildSuggestionChip(
+                                controller,
+                                3,
+                                Icons.description_outlined,
+                                context,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
                     _buildInputArea(context, controller),
                   ],
                 ),
                 Positioned(
                   top: 10,
-                  left: 10,
+                  left: 0,
                   child: Builder(
-                    builder: (context) => GestureDetector(
-                      onTap: () => Scaffold.of(context).openDrawer(),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Image.asset(
-                          'assets/images/logo_small.png',
-                          height: 40,
-                          width: 40,
-                        ),
+                    builder: (innerContext) => IconButton(
+                      onPressed: () {
+                        Scaffold.of(innerContext).openDrawer();
+                      },
+                    icon: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 22,
+                            height: 2.5,
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Container(
+                            width: 14,
+                            height: 2.5,
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+                  ),
                   ),
                 ),
                 Obx(
@@ -350,8 +428,7 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 
   Widget _buildSuggestionChip(
@@ -378,21 +455,10 @@ class HomeScreen extends StatelessWidget {
               ),
         borderRadius: BorderRadius.circular(20),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 16),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: Colors.black.withOpacity(0.12),
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            color:  Colors.black.withOpacity(0.04),
+            borderRadius: BorderRadius.circular(25),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -685,217 +751,214 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Widget _buildInputArea(BuildContext context, dynamic controller) {
+  }Widget _buildInputArea(BuildContext context, dynamic controller) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Colors.white.withOpacity(0.0), Colors.white, Colors.white],
-        ),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.black.withOpacity(0.15), width: 2),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 30,
-              offset: const Offset(0, 8),
-            ),
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 60,
-              spreadRadius: -10,
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Obx(
-              () => controller.selectedSuggestions.isNotEmpty
-                  ? Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                      child: Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: controller.selectedSuggestions.map<Widget>((
-                          suggestion,
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      child: Obx(
+            () => Container(
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.04),
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Suggestion Chips
+              if (controller.selectedSuggestions.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: controller.selectedSuggestions.map<Widget>((
+                        suggestion,
                         ) {
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.05),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: Colors.black.withOpacity(0.1),
-                                width: 1,
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.06),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              suggestion,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
                               ),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  suggestion,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                GestureDetector(
-                                  onTap: () =>
-                                      controller.removeSuggestion(suggestion),
-                                  child: Icon(
-                                    Icons.cancel,
-                                    size: 14,
-                                    color: Colors.black.withOpacity(0.4),
-                                  ),
-                                ),
-                              ],
+                            const SizedBox(width: 4),
+                            GestureDetector(
+                              onTap: () =>
+                                  controller.removeSuggestion(suggestion),
+                              child: Icon(
+                                Icons.cancel,
+                                size: 14,
+                                color: Colors.black.withOpacity(0.4),
+                              ),
                             ),
-                          );
-                        }).toList(),
-                      ),
-                    )
-                  : const SizedBox.shrink(),
-            ),
-            Obx(
-              () => TextField(
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+
+              // Text field
+              TextField(
                 readOnly: controller.isLoading.value,
                 controller: controller.searchController,
+                maxLines: 4,
+                minLines: 1,
                 style: const TextStyle(
                   color: Colors.black,
                   fontSize: 15,
-                  letterSpacing: 0.1,
                   fontWeight: FontWeight.w500,
                 ),
-                maxLines: 1,
-                textInputAction: TextInputAction.newline,
                 decoration: InputDecoration(
-                  hintText: 'Ask anything...',
+                  hintText: 'Ask anything',
                   hintStyle: TextStyle(
                     color: Colors.black.withOpacity(0.35),
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
                   ),
-                  prefixIcon: Builder(
-                    builder: (buttonContext) => Container(
-                      margin: const EdgeInsets.only(left: 6),
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.attach_file_rounded,
-                          color: Colors.black.withOpacity(0.4),
-                          size: 24,
-                        ),
-                        onPressed: () =>
-                            _showAttachPopover(context, buttonContext),
-                        tooltip: 'Attach',
-                      ),
-                    ),
-                  ),
-                  suffixIcon: Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (!controller.isListening.value)
-                          IconButton(
-                            icon: Icon(
-                              Icons.qr_code_scanner_rounded,
-                              color: Colors.black.withOpacity(0.4),
-                              size: 24,
-                            ),
-                            onPressed: () => controller.scanQRCode(context),
-                            tooltip: 'Scan QR Code',
-                          ),
-                        if ((controller.selectedSuggestions.length != 0 &&
-                            controller.selectedSuggestions[0] ==
-                                controller.searchOptions[1]))
-                          Container(
-                            margin: const EdgeInsets.only(right: 6),
-                            decoration: BoxDecoration(
-                              color: controller.isLoading.value
-                                  ? Colors.grey
-                                  : Colors.black,
-                              shape: BoxShape.circle,
-                            ),
-                            child: IconButton(
-                              icon: Icon(
-                                Icons.arrow_upward_rounded,
-                                color: Colors.white,
-                                size: 22,
-                              ),
-                              onPressed: () =>
-                                  handleSendMessage(controller, context),
-                              tooltip: 'Send message',
-                            ),
-                          ),
-
-                        //---------------------------------------
-                        if (!(controller.selectedSuggestions.length != 0 &&
-                            controller.selectedSuggestions[0] ==
-                                controller.searchOptions[1]))
-                          Container(
-                            margin: const EdgeInsets.only(right: 6),
-                            decoration: BoxDecoration(
-                              color: controller.isLoading.value
-                                  ? Colors.grey
-                                  : controller.isListening.value
-                                  ? Colors.red
-                                  : Colors.black,
-                              shape: BoxShape.circle,
-                            ),
-                            child: IconButton(
-                              icon: controller.hasText.value
-                                  ? Icon(
-                                      Icons.arrow_upward_rounded,
-                                      color: controller.hasText.value
-                                          ? Colors.white
-                                          : Colors.black.withOpacity(0.3),
-                                      size: 22,
-                                    )
-                                  : Image.asset(
-                                      "assets/images/mic_icon.png",
-                                      width: 24,
-                                      height: 24,
-                                    ),
-                              onPressed: () =>
-                                  handleSendMessage(controller, context),
-                              tooltip: controller.hasText.value
-                                  ? 'Send message'
-                                  : controller.isListening.value
-                                  ? 'Stop listening'
-                                  : 'Start voice',
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
+                  filled: false,
+                  contentPadding: const EdgeInsets.fromLTRB(18, 16, 18, 12),
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 16,
-                  ),
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
                 ),
               ),
-            ),
-          ],
+
+              // Bottom toolbar
+              Padding(
+                padding: const EdgeInsets.fromLTRB(6, 0, 8, 8),
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    // Attach icon button
+                    Builder(
+                      builder: (iconContext) => Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.04),
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          padding: EdgeInsets.zero,
+                          icon: Icon(
+                            Icons.attach_file_rounded,
+                            color: Colors.black.withOpacity(0.4),
+                            size: 22,
+                          ),
+                          onPressed: () =>
+                              _showAttachPopover(context, iconContext),
+                        ),
+                      ),
+                    ),
+
+                    const Spacer(),
+
+                    // QR scan icon (only when no text)
+                    if (!controller.hasText.value) ...[
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.04),
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          padding: EdgeInsets.zero,
+                          icon: Icon(
+                            Icons.qr_code_scanner_rounded,
+                            color: Colors.black.withOpacity(0.4),
+                            size: 22,
+                          ),
+                          onPressed: () => controller.scanQRCode(context),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+
+                    // Speak pill / Send circle — no AnimatedContainer
+                    GestureDetector(
+                      onTap: () => controller.hasText.value
+                          ? handleSendMessage(controller, context)
+                          : _handleMicrophoneInput(controller, context),
+                      child: controller.hasText.value
+                      // ── Send: fixed circle ──
+                          ? Container(
+                        width: 45,
+                        height: 45,
+                        decoration: BoxDecoration(
+                          color: controller.isLoading.value
+                              ? Colors.grey.withOpacity(0.4)
+                              : Colors.black,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.arrow_upward_rounded,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      )
+                      // ── Speak: pill ──
+                          : Container(
+                        height: 45,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16
+                        ),
+                        decoration: BoxDecoration(
+                          color: controller.isLoading.value
+                              ? Colors.grey.withOpacity(0.4)
+                              : controller.isListening.value
+                              ? Colors.red
+                              : Colors.black,
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset(
+                              "assets/images/mic_icon.png",
+                              width: 16,
+                              height: 16,
+                              color: Colors.white,
+                            ),
+                            const SizedBox(width: 6),
+                            const Text(
+                              'Speak',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+
+
 
   Future<void> handleSendMessage(controller, BuildContext context) async {
     debugPrint('🔘 handleSendMessage called');
@@ -1729,6 +1792,88 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  String _formatDate(String? dateStr) {
+    if (dateStr == null) return '';
+    try {
+      final date = DateTime.parse(dateStr);
+      final months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec'
+      ];
+      return '${months[date.month - 1]} ${date.day.toString().padLeft(2, '0')}';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  Widget _buildSessionItem({
+    required String title,
+    required String date,
+    required VoidCallback onTap,
+    required VoidCallback onMenuPressed,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 0, 12),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF1E293B),
+                        letterSpacing: -0.3,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (date.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        date,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.black.withOpacity(0.4),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              InkWell(
+                child: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: const Icon(Icons.more_vert, size: 20, color: Colors.black45),
+                ),
+                onTap: onMenuPressed,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildDrawerItem({
     required IconData icon,
     required String label,
@@ -2118,7 +2263,7 @@ class HomeScreen extends StatelessWidget {
         onTap: () => _showProfileDialog(context),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          padding: const EdgeInsets.fromLTRB(8,8,0,8),
           child: Row(
             children: [
               Obx(
@@ -2141,6 +2286,23 @@ class HomeScreen extends StatelessWidget {
                       color: Color(0xFF1E293B),
                     ),
                     overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.05),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    CupertinoIcons.chevron_right_2,
+                    size: 14,
+                    color: Colors.black.withOpacity(0.7),
                   ),
                 ),
               ),

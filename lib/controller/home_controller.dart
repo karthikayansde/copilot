@@ -55,6 +55,7 @@ class HomeController extends GetxController {
   var usedCredits = 0.0.obs;
   var creditsLeft = 0.0.obs;
   var isCreditsLoading = false.obs;
+  var isConversationsExpanded = true.obs;
 
 
 
@@ -99,6 +100,9 @@ class HomeController extends GetxController {
     });
     historySearchController.addListener(() {
       historySearchQuery.value = historySearchController.text;
+      if (historySearchController.text.isNotEmpty) {
+        isConversationsExpanded.value = true;
+      }
     });
   }
 
@@ -1276,4 +1280,3 @@ class HomeController extends GetxController {
 
 
 }
-
