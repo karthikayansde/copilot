@@ -31,6 +31,7 @@ class HomeController extends GetxController {
   final TextEditingController historySearchController = TextEditingController();
   final ScrollController scrollController = ScrollController();
 
+
   var isLoading = false.obs;
   var isSessionsLoading = false.obs;
   var isMessageLoading = false.obs;
@@ -56,6 +57,7 @@ class HomeController extends GetxController {
   var creditsLeft = 0.0.obs;
   var isCreditsLoading = false.obs;
   var isConversationsExpanded = true.obs;
+
 
 
 
@@ -106,12 +108,15 @@ class HomeController extends GetxController {
     });
   }
 
+
+
   @override
   void onClose() {
     _speech.stop();
 
     searchController.dispose();
     historySearchController.dispose();
+
 
     super.onClose();
   }
@@ -228,6 +233,8 @@ class HomeController extends GetxController {
   }
 
   void clearText() {
+
+
     searchController.clear();
 
     // Listener will update hasText
@@ -1277,6 +1284,4 @@ class HomeController extends GetxController {
       isCreditsLoading.value = false;
     }
   }
-
-
 }

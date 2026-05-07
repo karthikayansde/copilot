@@ -338,9 +338,9 @@ class HomeScreen extends StatelessWidget {
                     ),
                     if(controller.messages.isEmpty)
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(20.0, 0 , 20,10),
+                        padding: const EdgeInsets.fromLTRB(20.0, 0, 20, 10),
                         child: SingleChildScrollView(
-                          scrollDirection: .horizontal,
+                          scrollDirection: Axis.horizontal,
                           child: Row(
                             spacing: 8,
                             children: [
@@ -455,13 +455,15 @@ class HomeScreen extends StatelessWidget {
               ),
         borderRadius: BorderRadius.circular(20),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 16),
+          width:  MediaQuery.of(context).size.width * 0.37+(labelIndex == 3?50:0),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           decoration: BoxDecoration(
             color:  Colors.black.withOpacity(0.04),
             borderRadius: BorderRadius.circular(25),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: .center,
             children: [
               Icon(icon, size: 18, color: Colors.black87),
               const SizedBox(width: 8),
@@ -912,39 +914,24 @@ class HomeScreen extends StatelessWidget {
                         ),
                       )
                       // ── Speak: pill ──
-                          : Container(
+                      : Container(
+                        width: 45,
                         height: 45,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16
-                        ),
                         decoration: BoxDecoration(
                           color: controller.isLoading.value
                               ? Colors.grey.withOpacity(0.4)
                               : controller.isListening.value
                               ? Colors.red
                               : Colors.black,
-                          borderRadius: BorderRadius.circular(24),
+                          shape: BoxShape.circle,
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Image.asset(
-                              "assets/images/mic_icon.png",
-                              width: 16,
-                              height: 16,
-                              color: Colors.white,
-                            ),
-                            const SizedBox(width: 6),
-                            const Text(
-                              'Speak',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
+                        child: Center(
+                          child: Image.asset(
+                            "assets/images/mic_icon.png",
+                            width: 18,
+                            height: 18,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
