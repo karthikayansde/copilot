@@ -843,14 +843,15 @@ class HomeController extends GetxController {
     messages.clear();
     searchController.clear();
     selectedSuggestions.clear();
+    storedDataJson = null; // Clear any cached data for new session
     if (searchOptions.isNotEmpty) {
       selectedSuggestions.add(searchOptions[0]);
     }
     hasText.value = false;
     isLoading.value = false;
   }
-
   Future<void> pickAndProcessFile(BuildContext context) async {
+    final String currentSessionId = sessionId;
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
@@ -872,6 +873,8 @@ class HomeController extends GetxController {
         );
         // Use the simplified processing flow from FileProcessorService
         final processedData = await FileProcessorService.processFile(file);
+
+        if (sessionId != currentSessionId) return;
 
         debugPrint("File Processed: ${jsonEncode(processedData)}");
 
@@ -1146,6 +1149,7 @@ class HomeController extends GetxController {
     }
 
     isLoading.value = true;
+    final String currentSessionId = sessionId;
     try {
       ApiResponse response;
       if (originalQuestion.isEmpty) {
@@ -1173,6 +1177,8 @@ class HomeController extends GetxController {
           useFormData: true,
         );
       }
+
+      if (sessionId != currentSessionId) return;
 
       if (response.code == ApiCode.success200.index && response.data != null) {
         // Case A: Suggestion list (Usually from empty question call)
