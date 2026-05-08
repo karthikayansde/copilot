@@ -11,32 +11,33 @@ class KnowledgeSourceView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final controller = Get.put(KnowledgeSourceController());
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Knowledge Source',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          style: TextStyle(color: colorScheme.onSurface, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
           onPressed: () => Get.back(),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add, color: Colors.blue),
+            icon: Icon(Icons.add, color: colorScheme.primary),
             tooltip: 'Add New',
             onPressed: () => _showAddNewEntryDialog(context, controller),
           ),
           Obx(() => IconButton(
                 icon: Icon(Icons.edit,
                     color: controller.selectedIds.length == 1
-                        ? Colors.blue
-                        : Colors.grey),
+                        ? colorScheme.primary
+                        : colorScheme.outline),
                 tooltip: 'Edit Selected',
                 onPressed: controller.selectedIds.length == 1
                     ? () => _showEditAddDialog(context, controller,
@@ -48,7 +49,7 @@ class KnowledgeSourceView extends StatelessWidget {
                       },
               )),
           IconButton(
-            icon: const Icon(Icons.delete, color: Colors.red),
+            icon: Icon(Icons.delete, color: colorScheme.error),
             tooltip: 'Delete Selected',
             onPressed: () {
               if (controller.hasSelection()) {
@@ -57,7 +58,7 @@ class KnowledgeSourceView extends StatelessWidget {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.black),
+            icon: Icon(Icons.refresh, color: colorScheme.onSurface),
             onPressed: () => controller.fetchKnowledgeSources(),
           ),
         ],
@@ -163,7 +164,7 @@ class KnowledgeSourceView extends StatelessWidget {
             if (controller.isLoading.value)
               Positioned.fill(
                 child: Container(
-                  color: AppColors.shadowMedium,
+                  color: colorScheme.scrim.withOpacity(0.4),
                   child: Center(child: LoadingWidget.loader()),
                 ),
               ),

@@ -45,4 +45,8 @@ class AppStrings {
   static const String sendResetLink = "Send reset link";
   static const String resetLinkSentSuccess = "activation link sent successfully. You can now reset.";
   static const String rememberedPassword = "Remembered Password?";
+  static const String themeDark = "themeDark";
+  static const String themeLight = "themeLight";
+  static const String themeSystem = "System Default";
+
 }

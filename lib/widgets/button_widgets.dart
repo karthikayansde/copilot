@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../utils/app_colors.dart';
+import '../core/theme/app_colors.dart';
 
 class BasicButtonWidget extends StatefulWidget {
   final void Function() onPressed;
@@ -13,7 +13,7 @@ class BasicButtonWidget extends StatefulWidget {
   final bool isDisable;
   final bool? elevation;
 
-  const BasicButtonWidget({super.key, required this.onPressed, required this.label, this.height = 60, this.width = double.maxFinite, this.color = AppColors.black, this.radius = 20, this.isDisable = false, this.labelColor, this.elevation});
+  const BasicButtonWidget({super.key, required this.onPressed, required this.label, this.height = 60, this.width = double.maxFinite, this.color, this.radius = 20, this.isDisable = false, this.labelColor, this.elevation});
 
   @override
   State<BasicButtonWidget> createState() => _BasicButtonWidgetState();

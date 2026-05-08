@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 
+import '../core/theme/app_colors.dart';
 import '../services/api/api_service.dart';
-import '../utils/app_colors.dart';
 
 class SnackBarWidget {
 

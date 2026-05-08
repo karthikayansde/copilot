@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:iMirAI/services/local_storage_service/local_storage_service.dart';
 import 'package:iMirAI/utils/app_strings.dart';
 import 'package:iMirAI/views/home_screen.dart';
 import 'package:iMirAI/widgets/button_widgets.dart';
@@ -15,14 +16,21 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:get/get.dart';
 import 'controller/home_controller.dart';
+import 'core/theme/app_color_schemes.dart';
 import 'core/theme/app_colors.dart';
+import 'core/theme/app_theme.dart';
 import 'core/theme/styles.dart';
 import 'services/shared_pref_manager.dart';
 import 'views/login_view.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   HttpOverrides.global = MyHttpOverrides();
+  ILocalStorage? localStorage;
+  localStorage = LocalStorageService();
+  await localStorage.init();
+  AppTheme(isNative: true, colorSchemes: AppColorSchemes(AppTextTheme.textTheme).options, storage: localStorage);
+
   runApp(const MyApp());
 }
 
@@ -39,14 +47,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      title: AppStrings.appName,
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
-        useMaterial3: true,
+    return AppTheme.instance.themeWrapper(
+      (theme, darkTheme, themeMode) => GetMaterialApp(
+        title: AppStrings.appName,
+        debugShowCheckedModeBanner: false,
+        theme: theme,
+        darkTheme: darkTheme,
+        themeMode: themeMode,
+        home: const AuthScreen(),
       ),
-      home: const AuthScreen(),
     );
   }
 }
@@ -57,7 +66,6 @@ class AuthScreen extends StatefulWidget {
   @override
   State<AuthScreen> createState() => _AuthScreenState();
 }
-
 class _AuthScreenState extends State<AuthScreen> {
   final LocalAuthentication auth = LocalAuthentication();
   bool _canCheckBiometrics = false;
@@ -71,20 +79,18 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Future<void> _checkLoginStatus() async {
-    // Add a small delay for splash effect
     await Future.delayed(const Duration(milliseconds: 500));
 
-    final isLoggedIn = await SharedPrefManager.instance.getBoolAsync(SharedPrefManager.isLoggedIn) ?? false;
+    final isLoggedIn =
+        await SharedPrefManager.instance.getBoolAsync(SharedPrefManager.isLoggedIn) ?? false;
     if (!mounted) return;
 
     if (!isLoggedIn) {
-      // Not logged in -> Go to Login
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const LoginView()),
       );
     } else {
-      // Logged in -> Setup Biometrics
       setState(() {
         _isLoggedIn = true;
         _isLoading = false;
@@ -130,7 +136,7 @@ class _AuthScreenState extends State<AuthScreen> {
             cancelButton: 'Cancel',
           ),
         ],
-          biometricOnly: false,
+        biometricOnly: false,
       );
 
       if (authenticated && mounted) {
@@ -141,35 +147,40 @@ class _AuthScreenState extends State<AuthScreen> {
       }
     } catch (e) {
       debugPrint('Authentication error: $e');
-      // Allow retry via button
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: colorScheme.surface,
+        body: Center(
+          child: CircularProgressIndicator(color: colorScheme.primary),
+        ),
       );
     }
 
     return Scaffold(
-      backgroundColor: AppColors.cardBackground,
+      backgroundColor: colorScheme.surfaceContainerLow,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-
             Text(
               'Authentication',
-
-              style: text28Bold.copyWith(fontSize: 24),
+              style: text28Bold.copyWith(
+                fontSize: 24,
+                color: colorScheme.onSurface,
+              ),
             ),
-            SizedBox(height: 40,),
+            const SizedBox(height: 40),
             Icon(
               Icons.fingerprint,
               size: 100,
-              color: AppColors.textPrimary,
+              color: colorScheme.onSurfaceVariant,
             ),
             const SizedBox(height: 40),
             if (_canCheckBiometrics)
@@ -179,24 +190,26 @@ class _AuthScreenState extends State<AuthScreen> {
                 label: 'Unlock with Biometrics',
               )
             else
-              const Text(
+              Text(
                 'Biometrics not available.\nPlease log in again.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.red),
+                style: TextStyle(color: colorScheme.error),
               ),
-
             const SizedBox(height: 16),
             TextButton(
               onPressed: () async {
-                 await SharedPrefManager.instance.logout();
-                 if(mounted){
-                   Navigator.pushReplacement(
+                await SharedPrefManager.instance.logout();
+                if (mounted) {
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (context) => const LoginView()),
                   );
-                 }
+                }
               },
-              child: Text('Log out',style: TextStyle(color: AppColors.textSecondary),),
+              child: Text(
+                'Log out',
+                style: TextStyle(color: colorScheme.secondary),
+              ),
             ),
           ],
         ),

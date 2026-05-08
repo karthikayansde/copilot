@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../utils/app_colors.dart';
 
 class LoadingWidget {
   static void showLoader(BuildContext context) {

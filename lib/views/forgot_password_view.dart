@@ -1,7 +1,6 @@
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../core/theme/app_colors.dart';
 import '../core/theme/styles.dart';
 import '../services/api/api_service.dart';
 import '../services/api/endpoints.dart';
@@ -54,17 +53,17 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
         endpoint: Endpoints.registerBaseUrl + Endpoints.forgotPassword,
         body: {"user_name": _usernameController.text},
       );
-        if(response.code == ApiCode.notFound404.index) {
-          if (response.data['detail'] == "USERNAME NOT REGISTERED") {
-            SnackBarWidget.show(
-              context,
-              title: AppStrings.warning,
-              message: "Username not registered",
-              contentType: ContentType.warning,
-            );
-            return;
-          }
+      if (response.code == ApiCode.notFound404.index) {
+        if (response.data['detail'] == "USERNAME NOT REGISTERED") {
+          SnackBarWidget.show(
+            context,
+            title: AppStrings.warning,
+            message: "Username not registered",
+            contentType: ContentType.warning,
+          );
+          return;
         }
+      }
       _isSuccess.value = true;
     } catch (e) {
       SnackBarWidget.showError(context);
@@ -75,19 +74,19 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
 
   Future<void> _sendResetLink() async {
     if (!_formKey.currentState!.validate()) return;
-
     FocusScope.of(context).unfocus();
     _isSuccess.value = false;
-
     await forgotPasswordApi(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: AppColors.greyBackground,
+      backgroundColor: cs.surfaceContainerLow,
       body: Obx(
-        () => Stack(
+            () => Stack(
           children: [
             Center(
               child: Padding(
@@ -96,14 +95,14 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                   child: Form(
                     key: _formKey,
                     child: Card(
-                      color: AppColors.cardBackground,
+                      color: cs.surface,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Obx(
-                          () => Column(
+                              () => Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -121,7 +120,10 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                                 alignment: Alignment.centerLeft,
                                 child: Text(
                                   AppStrings.forgotPasswordTitle,
-                                  style: text28Bold.copyWith(fontSize: 24),
+                                  style: text28Bold.copyWith(
+                                    fontSize: 24,
+                                    color: cs.onSurface,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 20),
@@ -132,12 +134,11 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                                 hasHindOnTop: true,
                                 suffixIcon: Padding(
                                   padding: const EdgeInsets.only(
-                                    left: 10,
-                                    right: 10,
-                                  ),
+                                      left: 10, right: 10),
                                   child: Icon(
                                     Icons.person_outline,
                                     size: 18,
+                                    color: cs.onSurface.withOpacity(0.6),
                                   ),
                                 ),
                                 maxLines: 1,
@@ -157,10 +158,10 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                                   width: double.infinity,
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFE8F5E9),
+                                    color: cs.secondaryContainer,
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
-                                      color: const Color(0xFF4CAF50),
+                                      color: cs.secondary,
                                       width: 0.5,
                                     ),
                                   ),
@@ -168,7 +169,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                                     children: [
                                       Icon(
                                         Icons.check_circle,
-                                        color: const Color(0xFF4CAF50),
+                                        color: cs.secondary,
                                         size: 20,
                                       ),
                                       const SizedBox(width: 10),
@@ -176,7 +177,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                                         child: Text(
                                           AppStrings.resetLinkSentSuccess,
                                           style: bodyText14.copyWith(
-                                            color: const Color(0xFF2E7D32),
+                                            color: cs.onSecondaryContainer,
                                           ),
                                         ),
                                       ),
@@ -190,7 +191,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
 
                               // Send reset link button
                               BasicButtonWidget(
-                                onPressed: _sendResetLink,
+                                onPressed: () => _sendResetLink(),
                                 label: AppStrings.sendResetLink,
                               ),
 
@@ -198,9 +199,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
 
                               // Back to login link
                               InkWell(
-                                onTap: () {
-                                  Navigator.pop(context);
-                                },
+                                onTap: () => Navigator.pop(context),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -208,7 +207,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                                       AppStrings.rememberedPassword,
                                       style: bodyText16.copyWith(
                                         height: 1.6,
-                                        color: AppColors.textPrimary,
+                                        color: cs.onSurface.withOpacity(0.7),
                                         letterSpacing: 0.2,
                                       ),
                                     ),
@@ -218,7 +217,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                                       style: bodyText16.copyWith(
                                         fontWeight: FontWeight.w700,
                                         height: 1.6,
-                                        color: AppColors.primary,
+                                        color: cs.primary,
                                         letterSpacing: 0.2,
                                       ),
                                     ),
@@ -235,10 +234,12 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                 ),
               ),
             ),
+
+            // Loading overlay
             if (_isLoading.value)
               Positioned.fill(
                 child: Container(
-                  color: AppColors.shadowMedium,
+                  color: cs.surface.withOpacity(0.6),
                   child: LoadingWidget.loader(),
                 ),
               ),

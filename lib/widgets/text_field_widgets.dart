@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../utils/app_colors.dart';
+import '../core/theme/app_colors.dart';
 
 class TextFieldWidget extends StatelessWidget {
-  TextFieldWidget({super.key, required this.controller, required this.hint, this.radius = 20, this.contentPadding, this.isReadOnly = false, this.suffixIcon, this.prefixIcon, this.isPassword = false, this.keyboardType, this.inputFormatters, this.formKey, this.validator, this.focusNode, this.maxLines, this.onTap, this.enableInteractiveSelection, this.onChanged, this.hasHindOnTop = false, this.bgColor = AppColors.white, this.fillBgColor = false, this.isBorderNeeded = false, this.hintColor, this.header, this.maxLength});
+  TextFieldWidget({super.key, required this.controller, required this.hint, this.radius = 20, this.contentPadding, this.isReadOnly = false, this.suffixIcon, this.prefixIcon, this.isPassword = false, this.keyboardType, this.inputFormatters, this.formKey, this.validator, this.focusNode, this.maxLines, this.onTap, this.enableInteractiveSelection, this.onChanged, this.hasHindOnTop = false, this.bgColor, this.fillBgColor = false, this.isBorderNeeded = false, this.hintColor, this.header, this.maxLength});
   final TextEditingController controller;
   final String hint;
   final String? header;
@@ -32,21 +32,32 @@ class TextFieldWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final textStyle = TextStyle(
+      fontSize: 13,
+      fontWeight: FontWeight.w500,
+      color: cs.onSurface,
+    );
+
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 5.0),
+      padding: const EdgeInsets.symmetric(vertical: 5.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          !hasHindOnTop!?Container():Padding(
-            padding: const EdgeInsets.all(1.0),
-            child: Text( header??hint, style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: AppColors.black
-            ),),
-          ),
+          if (hasHindOnTop == true)
+            Padding(
+              padding: const EdgeInsets.all(1.0),
+              child: Text(
+                header ?? hint,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: cs.onSurface,
+                ),
+              ),
+            ),
           ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 450 ),
+            constraints: const BoxConstraints(maxWidth: 450),
             child: TextFormField(
               maxLength: maxLength,
               enableInteractiveSelection: enableInteractiveSelection,
@@ -57,55 +68,54 @@ class TextFieldWidget extends StatelessWidget {
               inputFormatters: inputFormatters,
               obscureText: isPassword,
               readOnly: isReadOnly,
-              cursorColor: AppColors.primary,
+              cursorColor: cs.primary,
               controller: controller,
               keyboardType: keyboardType,
               maxLines: maxLines,
-              style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.black
-              ),
+              style: textStyle,
               onChanged: onChanged,
               decoration: InputDecoration(
-                filled: isReadOnly?true: fillBgColor,
-                fillColor: isReadOnly?Colors.grey.shade200 : bgColor,
+                filled: isReadOnly ? true : fillBgColor,
+                fillColor: isReadOnly ? cs.surfaceContainerLow : bgColor,
                 suffixIcon: suffixIcon,
                 prefixIcon: prefixIcon,
-                prefixIconConstraints: BoxConstraints(maxHeight: 40, maxWidth: 40),
-                suffixIconConstraints: BoxConstraints(maxHeight: 40, maxWidth: 40),
+                prefixIconConstraints:
+                    const BoxConstraints(maxHeight: 40, maxWidth: 40),
+                suffixIconConstraints:
+                    const BoxConstraints(maxHeight: 40, maxWidth: 40),
                 contentPadding: contentPadding,
                 hintText: hint,
                 hintStyle: TextStyle(
                   fontWeight: FontWeight.w400,
                   fontSize: 13,
-                  color: hintColor,
+                  color: hintColor ?? cs.onSurface.withOpacity(0.5),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius:
-                  BorderRadius.circular(radius??0),
-                  borderSide:
-                  BorderSide(color: (isBorderNeeded!?AppColors.black:AppColors.transparent)),
+                  borderRadius: BorderRadius.circular(radius ?? 0),
+                  borderSide: BorderSide(
+                    color: isBorderNeeded == true
+                        ? cs.outline
+                        : Colors.transparent,
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius:
-                  BorderRadius.circular(radius??0),
-                  borderSide:
-                  BorderSide(color: AppColors.primary),
+                  borderRadius: BorderRadius.circular(radius ?? 0),
+                  borderSide: BorderSide(color: cs.primary, width: 2),
                 ),
                 errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(radius??0),
-                  borderSide: const BorderSide(color: AppColors.red),
+                  borderRadius: BorderRadius.circular(radius ?? 0),
+                  borderSide: BorderSide(color: cs.error),
                 ),
                 focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(radius??0),
-                  borderSide: const BorderSide(color: AppColors.primary
+                  borderRadius: BorderRadius.circular(radius ?? 0),
+                  borderSide: BorderSide(color: cs.error, width: 2),
                 ),
+                counterText: "",
               ),
             ),
-          ),),
+          ),
         ],
       ),
     );
   }
-}
+  }

@@ -36,6 +36,7 @@ class _ResendActivationViewState extends State<ResendActivationView> {
   final _isLoading = false.obs;
   final _isSuccess = false.obs;
   final apiService = ApiService();
+
   @override
   void initState() {
     super.initState();
@@ -69,60 +70,84 @@ class _ResendActivationViewState extends State<ResendActivationView> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: AppColors.greyBackground,
-      body: Obx(
-        () => Stack(
-          children: [
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: SingleChildScrollView(
-                  child: Form(
-                    key: _formKey,
-                    child: Card(
-                      color: AppColors.cardBackground,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Obx(
-                          () => Column(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              colorScheme.surface,
+              colorScheme.primary.withOpacity(0.05),
+              colorScheme.surface,
+            ],
+          ),
+        ),
+        child: Obx(
+          () => Stack(
+            children: [
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: SingleChildScrollView(
+                    child: Form(
+                      key: _formKey,
+                      child: Card(
+                        elevation: 0,
+                        color: colorScheme.surface.withOpacity(0.8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(28),
+                          side: BorderSide(
+                            color: colorScheme.outlineVariant.withOpacity(0.5),
+                            width: 1,
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              const SizedBox(height: 16),
-                              Align(
-                                alignment: Alignment.center,
+                              const SizedBox(height: 8),
+                              Center(
                                 child: Image.asset(
                                   'assets/images/iMirAI-Logo1.png',
                                   height: 50,
                                   width: 180,
                                 ),
                               ),
-                              const SizedBox(height: 16),
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  AppStrings.resendActivationLink,
-                                  style: text28Bold.copyWith(fontSize: 24),
+                              const SizedBox(height: 32),
+                              Text(
+                                AppStrings.resendActivationLink,
+                                style: text28Bold.copyWith(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w800,
+                                  color: colorScheme.onSurface,
+                                  letterSpacing: -0.5,
                                 ),
                               ),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Enter your credentials to resend the link',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: colorScheme.onSurface.withOpacity(0.6),
+                                ),
+                              ),
+                              const SizedBox(height: 32),
 
                               // Username field
                               TextFieldWidget(
                                 isBorderNeeded: true,
                                 hasHindOnTop: true,
                                 suffixIcon: Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 10,
-                                    right: 10,
-                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
                                   child: Icon(
-                                    Icons.person_2_outlined,
-                                    size: 18,
+                                    Icons.alternate_email_rounded,
+                                    size: 20,
+                                    color: colorScheme.onSurface.withOpacity(0.5),
                                   ),
                                 ),
                                 maxLines: 1,
@@ -133,31 +158,23 @@ class _ResendActivationViewState extends State<ResendActivationView> {
                                 hint: AppStrings.userName,
                                 controller: _usernameController,
                               ),
-
+                              const SizedBox(height: 4),
                               // Password field
                               TextFieldWidget(
                                 isBorderNeeded: true,
                                 hasHindOnTop: true,
                                 isPassword: _isPasswordHidden.value,
                                 suffixIcon: InkWell(
-                                  onTap: () {
-                                    _isPasswordHidden.value =
-                                        !_isPasswordHidden.value;
-                                  },
+                                  onTap: () => _isPasswordHidden.toggle(),
                                   child: Padding(
-                                    padding: const EdgeInsets.only(
-                                      left: 10,
-                                      right: 10,
+                                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                                    child: Icon(
+                                      _isPasswordHidden.value
+                                          ? Icons.visibility_outlined
+                                          : Icons.visibility_off_outlined,
+                                      size: 20,
+                                      color: colorScheme.onSurface.withOpacity(0.5),
                                     ),
-                                    child: _isPasswordHidden.value
-                                        ? Icon(
-                                            Icons.visibility_outlined,
-                                            size: 18,
-                                          )
-                                        : Icon(
-                                            Icons.visibility_off_outlined,
-                                            size: 18,
-                                          ),
                                   ),
                                 ),
                                 maxLines: 1,
@@ -170,7 +187,7 @@ class _ResendActivationViewState extends State<ResendActivationView> {
                                 controller: _passwordController,
                               ),
 
-                              const SizedBox(height: 15),
+                              const SizedBox(height: 16),
 
                               // Success message banner
                               if (_isSuccess.value) ...[
@@ -178,36 +195,38 @@ class _ResendActivationViewState extends State<ResendActivationView> {
                                   width: double.infinity,
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFE8F5E9),
-                                    borderRadius: BorderRadius.circular(10),
+                                    color: colorScheme.primaryContainer,
+                                    borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: const Color(0xFF4CAF50),
+                                      color: colorScheme.primary,
                                       width: 0.5,
                                     ),
                                   ),
                                   child: Row(
                                     children: [
                                       Icon(
-                                        Icons.check_circle,
-                                        color: const Color(0xFF4CAF50),
+                                        Icons.check_circle_rounded,
+                                        color: colorScheme.primary,
                                         size: 20,
                                       ),
                                       const SizedBox(width: 10),
                                       Expanded(
                                         child: Text(
                                           AppStrings.activationLinkSentSuccess,
-                                          style: bodyText14.copyWith(
-                                            color: const Color(0xFF2E7D32),
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: colorScheme.onPrimaryContainer,
                                           ),
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-                                const SizedBox(height: 15),
+                                const SizedBox(height: 24),
                               ],
 
-                              const SizedBox(height: 15),
+                              const SizedBox(height: 8),
 
                               // Resend activation link button
                               BasicButtonWidget(
@@ -215,35 +234,35 @@ class _ResendActivationViewState extends State<ResendActivationView> {
                                 label: AppStrings.resendActivationLink,
                               ),
 
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 24),
 
                               // Back to login link
-                              InkWell(
-                                onTap: () {
-                                  Navigator.pop(context);
-                                },
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      AppStrings.rememberPassword,
-                                      style: bodyText16.copyWith(
-                                        height: 1.6,
-                                        color: AppColors.textPrimary,
-                                        letterSpacing: 0.2,
+                              Center(
+                                child: InkWell(
+                                  onTap: () => Navigator.pop(context),
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                    child: RichText(
+                                      text: TextSpan(
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: colorScheme.onSurface.withOpacity(0.7),
+                                        ),
+                                        children: [
+                                          TextSpan(text: AppStrings.rememberPassword),
+                                          const TextSpan(text: ' '),
+                                          TextSpan(
+                                            text: AppStrings.backToLogin,
+                                            style: TextStyle(
+                                              color: colorScheme.primary,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      AppStrings.backToLogin,
-                                      style: bodyText16.copyWith(
-                                        fontWeight: FontWeight.w700,
-                                        height: 1.6,
-                                        color: AppColors.primary,
-                                        letterSpacing: 0.2,
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -255,19 +274,20 @@ class _ResendActivationViewState extends State<ResendActivationView> {
                   ),
                 ),
               ),
-            ),
-            if (_isLoading.value)
-              Positioned.fill(
-                child: Container(
-                  color: AppColors.shadowMedium,
-                  child: LoadingWidget.loader(),
+              if (_isLoading.value)
+                Positioned.fill(
+                  child: Container(
+                    color: colorScheme.surface.withOpacity(0.6),
+                    child: LoadingWidget.loader(),
+                  ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
+
   Future<void> resendActivationApi(BuildContext context) async {
     try {
       ApiResponse response = await apiService.request(
@@ -275,11 +295,14 @@ class _ResendActivationViewState extends State<ResendActivationView> {
         customUrl: true,
         useFormData: true,
         endpoint: Endpoints.registerBaseUrl + Endpoints.resendActivation,
-        body: {"username": _usernameController.text, "password": _passwordController.text},
+        body: {
+          "username": _usernameController.text,
+          "password": _passwordController.text,
+        },
       );
 
-      if(response.code == ApiCode.notFound404.index){
-        if(response.data['detail'] == "INCORRECT USERNAME"){
+      if (response.code == ApiCode.notFound404.index) {
+        if (response.data['detail'] == "INCORRECT USERNAME") {
           SnackBarWidget.show(
             context,
             title: AppStrings.warning,
@@ -289,8 +312,8 @@ class _ResendActivationViewState extends State<ResendActivationView> {
           return;
         }
       }
-      if(response.code == ApiCode.unauthorized401.index){
-        if(response.data['detail'] == "INCORRECT PASSWORD"){
+      if (response.code == ApiCode.unauthorized401.index) {
+        if (response.data['detail'] == "INCORRECT PASSWORD") {
           SnackBarWidget.show(
             context,
             title: AppStrings.warning,
@@ -300,8 +323,8 @@ class _ResendActivationViewState extends State<ResendActivationView> {
           return;
         }
       }
-      if(response.code == ApiCode.error400.index){
-        if(response.data['detail'] == "ACCOUNT ALREADY ACTIVATED"){
+      if (response.code == ApiCode.error400.index) {
+        if (response.data['detail'] == "ACCOUNT ALREADY ACTIVATED") {
           SnackBarWidget.show(
             context,
             title: AppStrings.warning,
@@ -311,8 +334,8 @@ class _ResendActivationViewState extends State<ResendActivationView> {
           return;
         }
       }
-      if(response.code == ApiCode.forbidden403.index){
-        if(response.data['detail'] == "APPROVAL REJECTED"){
+      if (response.code == ApiCode.forbidden403.index) {
+        if (response.data['detail'] == "APPROVAL REJECTED") {
           SnackBarWidget.show(
             context,
             title: AppStrings.warning,
@@ -320,7 +343,7 @@ class _ResendActivationViewState extends State<ResendActivationView> {
             contentType: ContentType.warning,
           );
           return;
-        }else if(response.data['detail'] == "APPROVAL PENDING"){
+        } else if (response.data['detail'] == "APPROVAL PENDING") {
           SnackBarWidget.show(
             context,
             title: AppStrings.warning,

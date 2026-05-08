@@ -40,4 +40,23 @@ class AppColors {
   // Shadow Colors
   static Color shadowLight = Colors.black12;
   static Color shadowMedium = Colors.black26;
+  //--------------------------------
+
+  /// basic
+  static const Color popupBG = Colors.black54;
+  static const Color transparent = Color(0x00000000);
+  static const Color red = Colors.red;
+  /// app colors
+  static const Color yelloLight = Color(0xFFFFF5E9);
+  static const Color primaryRed = Color(0xFFAC0000);
+  static const Color bgTabSider = Color(0xFFFEBCBD);
+  static const Color darkPrim = Color(0xFF413247);
+  static const Color listBg = Color(0xFFF8E5FF);
+  static const Color menuBg = Color(0xFFC9FFCB);
+  static const Color grey = Colors.grey;
+
+  static const Color successGreen = Color(0xFF2E7D32);
+  static const Color infoBlue = Color(0xFF1976D2);
+  static const Color warning = Color(0xFFFFA000);
+  static const Color error = Color(0xFFD32F2F);
 }
