@@ -106,6 +106,11 @@ class HomeController extends GetxController {
         isConversationsExpanded.value = true;
       }
     });
+
+    // Select the first option by default
+    if (searchOptions.isNotEmpty) {
+      selectedSuggestions.add(searchOptions[0]);
+    }
   }
 
 
@@ -280,50 +285,48 @@ class HomeController extends GetxController {
   }
 
   Future<void> logout(BuildContext context) async {
-    // Show confirmation dialog
-
-    final bool? shouldLogout = await showDialog<bool>(
-      context: context,
-
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('Confirm Logout'),
-
-          content: const Text('Are you sure you want to logout?'),
-
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+    // Show confirmation dialog using Get.dialog for better reliability
+    final bool? shouldLogout = await Get.dialog<bool>(
+      AlertDialog(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: Text(
+          'Confirm Logout',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontWeight: FontWeight.bold,
           ),
-
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-
-              child: const Text('Cancel'),
+        ),
+        content: Text(
+          'Are you sure you want to logout?',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+          ),
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Theme.of(context).colorScheme.primary),
             ),
-
-            BasicButtonWidget(
-              height: 35,
-
-              width: 100,
-
-              onPressed: () {
-                Navigator.of(dialogContext).pop(true);
-              },
-
-              label: AppStrings.logout,
-            ),
-          ],
-        );
-      },
+          ),
+          BasicButtonWidget(
+            height: 40,
+            width: 100,
+            onPressed: () => Get.back(result: true),
+            label: AppStrings.logout,
+          ),
+        ],
+      ),
     );
-
-    // If user confirmed logout
 
     if (shouldLogout == true) {
       try {
+        // 1. Clear persistent storage
         await SharedPrefManager.instance.logout();
 
+        // 2. Reset all controller states
         messages.clear();
         searchController.clear();
         sessionId = '';
@@ -332,39 +335,36 @@ class HomeController extends GetxController {
         speechEnabled.value = false;
         hasText.value = false;
         isLoading.value = false;
-        _speech.stop();
 
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Logged out successfully'),
-              duration: Duration(seconds: 2),
-
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-
-          Navigator.pushAndRemoveUntil(
-            context,
-
-            MaterialPageRoute(builder: (context) => const LoginView()),
-
-                (Route<dynamic> route) => false,
-          );
+        // Stop any active speech processing
+        try {
+          _speech.stop();
+        } catch (e) {
+          debugPrint('Speech stop error: $e');
         }
+
+        // 3. Redirect using Get.offAll to clear the entire navigation stack
+        Get.offAll(() => const LoginView());
+
+        // 4. Show success message
+        Get.snackbar(
+          'Success',
+          'Logged out successfully',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green.withOpacity(0.8),
+          colorText: Colors.white,
+          margin: const EdgeInsets.all(16),
+        );
       } catch (e) {
         debugPrint('Error logging out: $e');
-
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Error logging out'),
-              duration: Duration(seconds: 2),
-
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
+        Get.snackbar(
+          'Error',
+          'An error occurred while logging out. Please try again.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withOpacity(0.8),
+          colorText: Colors.white,
+          margin: const EdgeInsets.all(16),
+        );
       }
     }
   }
@@ -389,9 +389,12 @@ class HomeController extends GetxController {
       ),
     );
 
-    // Clear inputs
+    // Clear inputs and reset to default selection
     searchController.clear();
     selectedSuggestions.clear();
+    if (searchOptions.isNotEmpty) {
+      selectedSuggestions.add(searchOptions[0]);
+    }
     
     isLoading.value = true;
     scrollToBottom();
@@ -409,8 +412,10 @@ class HomeController extends GetxController {
 
       String fullResponse = "";
       ChatMessage? aiMessage;
+      final String currentSessionId = sessionId;
 
       await for (final chunk in stream) {
+        if (sessionId != currentSessionId) return;
         if (chunk.startsWith("||ERROR||")) {
           isLoading.value = false;
           messages.add(ChatMessage(
@@ -729,6 +734,9 @@ class HomeController extends GetxController {
       messages.clear();
       searchController.clear();
       selectedSuggestions.clear();
+      if (searchOptions.isNotEmpty) {
+        selectedSuggestions.add(searchOptions[0]);
+      }
 
       ApiResponse response = await apiService.request(
         method: ApiMethod.get,
@@ -835,7 +843,11 @@ class HomeController extends GetxController {
     messages.clear();
     searchController.clear();
     selectedSuggestions.clear();
+    if (searchOptions.isNotEmpty) {
+      selectedSuggestions.add(searchOptions[0]);
+    }
     hasText.value = false;
+    isLoading.value = false;
   }
 
   Future<void> pickAndProcessFile(BuildContext context) async {
@@ -924,6 +936,7 @@ class HomeController extends GetxController {
     scrollToBottom();
 
     isLoading.value = true;
+    final String currentSessionId = sessionId;
     try {
       ApiResponse response = await apiService.request(
         method: ApiMethod.post,
@@ -937,6 +950,7 @@ class HomeController extends GetxController {
         useFormData: true,
       );
 
+      if (sessionId != currentSessionId) return;
       if (response.code == ApiCode.success200.index) {
         if (response.data != null) {
           messages.add(
@@ -1024,6 +1038,7 @@ class HomeController extends GetxController {
   scrollToBottom();
 
   isLoading.value = true;
+  final String currentSessionId = sessionId;
 
   try {
     final url = Uri.parse(
@@ -1037,6 +1052,7 @@ class HomeController extends GetxController {
       body: {"Question": prompt},
     );
 
+    if (sessionId != currentSessionId) return;
     if (response.statusCode == 200) {
       final bytes = response.bodyBytes;
 
