@@ -286,7 +286,9 @@ class HomeScreen extends StatelessWidget {
                               children: [
                                 const SizedBox(height: 12),
                                 Image.asset(
-                                  'assets/images/logoBW.png',
+                                  context.isDark
+                                      ? 'assets/images/logoBW.png'
+                                      : 'assets/images/logoBWLig.png',
                                   height: 50,
                                   width: 180,
                                 ),
