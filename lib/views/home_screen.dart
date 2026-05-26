@@ -256,6 +256,46 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: Builder(
+          builder: (innerContext) => IconButton(
+            onPressed: () => Scaffold.of(innerContext).openDrawer(),
+            icon: Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: Image.asset(
+                'assets/images/logo_small.png',
+                height: 28,
+                width: 28,
+              ),
+            ),
+          ),
+        ),
+        actions: [
+          Obx(() => controller.messages.isNotEmpty
+              ? Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: IconButton(
+                    onPressed: () => controller.startNewChat(),
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: cs.onSurface.withOpacity(0.05),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        CupertinoIcons.square_pencil_fill,
+                        size: 20,
+                        color: cs.onSurface.withOpacity(0.85),
+                      ),
+                    ),
+                    tooltip: 'New Chat',
+                  ),
+                )
+              : const SizedBox.shrink()),
+        ],
+      ),
 
       // ── Body ──────────────────────────────────────────────────────────────
       body: Container(
@@ -350,48 +390,48 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
 
-              // ── Hamburger button ──
-              Positioned(
-                top: 10,
-                left: 0,
-                child: Builder(
-                  builder: (innerContext) => IconButton(
-                    onPressed: () => Scaffold.of(innerContext).openDrawer(),
-                    icon: Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: Image.asset(
-                        'assets/images/logo_small.png',
-                        height: 28,
-                        width: 28,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              // ── New Chat button ──
-              Positioned(
-                top: 10,
-                right: 10,
-                child: Obx(() => controller.messages.isNotEmpty
-                    ? IconButton(
-                        onPressed: () => controller.startNewChat(),
-                        icon: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: cs.onSurface.withOpacity(0.05),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            CupertinoIcons.square_pencil_fill,
-                            size: 20,
-                            color: cs.onSurface.withOpacity(0.85),
-                          ),
-                        ),
-                        tooltip: 'New Chat',
-                      )
-                    : const SizedBox.shrink()),
-              ),
+              // // ── Hamburger button ──
+              // Positioned(
+              //   top: 10,
+              //   left: 0,
+              //   child: Builder(
+              //     builder: (innerContext) => IconButton(
+              //       onPressed: () => Scaffold.of(innerContext).openDrawer(),
+              //       icon: Padding(
+              //         padding: const EdgeInsets.all(4.0),
+              //         child: Image.asset(
+              //           'assets/images/logo_small.png',
+              //           height: 28,
+              //           width: 28,
+              //         ),
+              //       ),
+              //     ),
+              //   ),
+              // ),
+              //
+              // // ── New Chat button ──
+              // Positioned(
+              //   top: 10,
+              //   right: 10,
+              //   child: Obx(() => controller.messages.isNotEmpty
+              //       ? IconButton(
+              //           onPressed: () => controller.startNewChat(),
+              //           icon: Container(
+              //             padding: const EdgeInsets.all(8),
+              //             decoration: BoxDecoration(
+              //               color: cs.onSurface.withOpacity(0.05),
+              //               shape: BoxShape.circle,
+              //             ),
+              //             child: Icon(
+              //               CupertinoIcons.square_pencil_fill,
+              //               size: 20,
+              //               color: cs.onSurface.withOpacity(0.85),
+              //             ),
+              //           ),
+              //           tooltip: 'New Chat',
+              //         )
+              //       : const SizedBox.shrink()),
+              // ),
 
               // Full-screen loading overlay
               Obx(
@@ -463,7 +503,7 @@ class HomeScreen extends StatelessWidget {
               children: [
                 Icon(
                   icon,
-                  size: 18,
+                  size: 24,
                   color:
                       isSelected ? selectedFg : cs.onSurface.withOpacity(0.85),
                 ),
@@ -545,20 +585,7 @@ class HomeScreen extends StatelessWidget {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 20, vertical: 16),
-                decoration: BoxDecoration(
-                  color: cs.surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                      color: cs.outlineVariant.withOpacity(0.5), width: 1.5),
-                  boxShadow: [
-                    BoxShadow(
-                      color: cs.shadow.withOpacity(0.06),
-                      blurRadius: 20,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
+                    horizontal: 4, vertical: 8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -687,22 +714,11 @@ class HomeScreen extends StatelessWidget {
           Flexible(
             child: Container(
               padding: const EdgeInsets.symmetric(
-                  horizontal: 20, vertical: 16),
-              decoration: BoxDecoration(
-                color: cs.inverseSurface,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: cs.shadow.withOpacity(0.12),
-                    blurRadius: 20,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
+                  horizontal: 12, vertical: 8),
               child: Text(
                 message.text['answer'],
                 style: TextStyle(
-                  color: cs.onInverseSurface,
+                  color: cs.onSurface,
                   fontSize: 15,
                   height: 1.6,
                   letterSpacing: 0.1,
