@@ -992,16 +992,14 @@ class HomeScreen extends StatelessWidget {
     }
 
     await _handleMicrophoneInput(controller, context);
-  }
-// ── Negative feedback dialog ─────────────────────────────────────────────
+  }// ── Negative feedback dialog ─────────────────────────────────────────────
 
   void _showNegativeFeedbackDialog(
       BuildContext context,
       String question,
       dynamic controller,
       int messageIndex,
-      )
-  {
+      ) {
     final cs = context.cs;
     double rating = 30.0;
     String? selectedReason;
@@ -1010,205 +1008,281 @@ class HomeScreen extends StatelessWidget {
       'Incorrect Information',
       'Data Inaccuracy',
       'Lack of Relevance',
-      'Presentation & Formatting Deficiency',
+      'Presentation & Formatting',
       'Insufficient Specificity',
       'Others',
     ];
 
     showDialog(
       context: context,
+      barrierColor: Colors.black.withOpacity(0.45),
       builder: (dialogContext) => StatefulBuilder(
         builder: (stateContext, setState) => Dialog(
           backgroundColor: cs.surfaceContainerLow,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(14, 24, 14, 14),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Row(
-                  //   mainAxisAlignment: MainAxisAlignment.end,
-                  //   children: [
-                  //     IconButton(
-                  //       onPressed: () => Navigator.pop(stateContext),
-                  //       icon: Icon(Icons.close_rounded,
-                  //           color: cs.onSurface.withOpacity(0.3), size: 18),
-                  //       padding: EdgeInsets.zero,
-                  //       constraints: const BoxConstraints(),
-                  //     ),
-                  //   ],
-                  // ),
-                  Text(
-                    'What went wrong?',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                      color: cs.onSurface,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Your feedback helps improve future answers',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: cs.onSurface.withOpacity(0.5),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: .center,
-                    children: [
-                      SliderTheme(
-                        data: SliderTheme.of(stateContext).copyWith(
-                          activeTrackColor: cs.primary,
-                          inactiveTrackColor: cs.outlineVariant,
-                          thumbColor: cs.primary,
-                          overlayColor: cs.primary.withOpacity(0.12),
-                          trackHeight: 3,padding: EdgeInsets.zero,
-                          thumbShape: const RoundSliderThumbShape(
-                              enabledThumbRadius: 8, elevation: 3),
-                          trackShape: const RoundedRectSliderTrackShape(),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 340),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            color: cs.errorContainer.withOpacity(0.4),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(Icons.thumb_down_outlined,
+                              size: 14, color: cs.error),
                         ),
-                        child: Slider(
-                          value: rating,
-                          min: 0,
-                          max: 49,
-                          onChanged: (v) => setState(() => rating = v),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'What went wrong?',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: cs.onSurface,
+                                  letterSpacing: -0.3,
+                                ),
+                              ),
+                              Text(
+                                'Help us improve future answers',
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  color: cs.onSurface.withOpacity(0.55),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-
-                      const SizedBox(width: 24),
-                      Text(
-                        '${rating.toInt()}%',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
-                          color: rating < 30 ? cs.error : cs.tertiary,
-                          letterSpacing: -1,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: cs.outlineVariant, width: 1.5),
+                      ],
                     ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: selectedReason,
-                        dropdownColor: cs.surfaceContainerLow,
-                        hint: Text(
-                          'Select a reason',
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Rating',
                           style: TextStyle(
-                              color: cs.onSurface.withOpacity(0.4), fontSize: 13),
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w600,
+                            color: cs.onSurface.withOpacity(0.6),
+                            letterSpacing: 0.3,
+                          ),
                         ),
-                        isExpanded: true,
-                        icon: Icon(Icons.expand_more_rounded, color: cs.onSurface),
-                        items: reasons.map((r) {
-                          return DropdownMenuItem<String>(
-                            value: r,
-                            child: Text(r,
-                                style:
-                                TextStyle(fontSize: 13, color: cs.onSurface)),
-                          );
-                        }).toList(),
-                        onChanged: (v) => setState(() => selectedReason = v),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: (rating < 25 ? cs.error : cs.tertiary)
+                                .withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: Text(
+                            '${rating.toInt()}%',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              color: rating < 25 ? cs.error : cs.tertiary,
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SliderTheme(
+                      data: SliderTheme.of(stateContext).copyWith(
+                        activeTrackColor: cs.error,
+                        inactiveTrackColor: cs.outlineVariant.withOpacity(0.5),
+                        thumbColor: cs.error,
+                        overlayColor: cs.error.withOpacity(0.1),
+                        trackHeight: 3,
+                        thumbShape: const RoundSliderThumbShape(
+                          enabledThumbRadius: 6,
+                          elevation: 2,
+                        ),
+                        overlayShape:
+                        const RoundSliderOverlayShape(overlayRadius: 12),
+                        trackShape: const RoundedRectSliderTrackShape(),
+                      ),
+                      child: Slider(
+                        value: rating,
+                        min: 0,
+                        max: 49,
+                        onChanged: (v) => setState(() => rating = v),
                       ),
                     ),
-                  ),
-                  if (selectedReason == 'Others') ...[
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: cs.outlineVariant, width: 1.5),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Reason',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                        color: cs.onSurface.withOpacity(0.6),
+                        letterSpacing: 0.3,
                       ),
-                      child: TextField(
-                        controller: otherReasonController,
-                        maxLines: 2,
-                        style: TextStyle(color: cs.onSurface),
-                        onChanged: (_) => setState(() {}),
-                        decoration: InputDecoration(
-                          hintText: 'Please describe the issue',
-                          hintStyle: TextStyle(
-                              color: cs.onSurface.withOpacity(0.3), fontSize: 13),
-                          border: InputBorder.none,
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(
+                        color: cs.surface.withOpacity(0.4),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                            color: cs.outlineVariant.withOpacity(0.6), width: 1),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: selectedReason,
+                          dropdownColor: cs.surfaceContainerLow,
+                          borderRadius: BorderRadius.circular(10),
+                          isDense: true,
+                          hint: Text(
+                            'Select a reason',
+                            style: TextStyle(
+                                color: cs.onSurface.withOpacity(0.4),
+                                fontSize: 12),
+                          ),
+                          isExpanded: true,
+                          icon: Icon(Icons.keyboard_arrow_down_rounded,
+                              color: cs.onSurface.withOpacity(0.6), size: 18),
+                          items: reasons.map((r) {
+                            return DropdownMenuItem<String>(
+                              value: r,
+                              child: Text(
+                                r,
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color: cs.onSurface,
+                                    fontWeight: FontWeight.w500),
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (v) => setState(() => selectedReason = v),
                         ),
                       ),
+                    ),
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeOut,
+                      child: selectedReason == 'Others'
+                          ? Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: cs.surface.withOpacity(0.4),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                                color: cs.outlineVariant.withOpacity(0.6),
+                                width: 1),
+                          ),
+                          child: TextField(
+                            controller: otherReasonController,
+                            maxLines: 2,
+                            style: TextStyle(
+                                color: cs.onSurface, fontSize: 12),
+                            onChanged: (_) => setState(() {}),
+                            decoration: InputDecoration(
+                              hintText: 'Describe the issue',
+                              hintStyle: TextStyle(
+                                  color: cs.onSurface.withOpacity(0.35),
+                                  fontSize: 12),
+                              border: InputBorder.none,
+                              isDense: true,
+                              contentPadding:
+                              const EdgeInsets.symmetric(vertical: 6),
+                            ),
+                          ),
+                        ),
+                      )
+                          : const SizedBox.shrink(),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(7)),
+                          ),
+                          onPressed: () => Navigator.pop(stateContext),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                                color: cs.onSurface.withOpacity(0.65),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 11.5),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        ElevatedButton(
+                          onPressed: (selectedReason == null ||
+                              (selectedReason == 'Others' &&
+                                  otherReasonController.text.trim().isEmpty))
+                              ? null
+                              : () async {
+                            Navigator.pop(stateContext);
+                            bool success =
+                            await controller.saveFeedbackApi(
+                              context: context,
+                              question: question,
+                              isThumbsUp: false,
+                              percentage: rating,
+                              messageIndex: messageIndex,
+                              reason: selectedReason == 'Others'
+                                  ? otherReasonController.text.trim()
+                                  : selectedReason,
+                            );
+                            if (success && context.mounted) {
+                              _showThankYouDialog(context);
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: cs.inverseSurface,
+                            disabledBackgroundColor:
+                            cs.onSurface.withOpacity(0.08),
+                            foregroundColor: cs.onInverseSurface,
+                            disabledForegroundColor:
+                            cs.onSurface.withOpacity(0.35),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 7),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(7)),
+                            elevation: 0,
+                          ),
+                          child: const Text(
+                            'Submit',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 11.5,
+                                letterSpacing: 0.2),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 6),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
-                          side: BorderSide(color: cs.outline),
-                        ),
-                        onPressed: () => Navigator.pop(stateContext),
-                        child: Text(
-                          'Cancel',
-                          style: TextStyle(
-                              color: cs.onSurface.withOpacity(0.6),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 12),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: (selectedReason == null ||
-                            (selectedReason == 'Other' &&
-                                otherReasonController.text.trim().isEmpty))
-                            ? null
-                            : () async {
-                          Navigator.pop(stateContext);
-                          bool success = await controller.saveFeedbackApi(
-                            context: context,
-                            question: question,
-                            isThumbsUp: false,
-                            percentage: rating,
-                            messageIndex: messageIndex,
-                            reason: selectedReason == 'Other'
-                                ? otherReasonController.text
-                                : selectedReason,
-                          );
-                          if (success && context.mounted) {
-                            _showThankYouDialog(context);
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: cs.inverseSurface,
-                          disabledBackgroundColor: cs.onSurface.withOpacity(0.12),
-                          foregroundColor: cs.onInverseSurface,
-                          disabledForegroundColor: cs.onSurface.withOpacity(0.38),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 6),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
-                          elevation: 0,
-                        ),
-                        child: const Text(
-                          'Submit feedback',
-                          style:
-                          TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -1227,62 +1301,107 @@ class HomeScreen extends StatelessWidget {
       ) {
     final cs = context.cs;
     double rating = 80.0;
+
     showDialog(
       context: context,
+      barrierColor: Colors.black.withOpacity(0.45),
       builder: (dialogContext) => StatefulBuilder(
         builder: (stateContext, setState) => Dialog(
           backgroundColor: cs.surfaceContainerLow,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(14, 24, 14, 14),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.end,
-                //   children: [
-                //     IconButton(
-                //       onPressed: () => Navigator.pop(stateContext),
-                //       icon: Icon(Icons.close_rounded,
-                //           color: cs.onSurface.withOpacity(0.3), size: 18),
-                //       padding: EdgeInsets.zero,
-                //       constraints: const BoxConstraints(),
-                //     ),
-                //   ],
-                // ),
-                Text(
-                  'How helpful was this response?',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                    color: cs.onSurface,
-                    letterSpacing: -0.5,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 320),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: cs.primaryContainer.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(Icons.thumb_up_outlined,
+                            size: 14, color: cs.primary),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Rate this response',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: cs.onSurface,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                            Text(
+                              'How helpful was the answer?',
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                color: cs.onSurface.withOpacity(0.55),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Your feedback helps improve future answers',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: cs.onSurface.withOpacity(0.5),
-                    fontWeight: FontWeight.w500,
+                  const SizedBox(height: 12),
+                  Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '${rating.toInt()}',
+                          style: TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.w800,
+                            color: rating < 70 ? cs.tertiary : cs.primary,
+                            letterSpacing: -1.5,
+                            height: 1,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 4, left: 2),
+                          child: Text(
+                            '%',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: (rating < 70 ? cs.tertiary : cs.primary)
+                                  .withOpacity(0.7),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: .center,
-                  children: [
                   SliderTheme(
                     data: SliderTheme.of(stateContext).copyWith(
-                      activeTrackColor: cs.primary,
-                      inactiveTrackColor: cs.outlineVariant,
-                      thumbColor: cs.primary,
-                      overlayColor: cs.primary.withOpacity(0.12),
-                      trackHeight: 3,padding: EdgeInsets.zero,
+                      activeTrackColor: rating < 70 ? cs.tertiary : cs.primary,
+                      inactiveTrackColor: cs.outlineVariant.withOpacity(0.5),
+                      thumbColor: rating < 70 ? cs.tertiary : cs.primary,
+                      overlayColor:
+                      (rating < 70 ? cs.tertiary : cs.primary).withOpacity(0.1),
+                      trackHeight: 3,
                       thumbShape: const RoundSliderThumbShape(
-                          enabledThumbRadius: 8, elevation: 3),
+                        enabledThumbRadius: 6,
+                        elevation: 2,
+                      ),
+                      overlayShape:
+                      const RoundSliderOverlayShape(overlayRadius: 12),
                       trackShape: const RoundedRectSliderTrackShape(),
                     ),
                     child: Slider(
@@ -1292,72 +1411,90 @@ class HomeScreen extends StatelessWidget {
                       onChanged: (v) => setState(() => rating = v),
                     ),
                   ),
-                    const SizedBox(width: 16),
-                  Text(
-                    '${rating.toInt()}%',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w900,
-                      color: rating < 70 ? cs.tertiary : cs.primary,
-                      letterSpacing: -1,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Poor',
+                            style: TextStyle(
+                                fontSize: 9.5,
+                                color: cs.onSurface.withOpacity(0.45),
+                                fontWeight: FontWeight.w500)),
+                        Text('Good',
+                            style: TextStyle(
+                                fontSize: 9.5,
+                                color: cs.onSurface.withOpacity(0.45),
+                                fontWeight: FontWeight.w500)),
+                        Text('Excellent',
+                            style: TextStyle(
+                                fontSize: 9.5,
+                                color: cs.onSurface.withOpacity(0.45),
+                                fontWeight: FontWeight.w500)),
+                      ],
                     ),
                   ),
-                ],),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 6),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        side: BorderSide(color: cs.outline),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(7)),
+                        ),
+                        onPressed: () => Navigator.pop(stateContext),
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(
+                              color: cs.onSurface.withOpacity(0.65),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 11.5),
+                        ),
                       ),
-                      onPressed: () => Navigator.pop(stateContext),
-                      child: Text(
-                        'Cancel',
-                        style: TextStyle(
-                            color: cs.onSurface.withOpacity(0.6),
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12),
+                      const SizedBox(width: 4),
+                      ElevatedButton(
+                        onPressed: () async {
+                          Navigator.pop(stateContext);
+                          bool success = await controller.saveFeedbackApi(
+                            context: context,
+                            question: question,
+                            isThumbsUp: true,
+                            percentage: rating,
+                            messageIndex: messageIndex,
+                            reason: null,
+                          );
+                          if (success && context.mounted) {
+                            _showThankYouDialog(context);
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: cs.inverseSurface,
+                          foregroundColor: cs.onInverseSurface,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 7),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(7)),
+                          elevation: 0,
+                        ),
+                        child: const Text(
+                          'Submit',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 11.5,
+                              letterSpacing: 0.2),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: () async {
-                        Navigator.pop(stateContext);
-                        bool success = await controller.saveFeedbackApi(
-                          context: context,
-                          question: question,
-                          isThumbsUp: true,
-                          percentage: rating,
-                          messageIndex: messageIndex,
-                          reason: null,
-                        );
-                        if (success && context.mounted) {
-                          _showThankYouDialog(context);
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: cs.inverseSurface,
-                        foregroundColor: cs.onInverseSurface,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 6),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        elevation: 0,
-                      ),
-                      child: const Text(
-                        'Submit feedback',
-                        style:
-                        TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -1564,59 +1701,315 @@ class HomeScreen extends StatelessWidget {
   }
 
   // ── Edit session dialog ──────────────────────────────────────────────────
-
   void _showEditSessionDialog(
-    BuildContext context,
-    dynamic session,
-    dynamic controller,
-  ) {
+      BuildContext context,
+      dynamic session,
+      dynamic controller,
+      ) {
     final cs = context.cs;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final TextEditingController editController =
-        TextEditingController(text: session.title);
+    TextEditingController(text: session.title);
+    final ValueNotifier<bool> canSave =
+    ValueNotifier(session.title.toString().trim().isNotEmpty);
+
+    editController.addListener(() {
+      final t = editController.text.trim();
+      canSave.value = t.isNotEmpty && t != session.title.toString().trim();
+    });
+
+    void submit(BuildContext ctx) {
+      final newTitle = editController.text.trim();
+      if (newTitle.isNotEmpty && newTitle != session.title.toString().trim()) {
+        Navigator.pop(ctx);
+        controller.editSessionTitleApi(context, session.sessionId, newTitle);
+      }
+    }
+
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: cs.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
-        actionsPadding: const EdgeInsets.only(bottom: 8, right: 16, top: 4),
-        title: Text('Edit Chat Title',
-            style: TextStyle(color: cs.onSurface, fontWeight: FontWeight.w500, fontSize: 16)),
-        content: TextField(
-          controller: editController,
-          style: TextStyle(color: cs.onSurface, fontSize: 15, fontWeight: FontWeight.w400),
-          decoration: InputDecoration(
-            hintText: 'Enter new title',
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            hintStyle:
-                TextStyle(color: cs.onSurface.withOpacity(0.4), fontSize: 15),
-            border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: cs.outline.withOpacity(0.3), width: 0.5)),
-            focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: cs.primary, width: 1)),
+      barrierColor: Colors.black.withOpacity(0.55),
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 310),
+          child: Container(
+            decoration: BoxDecoration(
+              color: cs.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: cs.outlineVariant.withOpacity(0.5),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(isDark ? 0.45 : 0.10),
+                  blurRadius: 26,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.fromLTRB(14, 14, 8, 13),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          cs.primaryContainer.withOpacity(0.40),
+                          cs.tertiaryContainer.withOpacity(0.15),
+                          cs.surfaceContainerLow,
+                        ],
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 34,
+                          height: 34,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [cs.primary, cs.tertiary],
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: cs.primary.withOpacity(0.28),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Icon(Icons.edit_rounded,
+                              color: cs.onPrimary, size: 15),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Rename chat',
+                                style: TextStyle(
+                                  fontSize: 14.5,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: -0.2,
+                                  color: cs.onSurface,
+                                ),
+                              ),
+                              const SizedBox(height: 1),
+                              Text(
+                                'Give this conversation a clearer name',
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w500,
+                                  color: cs.onSurfaceVariant,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          icon: Icon(Icons.close_rounded,
+                              size: 16, color: cs.onSurfaceVariant),
+                          style: IconButton.styleFrom(
+                            backgroundColor: cs.onSurface.withOpacity(0.05),
+                            padding: const EdgeInsets.all(4),
+                            minimumSize: const Size(28, 28),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Input
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(14, 12, 14, 2),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'CHAT TITLE',
+                          style: TextStyle(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.3,
+                            color: cs.onSurfaceVariant.withOpacity(0.7),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        TextField(
+                          controller: editController,
+                          autofocus: true,
+                          // maxLength: 60,
+                          textInputAction: TextInputAction.done,
+                          onSubmitted: (_) => submit(ctx),
+                          style: TextStyle(
+                            color: cs.onSurface,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Enter a new title',
+                            hintStyle: TextStyle(
+                              color: cs.onSurface.withOpacity(0.35),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                            ),
+                            filled: true,
+                            fillColor: cs.onSurface.withOpacity(0.04),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 11),
+                            counterStyle: TextStyle(
+                              fontSize: 10,
+                              color: cs.onSurfaceVariant.withOpacity(0.6),
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: cs.outlineVariant.withOpacity(0.5),
+                                width: 1,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: cs.outlineVariant.withOpacity(0.5),
+                                width: 1,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: cs.primary,
+                                width: 1.4,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Actions
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(14, 4, 14, 14),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              backgroundColor: cs.onSurface.withOpacity(0.05),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: Text(
+                              'Cancel',
+                              style: TextStyle(
+                                color: cs.onSurface,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          flex: 2,
+                          child: ValueListenableBuilder<bool>(
+                            valueListenable: canSave,
+                            builder: (context, enabled, _) {
+                              return DecoratedBox(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  gradient: enabled
+                                      ? LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [cs.primary, cs.tertiary],
+                                  )
+                                      : null,
+                                  color: enabled
+                                      ? null
+                                      : cs.onSurface.withOpacity(0.08),
+                                  boxShadow: enabled
+                                      ? [
+                                    BoxShadow(
+                                      color: cs.primary.withOpacity(0.28),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ]
+                                      : null,
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(10),
+                                    onTap: enabled ? () => submit(ctx) : null,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 10),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.check_rounded,
+                                            size: 16,
+                                            color: enabled
+                                                ? cs.onPrimary
+                                                : cs.onSurface.withOpacity(0.35),
+                                          ),
+                                          const SizedBox(width: 5),
+                                          Text(
+                                            'Save',
+                                            style: TextStyle(
+                                              color: enabled
+                                                  ? cs.onPrimary
+                                                  : cs.onSurface
+                                                  .withOpacity(0.35),
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 13,
+                                              letterSpacing: 0.1,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-          autofocus: true,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel',
-                style: TextStyle(color: cs.onSurface.withOpacity(0.5), fontWeight: FontWeight.w500, fontSize: 14)),
-          ),
-          TextButton(
-            onPressed: () {
-              final newTitle = editController.text.trim();
-              if (newTitle.isNotEmpty) {
-                Navigator.pop(ctx);
-                controller.editSessionTitleApi(
-                    context, session.sessionId, newTitle);
-              }
-            },
-            child: Text('Save', style: TextStyle(color: cs.primary, fontWeight: FontWeight.w500, fontSize: 14)),
-          ),
-        ],
       ),
     );
   }
@@ -1837,7 +2230,8 @@ class HomeScreen extends StatelessWidget {
     required VoidCallback onTap,
     VoidCallback? onLongPress,
     bool isDestructive = false,
-  }) {
+  })
+  {
     final cs = context.cs;
     return Container(
       margin: const EdgeInsets.only(bottom: 6),
@@ -2103,10 +2497,10 @@ class HomeScreen extends StatelessWidget {
     return Obx(() {
       if (controller.isCreditsLoading.value) {
         return Container(
-          margin: inPopup
-              ? EdgeInsets.zero
-              : const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          padding: const EdgeInsets.all(12),
+          // margin: inPopup
+          //     ? EdgeInsets.zero
+          //     : const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          // padding: const EdgeInsets.all(12),
           height: 64,
           decoration: BoxDecoration(
             color: cs.surfaceContainerLowest,
@@ -2263,150 +2657,308 @@ class HomeScreen extends StatelessWidget {
   void _showProfileDialog(BuildContext context) {
     showDialog(
       context: context,
+      barrierColor: Colors.black.withOpacity(0.55),
       builder: (dialogContext) {
         return ValueListenableBuilder<String>(
           valueListenable: NormalThemeController().currentTheme,
           builder: (context, themeKey, child) {
             final cs = Theme.of(context).colorScheme;
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+
             return Dialog(
-              backgroundColor: cs.surfaceContainerLow,
-              surfaceTintColor: cs.surfaceTint,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              child: Container(
-                padding: const EdgeInsets.all(14),
-                width: 300,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 340),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: cs.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: cs.outlineVariant.withOpacity(0.5),
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(isDark ? 0.45 : 0.10),
+                        blurRadius: 32,
+                        offset: const Offset(0, 14),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Obx(() => _buildAvatar(
-                          context,
-                          controller.userName.value.isNotEmpty
-                              ? controller.userName.value
-                              : 'U',
-                          size: 42,
-                        )),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Obx(
-                                () => Text(
-                              controller.userName.value.isNotEmpty
-                                  ? controller.userName.value
-                                  : 'U',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800,
-                                color: cs.onSurface,
-                              ),
+                        // ── Header with subtle gradient wash ──────────────
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.fromLTRB(20, 22, 12, 20),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                cs.primaryContainer.withOpacity(0.40),
+                                cs.tertiaryContainer.withOpacity(0.15),
+                                cs.surfaceContainerLow,
+                              ],
                             ),
+                          ),
+                          child: Row(
+                            children: [
+                              Obx(() => _buildPremiumAvatar(
+                                context,
+                                controller.userName.value.isNotEmpty
+                                    ? controller.userName.value
+                                    : 'U',
+                                size: 56,
+                              )),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Obx(
+                                      () => Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        controller.userName.value.isNotEmpty
+                                            ? controller.userName.value
+                                            : 'User',
+                                        style: TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: -0.3,
+                                          color: cs.onSurface,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        'Manage your account',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                          color: cs.onSurfaceVariant,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () => Navigator.pop(dialogContext),
+                                icon: Icon(Icons.close_rounded,
+                                    size: 18, color: cs.onSurfaceVariant),
+                                style: IconButton.styleFrom(
+                                  backgroundColor: cs.onSurface.withOpacity(0.05),
+                                  padding: const EdgeInsets.all(6),
+                                  minimumSize: const Size(32, 32),
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // ── Credits ───────────────────────────────────────
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(10, 4, 10, 6),
+                          child:
+                          _buildCreditsUI(context, inPopup: true),
+                        ),
+
+                        Divider(color: cs.outlineVariant.withOpacity(0.4), height: 1),
+
+                        // ── Preferences section ───────────────────────────
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(10, 10, 10, 6),
+                          child: Column(
+                            children: [
+                              _sectionLabel(context, 'Preferences'),
+                              Row(
+                                crossAxisAlignment: .center,
+                                children: [
+                                  Expanded(
+                                    flex:4,
+                                    child: _buildDrawerItem(
+                                      context: context,
+                                      icon: Icons.settings_outlined,
+                                      label: 'Settings',
+                                      onTap: () {
+                                        Navigator.pop(dialogContext);
+                                        Get.snackbar(
+                                          'Settings',
+                                          'Coming soon...',
+                                          snackPosition: SnackPosition.BOTTOM,
+                                          backgroundColor: cs.inverseSurface,
+                                          colorText: cs.onInverseSurface,
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex:6,
+                                    child: AppTheme.instance.dropdownBuilder(
+                                          (selectedKey, themeMap, changeTheme) {
+                                        return _buildThemeSelector(
+                                          context,
+                                          selectedKey,
+                                          themeMap,
+                                          changeTheme,
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Divider(color: cs.outlineVariant.withOpacity(0.4), height: 1),
+
+                        // ── Logout ────────────────────────────────────────
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+                          child: _buildDrawerItem(
+                            context: context,
+                            icon: Icons.logout_rounded,
+                            label: 'Logout',
+                            isDestructive: true,
+                            onTap: () {
+                              Navigator.pop(dialogContext);
+                              controller.logout(context);
+                            },
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 14),
-                    Divider(color: cs.outlineVariant, height: 1),
-                    const SizedBox(height: 12),
-                    _buildCreditsUI(context, inPopup: true),
-                    const SizedBox(height: 10),
-                    _buildDrawerItem(
-                      context: context,
-                      icon: Icons.settings_outlined,
-                      label: 'Settings',
-                      onTap: () {
-                        Navigator.pop(dialogContext);
-                        Get.snackbar(
-                          'Settings',
-                          'Coming soon...',
-                          snackPosition: SnackPosition.BOTTOM,
-                          backgroundColor: cs.inverseSurface,
-                          colorText: cs.onInverseSurface,
-                        );
-                      },
-                    ),
-                    AppTheme.instance.dropdownBuilder(
-                          (selectedKey, themeMap, changeTheme) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 6),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              color: cs.onSurface.withOpacity(0.03),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                value: selectedKey,
-                                dropdownColor: cs.surfaceContainerLow,
-                                isExpanded: true,
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
-                                icon: Icon(Icons.keyboard_arrow_down_rounded,
-                                    color: cs.onSurface.withOpacity(0.4)),
-                                items: themeMap.entries.map((e) {
-                                  return DropdownMenuItem(
-                                    value: e.key,
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          e.key == 'dark'
-                                              ? Icons.dark_mode_outlined
-                                              : e.key == 'light'
-                                              ? Icons.light_mode_outlined
-                                              : Icons.brightness_auto_outlined,
-                                          size: 18,
-                                          color: cs.onSurface,
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Text(
-                                          e.value.name,
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                            color: cs.onSurface,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }).toList(),
-                                onChanged: (key) {
-                                  if (key != null) {
-                                    changeTheme(key);
-                                    AppTheme.instance.updateTheme(key);
-                                  }
-                                },
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    _buildDrawerItem(
-                      context: context,
-                      icon: Icons.data_usage_rounded,
-                      label: 'Data controls',
-                      onTap: () {
-                        Navigator.pop(dialogContext);
-                        Get.to(() => const DataControlsView());
-                      },
-                    ),
-                    _buildDrawerItem(
-                      context: context,
-                      icon: Icons.logout_rounded,
-                      label: 'Logout',
-                      isDestructive: true,
-                      onTap: () {
-                        Navigator.pop(dialogContext);
-                        controller.logout(context);
-                      },
-                    ),
-                  ],
+                  ),
                 ),
               ),
             );
           },
         );
       },
+    );
+  }
+
+// ── Premium gradient avatar with soft glow ──────────────────────────────
+  Widget _buildPremiumAvatar(BuildContext context, String name, {double size = 56}) {
+    final cs = Theme.of(context).colorScheme;
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : 'U';
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [cs.primary, cs.tertiary],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: cs.primary.withOpacity(0.30),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Center(
+        child: Text(
+          initial,
+          style: TextStyle(
+            color: cs.onPrimary,
+            fontWeight: FontWeight.w700,
+            fontSize: size * 0.42,
+            letterSpacing: -0.5,
+          ),
+        ),
+      ),
+    );
+  }
+
+// ── Small uppercase section label ───────────────────────────────────────
+  Widget _sectionLabel(BuildContext context, String text) {
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 4, 12, 6),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          text.toUpperCase(),
+          style: TextStyle(
+            fontSize: 10.5,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.4,
+            color: cs.onSurfaceVariant.withOpacity(0.7),
+          ),
+        ),
+      ),
+    );
+  }
+
+// ── Refined theme selector (row + compact pill dropdown) ────────────────
+  Widget _buildThemeSelector(
+      BuildContext context,
+      String selectedKey,
+      Map<String, dynamic> themeMap,
+      Function(String) changeTheme,
+      ) {
+    final cs = Theme.of(context).colorScheme;
+    IconData iconFor(String key) {
+      if (key == 'dark') return Icons.dark_mode_outlined;
+      if (key == 'light') return Icons.light_mode_outlined;
+      return Icons.brightness_auto_outlined;
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: cs.onSurface.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: selectedKey,
+          dropdownColor: cs.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(14),
+          isDense: true,
+          icon: Icon(Icons.keyboard_arrow_down_rounded,
+              color: cs.onSurfaceVariant, size: 18),
+          items: themeMap.entries.map((e) {
+            return DropdownMenuItem(
+              value: e.key,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(iconFor(e.key), size: 20, color: cs.onSurface),
+                  const SizedBox(width: 8),
+                  Text(
+                    e.value.name,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: cs.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+          onChanged: (key) {
+            if (key != null) {
+              changeTheme(key);
+              AppTheme.instance.updateTheme(key);
+            }
+          },
+        ),
+      ),
     );
   }
 }
