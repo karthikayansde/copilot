@@ -505,7 +505,7 @@ class HomeScreen extends StatelessWidget {
                   icon,
                   size: 24,
                   color:
-                      isSelected ? selectedFg : cs.onSurface.withOpacity(0.85),
+                      isSelected ? selectedFg : cs.onSurface.withOpacity(0.5),
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -993,20 +993,19 @@ class HomeScreen extends StatelessWidget {
 
     await _handleMicrophoneInput(controller, context);
   }
-
-  // ── Negative feedback dialog ─────────────────────────────────────────────
+// ── Negative feedback dialog ─────────────────────────────────────────────
 
   void _showNegativeFeedbackDialog(
-    BuildContext context,
-    String question,
-    dynamic controller,
-    int messageIndex,
-  ) {
+      BuildContext context,
+      String question,
+      dynamic controller,
+      int messageIndex,
+      )
+  {
     final cs = context.cs;
     double rating = 30.0;
     String? selectedReason;
-    final TextEditingController otherReasonController =
-        TextEditingController();
+    final TextEditingController otherReasonController = TextEditingController();
     final List<String> reasons = [
       'Incorrect Information',
       'Data Inaccuracy',
@@ -1021,37 +1020,36 @@ class HomeScreen extends StatelessWidget {
       builder: (dialogContext) => StatefulBuilder(
         builder: (stateContext, setState) => Dialog(
           backgroundColor: cs.surfaceContainerLow,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              padding: const EdgeInsets.fromLTRB(14, 24, 14, 14),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      IconButton(
-                        onPressed: () => Navigator.pop(stateContext),
-                        icon: Icon(Icons.close_rounded,
-                            color: cs.onSurface.withOpacity(0.3)),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                    ],
-                  ),
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.end,
+                  //   children: [
+                  //     IconButton(
+                  //       onPressed: () => Navigator.pop(stateContext),
+                  //       icon: Icon(Icons.close_rounded,
+                  //           color: cs.onSurface.withOpacity(0.3), size: 18),
+                  //       padding: EdgeInsets.zero,
+                  //       constraints: const BoxConstraints(),
+                  //     ),
+                  //   ],
+                  // ),
                   Text(
                     'What went wrong?',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 15,
                       fontWeight: FontWeight.w800,
                       color: cs.onSurface,
                       letterSpacing: -0.5,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   Text(
                     'Your feedback helps improve future answers',
                     textAlign: TextAlign.center,
@@ -1061,41 +1059,47 @@ class HomeScreen extends StatelessWidget {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    '${rating.toInt()}%',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      color: rating < 30 ? cs.error : cs.tertiary,
-                      letterSpacing: -1,
-                    ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: .center,
+                    children: [
+                      SliderTheme(
+                        data: SliderTheme.of(stateContext).copyWith(
+                          activeTrackColor: cs.primary,
+                          inactiveTrackColor: cs.outlineVariant,
+                          thumbColor: cs.primary,
+                          overlayColor: cs.primary.withOpacity(0.12),
+                          trackHeight: 3,padding: EdgeInsets.zero,
+                          thumbShape: const RoundSliderThumbShape(
+                              enabledThumbRadius: 8, elevation: 3),
+                          trackShape: const RoundedRectSliderTrackShape(),
+                        ),
+                        child: Slider(
+                          value: rating,
+                          min: 0,
+                          max: 49,
+                          onChanged: (v) => setState(() => rating = v),
+                        ),
+                      ),
+
+                      const SizedBox(width: 24),
+                      Text(
+                        '${rating.toInt()}%',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          color: rating < 30 ? cs.error : cs.tertiary,
+                          letterSpacing: -1,
+                        ),
+                      ),
+                    ],
                   ),
-                  SliderTheme(
-                    data: SliderTheme.of(stateContext).copyWith(
-                      activeTrackColor: cs.primary,
-                      inactiveTrackColor: cs.outlineVariant,
-                      thumbColor: cs.primary,
-                      overlayColor: cs.primary.withOpacity(0.12),
-                      trackHeight: 3,
-                      thumbShape: const RoundSliderThumbShape(
-                          enabledThumbRadius: 8, elevation: 3),
-                      trackShape: const RoundedRectSliderTrackShape(),
-                    ),
-                    child: Slider(
-                      value: rating,
-                      min: 0,
-                      max: 49,
-                      onChanged: (v) => setState(() => rating = v),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                          color: cs.outlineVariant, width: 1.5),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: cs.outlineVariant, width: 1.5),
                     ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
@@ -1104,34 +1108,29 @@ class HomeScreen extends StatelessWidget {
                         hint: Text(
                           'Select a reason',
                           style: TextStyle(
-                              color: cs.onSurface.withOpacity(0.4),
-                              fontSize: 13),
+                              color: cs.onSurface.withOpacity(0.4), fontSize: 13),
                         ),
                         isExpanded: true,
-                        icon: Icon(Icons.expand_more_rounded,
-                            color: cs.onSurface),
+                        icon: Icon(Icons.expand_more_rounded, color: cs.onSurface),
                         items: reasons.map((r) {
                           return DropdownMenuItem<String>(
                             value: r,
                             child: Text(r,
-                                style: TextStyle(
-                                    fontSize: 13, color: cs.onSurface)),
+                                style:
+                                TextStyle(fontSize: 13, color: cs.onSurface)),
                           );
                         }).toList(),
-                        onChanged: (v) =>
-                            setState(() => selectedReason = v),
+                        onChanged: (v) => setState(() => selectedReason = v),
                       ),
                     ),
                   ),
-                  if (selectedReason == 'Other') ...[
-                    const SizedBox(height: 12),
+                  if (selectedReason == 'Others') ...[
+                    const SizedBox(height: 8),
                     Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                            color: cs.outlineVariant, width: 1.5),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: cs.outlineVariant, width: 1.5),
                       ),
                       child: TextField(
                         controller: otherReasonController,
@@ -1141,23 +1140,22 @@ class HomeScreen extends StatelessWidget {
                         decoration: InputDecoration(
                           hintText: 'Please describe the issue',
                           hintStyle: TextStyle(
-                              color: cs.onSurface.withOpacity(0.3),
-                              fontSize: 13),
+                              color: cs.onSurface.withOpacity(0.3), fontSize: 13),
                           border: InputBorder.none,
                         ),
                       ),
                     ),
                   ],
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       OutlinedButton(
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
+                              horizontal: 10, vertical: 6),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
+                              borderRadius: BorderRadius.circular(10)),
                           side: BorderSide(color: cs.outline),
                         ),
                         onPressed: () => Navigator.pop(stateContext),
@@ -1169,48 +1167,43 @@ class HomeScreen extends StatelessWidget {
                               fontSize: 12),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 8),
                       ElevatedButton(
                         onPressed: (selectedReason == null ||
-                                (selectedReason == 'Other' &&
-                                    otherReasonController.text
-                                        .trim()
-                                        .isEmpty))
+                            (selectedReason == 'Other' &&
+                                otherReasonController.text.trim().isEmpty))
                             ? null
                             : () async {
-                                Navigator.pop(stateContext);
-                                bool success =
-                                    await controller.saveFeedbackApi(
-                                  context: context,
-                                  question: question,
-                                  isThumbsUp: false,
-                                  percentage: rating,
-                                  messageIndex: messageIndex,
-                                  reason: selectedReason == 'Other'
-                                      ? otherReasonController.text
-                                      : selectedReason,
-                                );
-                                if (success && context.mounted) {
-                                  _showThankYouDialog(context);
-                                }
-                              },
+                          Navigator.pop(stateContext);
+                          bool success = await controller.saveFeedbackApi(
+                            context: context,
+                            question: question,
+                            isThumbsUp: false,
+                            percentage: rating,
+                            messageIndex: messageIndex,
+                            reason: selectedReason == 'Other'
+                                ? otherReasonController.text
+                                : selectedReason,
+                          );
+                          if (success && context.mounted) {
+                            _showThankYouDialog(context);
+                          }
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: cs.inverseSurface,
-                          disabledBackgroundColor:
-                              cs.onSurface.withOpacity(0.12),
+                          disabledBackgroundColor: cs.onSurface.withOpacity(0.12),
                           foregroundColor: cs.onInverseSurface,
-                          disabledForegroundColor:
-                              cs.onSurface.withOpacity(0.38),
+                          disabledForegroundColor: cs.onSurface.withOpacity(0.38),
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
+                              horizontal: 10, vertical: 6),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
+                              borderRadius: BorderRadius.circular(10)),
                           elevation: 0,
                         ),
                         child: const Text(
                           'Submit feedback',
-                          style: TextStyle(
-                              fontWeight: FontWeight.w600, fontSize: 12),
+                          style:
+                          TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
                         ),
                       ),
                     ],
@@ -1224,14 +1217,14 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // ── Positive feedback dialog ─────────────────────────────────────────────
+// ── Positive feedback dialog ─────────────────────────────────────────────
 
   void _showFeedbackDialog(
-    BuildContext context,
-    String question,
-    dynamic controller,
-    int messageIndex,
-  ) {
+      BuildContext context,
+      String question,
+      dynamic controller,
+      int messageIndex,
+      ) {
     final cs = context.cs;
     double rating = 80.0;
     showDialog(
@@ -1239,36 +1232,35 @@ class HomeScreen extends StatelessWidget {
       builder: (dialogContext) => StatefulBuilder(
         builder: (stateContext, setState) => Dialog(
           backgroundColor: cs.surfaceContainerLow,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            padding: const EdgeInsets.fromLTRB(14, 24, 14, 14),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(stateContext),
-                      icon: Icon(Icons.close_rounded,
-                          color: cs.onSurface.withOpacity(0.3)),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                  ],
-                ),
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.end,
+                //   children: [
+                //     IconButton(
+                //       onPressed: () => Navigator.pop(stateContext),
+                //       icon: Icon(Icons.close_rounded,
+                //           color: cs.onSurface.withOpacity(0.3), size: 18),
+                //       padding: EdgeInsets.zero,
+                //       constraints: const BoxConstraints(),
+                //     ),
+                //   ],
+                // ),
                 Text(
                   'How helpful was this response?',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.w800,
                     color: cs.onSurface,
                     letterSpacing: -0.5,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
                 Text(
                   'Your feedback helps improve future answers',
                   textAlign: TextAlign.center,
@@ -1278,44 +1270,49 @@ class HomeScreen extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  '${rating.toInt()}%',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900,
-                    color: rating < 70 ? cs.tertiary : cs.primary,
-                    letterSpacing: -1,
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: .center,
+                  children: [
+                  SliderTheme(
+                    data: SliderTheme.of(stateContext).copyWith(
+                      activeTrackColor: cs.primary,
+                      inactiveTrackColor: cs.outlineVariant,
+                      thumbColor: cs.primary,
+                      overlayColor: cs.primary.withOpacity(0.12),
+                      trackHeight: 3,padding: EdgeInsets.zero,
+                      thumbShape: const RoundSliderThumbShape(
+                          enabledThumbRadius: 8, elevation: 3),
+                      trackShape: const RoundedRectSliderTrackShape(),
+                    ),
+                    child: Slider(
+                      value: rating,
+                      min: 0,
+                      max: 100,
+                      onChanged: (v) => setState(() => rating = v),
+                    ),
                   ),
-                ),
-                SliderTheme(
-                  data: SliderTheme.of(stateContext).copyWith(
-                    activeTrackColor: cs.primary,
-                    inactiveTrackColor: cs.outlineVariant,
-                    thumbColor: cs.primary,
-                    overlayColor: cs.primary.withOpacity(0.12),
-                    trackHeight: 3,
-                    thumbShape: const RoundSliderThumbShape(
-                        enabledThumbRadius: 8, elevation: 3),
-                    trackShape: const RoundedRectSliderTrackShape(),
+                    const SizedBox(width: 16),
+                  Text(
+                    '${rating.toInt()}%',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: rating < 70 ? cs.tertiary : cs.primary,
+                      letterSpacing: -1,
+                    ),
                   ),
-                  child: Slider(
-                    value: rating,
-                    min: 0,
-                    max: 100,
-                    onChanged: (v) => setState(() => rating = v),
-                  ),
-                ),
-                const SizedBox(height: 12),
+                ],),
+                const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
+                            horizontal: 10, vertical: 6),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                            borderRadius: BorderRadius.circular(10)),
                         side: BorderSide(color: cs.outline),
                       ),
                       onPressed: () => Navigator.pop(stateContext),
@@ -1327,7 +1324,7 @@ class HomeScreen extends StatelessWidget {
                             fontSize: 12),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 8),
                     ElevatedButton(
                       onPressed: () async {
                         Navigator.pop(stateContext);
@@ -1347,15 +1344,15 @@ class HomeScreen extends StatelessWidget {
                         backgroundColor: cs.inverseSurface,
                         foregroundColor: cs.onInverseSurface,
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
+                            horizontal: 10, vertical: 6),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                            borderRadius: BorderRadius.circular(10)),
                         elevation: 0,
                       ),
                       child: const Text(
                         'Submit feedback',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 12),
+                        style:
+                        TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
                       ),
                     ),
                   ],
@@ -1468,35 +1465,37 @@ class HomeScreen extends StatelessWidget {
   }
 
   // ── Session options dialog ───────────────────────────────────────────────
-
   void _showSessionOptions(
-    BuildContext context,
-    dynamic session,
-    dynamic controller,
-  ) {
+      BuildContext context,
+      dynamic session,
+      dynamic controller,
+      ) {
     final cs = context.cs;
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
         backgroundColor: cs.surfaceContainerLow,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: 10),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'Chat Options',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.5,
-                  color: cs.onSurface,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                child: Text(
+                  'Chat Options',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.5,
+                    color: cs.onSurface,
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
               Divider(height: 1, color: cs.outlineVariant),
+              const SizedBox(height: 4),
               _buildDialogOption(
                 context: context,
                 icon: Icons.edit_outlined,
@@ -1512,8 +1511,7 @@ class HomeScreen extends StatelessWidget {
                 label: 'Export Chat',
                 onTap: () {
                   Navigator.pop(ctx);
-                  controller.exportSessionChatApi(
-                      context, session.sessionId);
+                  controller.exportSessionChatApi(context, session.sessionId);
                 },
               ),
               _buildDialogOption(
@@ -1523,8 +1521,7 @@ class HomeScreen extends StatelessWidget {
                 isDestructive: true,
                 onTap: () {
                   Navigator.pop(ctx);
-                  _showDeleteConfirmationDialog(
-                      context, session, controller);
+                  _showDeleteConfirmationDialog(context, session, controller);
                 },
               ),
             ],
@@ -1533,7 +1530,6 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-
   Widget _buildDialogOption({
     required BuildContext context,
     required IconData icon,
@@ -1547,22 +1543,17 @@ class HomeScreen extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Row(
             children: [
-              Icon(icon,
-                  size: 20,
-                  color:
-                      isDestructive ? cs.error : cs.onSurface),
-              const SizedBox(width: 16),
+              Icon(icon, size: 18, color: isDestructive ? cs.error : cs.onSurface),
+              const SizedBox(width: 12),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color:
-                      isDestructive ? cs.error : cs.onSurface,
+                  color: isDestructive ? cs.error : cs.onSurface,
                 ),
               ),
             ],
@@ -1585,9 +1576,12 @@ class HomeScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: cs.surfaceContainerLow,
+        backgroundColor: cs.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+        actionsPadding: const EdgeInsets.only(bottom: 8, right: 16, top: 4),
         title: Text('Edit Chat Title',
-            style: TextStyle(color: cs.onSurface)),
+            style: TextStyle(color: cs.onSurface, fontWeight: FontWeight.w600, fontSize: 18)),
         content: TextField(
           controller: editController,
           style: TextStyle(color: cs.onSurface),
@@ -1596,8 +1590,10 @@ class HomeScreen extends StatelessWidget {
             hintStyle:
                 TextStyle(color: cs.onSurface.withOpacity(0.4)),
             border: OutlineInputBorder(
-                borderSide: BorderSide(color: cs.outline)),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: cs.outline.withOpacity(0.5))),
             focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: cs.primary)),
           ),
           autofocus: true,
@@ -1608,11 +1604,7 @@ class HomeScreen extends StatelessWidget {
             child: Text('Cancel',
                 style: TextStyle(color: cs.onSurface.withOpacity(0.6))),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: cs.inverseSurface,
-              foregroundColor: cs.onInverseSurface,
-            ),
+          TextButton(
             onPressed: () {
               final newTitle = editController.text.trim();
               if (newTitle.isNotEmpty) {
@@ -1621,7 +1613,7 @@ class HomeScreen extends StatelessWidget {
                     context, session.sessionId, newTitle);
               }
             },
-            child: const Text('Save'),
+            child: Text('Save', style: TextStyle(color: cs.primary, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -1639,9 +1631,12 @@ class HomeScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: cs.surfaceContainerLow,
+        backgroundColor: cs.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+        actionsPadding: const EdgeInsets.only(bottom: 8, right: 16, top: 4),
         title: Text('Delete Chat?',
-            style: TextStyle(color: cs.onSurface)),
+            style: TextStyle(color: cs.onSurface, fontWeight: FontWeight.w600, fontSize: 18)),
         content: Text(
           'Are you sure you want to delete this chat history? This action cannot be undone.',
           style: TextStyle(color: cs.onSurface.withOpacity(0.7)),
@@ -1652,16 +1647,12 @@ class HomeScreen extends StatelessWidget {
             child: Text('Cancel',
                 style: TextStyle(color: cs.onSurface.withOpacity(0.6))),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: cs.error,
-              foregroundColor: cs.onError,
-            ),
+          TextButton(
             onPressed: () {
               Navigator.pop(ctx);
               controller.deleteSessionApi(context, session.sessionId);
             },
-            child: const Text('Delete'),
+            child: Text('Delete', style: TextStyle(color: cs.error, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -1848,33 +1839,28 @@ class HomeScreen extends StatelessWidget {
   }) {
     final cs = context.cs;
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 6),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
           onLongPress: onLongPress,
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(12),
           child: Container(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15),
-              color: isDestructive
-                  ? cs.error.withOpacity(0.07)
-                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+              color: isDestructive ? cs.error.withOpacity(0.07) : Colors.transparent,
             ),
             child: Row(
               children: [
-                Icon(icon,
-                    size: 22,
-                    color: isDestructive ? cs.error : cs.onSurface),
-                const SizedBox(width: 16),
+                Icon(icon, size: 20, color: isDestructive ? cs.error : cs.onSurface),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     label,
                     style: TextStyle(
-                      fontSize: 15,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: isDestructive ? cs.error : cs.onSurface,
                     ),
@@ -2111,7 +2097,6 @@ class HomeScreen extends StatelessWidget {
   }
 
   // ── Credits widget ────────────────────────────────────────────────────────
-
   Widget _buildCreditsUI(BuildContext context, {bool inPopup = false}) {
     final cs = context.cs;
     return Obx(() {
@@ -2119,23 +2104,21 @@ class HomeScreen extends StatelessWidget {
         return Container(
           margin: inPopup
               ? EdgeInsets.zero
-              : const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          padding: const EdgeInsets.all(16),
-          height: 80,
+              : const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          padding: const EdgeInsets.all(12),
+          height: 64,
           decoration: BoxDecoration(
             color: cs.surfaceContainerLowest,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-                color: cs.outlineVariant.withOpacity(0.5), width: 1),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: cs.outlineVariant.withOpacity(0.5), width: 1),
           ),
           child: Center(
             child: SizedBox(
-              width: 20,
-              height: 20,
+              width: 18,
+              height: 18,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                valueColor:
-                    AlwaysStoppedAnimation<Color>(cs.primary),
+                valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
               ),
             ),
           ),
@@ -2145,27 +2128,24 @@ class HomeScreen extends StatelessWidget {
       return Container(
         margin: inPopup
             ? EdgeInsets.zero
-            : const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        padding: const EdgeInsets.all(16),
+            : const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: cs.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-              color: cs.outlineVariant.withOpacity(0.5), width: 1),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: cs.outlineVariant.withOpacity(0.5), width: 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(Icons.toll_outlined,
-                    size: 20,
-                    color: cs.onSurface.withOpacity(0.6)),
-                const SizedBox(width: 8),
+                Icon(Icons.toll_outlined, size: 18, color: cs.onSurface.withOpacity(0.6)),
+                const SizedBox(width: 6),
                 Text(
                   'Credits',
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: cs.onSurface,
                   ),
@@ -2174,24 +2154,22 @@ class HomeScreen extends StatelessWidget {
                 Text(
                   '${controller.creditsLeft.value.toStringAsFixed(2)}/${controller.totalCredits.value.toInt()}',
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 13,
                     fontWeight: FontWeight.w700,
                     color: cs.onSurface,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             ClipRRect(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(8),
               child: LinearProgressIndicator(
-                value: (controller.creditsLeft.value /
-                        controller.totalCredits.value)
+                value: (controller.creditsLeft.value / controller.totalCredits.value)
                     .clamp(0.0, 1.0),
                 backgroundColor: cs.surfaceContainerHighest,
-                valueColor:
-                    AlwaysStoppedAnimation<Color>(cs.primary),
-                minHeight: 8,
+                valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
+                minHeight: 6,
               ),
             ),
           ],
@@ -2256,9 +2234,7 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildAvatar(BuildContext context, String name,
-      {double size = 40}) {
+  Widget _buildAvatar(BuildContext context, String name, {double size = 36}) {
     final cs = context.cs;
     String initial = name.isNotEmpty ? name[0].toUpperCase() : 'U';
     return Container(
@@ -2281,7 +2257,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // ── Profile dialog ────────────────────────────────────────────────────────
+// ── Profile dialog ────────────────────────────────────────────────────────
 
   void _showProfileDialog(BuildContext context) {
     showDialog(
@@ -2290,150 +2266,146 @@ class HomeScreen extends StatelessWidget {
         return ValueListenableBuilder<String>(
           valueListenable: NormalThemeController().currentTheme,
           builder: (context, themeKey, child) {
-            final cs = Theme
-                .of(context)
-                .colorScheme;
+            final cs = Theme.of(context).colorScheme;
             return Dialog(
-                backgroundColor: cs.surfaceContainerLow,
-                surfaceTintColor: cs.surfaceTint,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20)),
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  width: 320,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Obx(() =>
-                              _buildAvatar(
-                                context,
-                                controller.userName.value.isNotEmpty
-                                    ? controller.userName.value
-                                    : 'U',
-                                size: 50,
-                              )),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Obx(
-                                  () =>
-                                  Text(
-                                    controller.userName.value.isNotEmpty
-                                        ? controller.userName.value
-                                        : 'U',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w800,
-                                      color: cs.onSurface,
-                                    ),
-                                  ),
+              backgroundColor: cs.surfaceContainerLow,
+              surfaceTintColor: cs.surfaceTint,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                width: 300,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Obx(() => _buildAvatar(
+                          context,
+                          controller.userName.value.isNotEmpty
+                              ? controller.userName.value
+                              : 'U',
+                          size: 42,
+                        )),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Obx(
+                                () => Text(
+                              controller.userName.value.isNotEmpty
+                                  ? controller.userName.value
+                                  : 'U',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: cs.onSurface,
+                              ),
                             ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      Divider(color: cs.outlineVariant, height: 1),
-                      const SizedBox(height: 20),
-                      _buildCreditsUI(context, inPopup: true),
-                      const SizedBox(height: 16),
-                      _buildDrawerItem(
-                        context: context,
-                        icon: Icons.settings_outlined,
-                        label: 'Settings',
-                        onTap: () {
-                          Navigator.pop(dialogContext);
-                          Get.snackbar(
-                            'Settings',
-                            'Coming soon...',
-                            snackPosition: SnackPosition.BOTTOM,
-                            backgroundColor: cs.inverseSurface,
-                            colorText: cs.onInverseSurface,
-                          );
-                        },
-                      ),
-                      AppTheme.instance.dropdownBuilder(
-                            (selectedKey, themeMap, changeTheme) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(15),
-                                color: cs.onSurface.withOpacity(0.03),
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  value: selectedKey,
-                                  dropdownColor: cs.surfaceContainerLow,
-                                  isExpanded: true,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16),
-                                  icon: Icon(Icons.keyboard_arrow_down_rounded,
-                                      color: cs.onSurface.withOpacity(0.4)),
-                                  items: themeMap.entries.map((e) {
-                                    return DropdownMenuItem(
-                                      value: e.key,
-                                      child: Row(
-                                        children: [
-                                          Icon(
-                                            e.key == 'dark'
-                                                ? Icons.dark_mode_outlined
-                                                : e.key == 'light'
-                                                ? Icons.light_mode_outlined
-                                                : Icons
-                                                .brightness_auto_outlined,
-                                            size: 20,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Divider(color: cs.outlineVariant, height: 1),
+                    const SizedBox(height: 12),
+                    _buildCreditsUI(context, inPopup: true),
+                    const SizedBox(height: 10),
+                    _buildDrawerItem(
+                      context: context,
+                      icon: Icons.settings_outlined,
+                      label: 'Settings',
+                      onTap: () {
+                        Navigator.pop(dialogContext);
+                        Get.snackbar(
+                          'Settings',
+                          'Coming soon...',
+                          snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: cs.inverseSurface,
+                          colorText: cs.onInverseSurface,
+                        );
+                      },
+                    ),
+                    AppTheme.instance.dropdownBuilder(
+                          (selectedKey, themeMap, changeTheme) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              color: cs.onSurface.withOpacity(0.03),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: selectedKey,
+                                dropdownColor: cs.surfaceContainerLow,
+                                isExpanded: true,
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                icon: Icon(Icons.keyboard_arrow_down_rounded,
+                                    color: cs.onSurface.withOpacity(0.4)),
+                                items: themeMap.entries.map((e) {
+                                  return DropdownMenuItem(
+                                    value: e.key,
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          e.key == 'dark'
+                                              ? Icons.dark_mode_outlined
+                                              : e.key == 'light'
+                                              ? Icons.light_mode_outlined
+                                              : Icons.brightness_auto_outlined,
+                                          size: 18,
+                                          color: cs.onSurface,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Text(
+                                          e.value.name,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
                                             color: cs.onSurface,
                                           ),
-                                          const SizedBox(width: 16),
-                                          Text(
-                                            e.value.name,
-                                            style: TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w600,
-                                              color: cs.onSurface,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }).toList(),
-                                  onChanged: (key) {
-                                    if (key != null) {
-                                      changeTheme(key);
-                                      AppTheme.instance.updateTheme(key);
-                                    }
-                                  },
-                                ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                                onChanged: (key) {
+                                  if (key != null) {
+                                    changeTheme(key);
+                                    AppTheme.instance.updateTheme(key);
+                                  }
+                                },
                               ),
                             ),
-                          );
-                        },
-                      ),
-                      _buildDrawerItem(
-                        context: context,
-                        icon: Icons.data_usage_rounded,
-                        label: 'Data controls',
-                        onTap: () {
-                          Navigator.pop(dialogContext);
-                          Get.to(() => const DataControlsView());
-                        },
-                      ),
-                      _buildDrawerItem(
-                        context: context,
-                        icon: Icons.logout_rounded,
-                        label: 'Logout',
-                        isDestructive: true,
-                        onTap: () {
-                          Navigator.pop(dialogContext);
-                          controller.logout(context);
-                        },
-                      ),
-                    ],
-                  ),
-                ));
+                          ),
+                        );
+                      },
+                    ),
+                    _buildDrawerItem(
+                      context: context,
+                      icon: Icons.data_usage_rounded,
+                      label: 'Data controls',
+                      onTap: () {
+                        Navigator.pop(dialogContext);
+                        Get.to(() => const DataControlsView());
+                      },
+                    ),
+                    _buildDrawerItem(
+                      context: context,
+                      icon: Icons.logout_rounded,
+                      label: 'Logout',
+                      isDestructive: true,
+                      onTap: () {
+                        Navigator.pop(dialogContext);
+                        controller.logout(context);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            );
           },
         );
-      });}
+      },
+    );
+  }
 }

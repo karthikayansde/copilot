@@ -123,25 +123,21 @@ class _DataControlsViewState extends State<DataControlsView> {
           'Data Controls',
           style: TextStyle(
             color: cs.onSurface,
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
           ),
         ),
-        backgroundColor: cs.surface,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new,
               color: cs.onSurface, size: 18),
           onPressed: () => Get.back(),
         ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Divider(color: cs.outlineVariant, height: 1),
-        ),
       ),
       body: Obx(
             () => Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(24.0),
           child: Stack(
             children: [
               Column(
@@ -150,8 +146,8 @@ class _DataControlsViewState extends State<DataControlsView> {
                   Text(
                     'Export Data',
                     style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
                       color: cs.onSurface,
                     ),
                   ),
@@ -164,14 +160,14 @@ class _DataControlsViewState extends State<DataControlsView> {
                       height: 1.5,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
                   BasicButtonWidget(
                     onPressed: () {
             (isExporting.value ? null : _exportChatHistory());
             },
-                    label: "Export & Download Chat History",
+                    label: "Export & Download",
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 16),
                   _buildAestheticNote(cs),
                 ],
               ),
@@ -187,29 +183,22 @@ class _DataControlsViewState extends State<DataControlsView> {
   }
 
   Widget _buildAestheticNote(ColorScheme cs) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: cs.outlineVariant),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.info_outline, color: cs.onSurface.withOpacity(0.5), size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'Your export will be saved as a .docx file containing all your conversations with iMirAI.',
-              style: TextStyle(
-                fontSize: 13,
-                color: cs.onSurface.withOpacity(0.55),
-                height: 1.4,
-              ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(Icons.info_outline, color: cs.onSurface.withOpacity(0.4), size: 18),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            'Your export will be saved as a .docx file containing all your conversations with iMirAI.',
+            style: TextStyle(
+              fontSize: 13,
+              color: cs.onSurface.withOpacity(0.5),
+              height: 1.4,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
