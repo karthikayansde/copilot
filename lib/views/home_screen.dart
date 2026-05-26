@@ -1581,20 +1581,21 @@ class HomeScreen extends StatelessWidget {
         contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
         actionsPadding: const EdgeInsets.only(bottom: 8, right: 16, top: 4),
         title: Text('Edit Chat Title',
-            style: TextStyle(color: cs.onSurface, fontWeight: FontWeight.w600, fontSize: 18)),
+            style: TextStyle(color: cs.onSurface, fontWeight: FontWeight.w500, fontSize: 16)),
         content: TextField(
           controller: editController,
-          style: TextStyle(color: cs.onSurface),
+          style: TextStyle(color: cs.onSurface, fontSize: 15, fontWeight: FontWeight.w400),
           decoration: InputDecoration(
             hintText: 'Enter new title',
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             hintStyle:
-                TextStyle(color: cs.onSurface.withOpacity(0.4)),
+                TextStyle(color: cs.onSurface.withOpacity(0.4), fontSize: 15),
             border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: cs.outline.withOpacity(0.5))),
+                borderSide: BorderSide(color: cs.outline.withOpacity(0.3), width: 0.5)),
             focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: cs.primary)),
+                borderSide: BorderSide(color: cs.primary, width: 1)),
           ),
           autofocus: true,
         ),
@@ -1602,7 +1603,7 @@ class HomeScreen extends StatelessWidget {
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text('Cancel',
-                style: TextStyle(color: cs.onSurface.withOpacity(0.6))),
+                style: TextStyle(color: cs.onSurface.withOpacity(0.5), fontWeight: FontWeight.w500, fontSize: 14)),
           ),
           TextButton(
             onPressed: () {
@@ -1613,7 +1614,7 @@ class HomeScreen extends StatelessWidget {
                     context, session.sessionId, newTitle);
               }
             },
-            child: Text('Save', style: TextStyle(color: cs.primary, fontWeight: FontWeight.w600)),
+            child: Text('Save', style: TextStyle(color: cs.primary, fontWeight: FontWeight.w500, fontSize: 14)),
           ),
         ],
       ),
@@ -1636,23 +1637,23 @@ class HomeScreen extends StatelessWidget {
         contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
         actionsPadding: const EdgeInsets.only(bottom: 8, right: 16, top: 4),
         title: Text('Delete Chat?',
-            style: TextStyle(color: cs.onSurface, fontWeight: FontWeight.w600, fontSize: 18)),
+            style: TextStyle(color: cs.onSurface, fontWeight: FontWeight.w500, fontSize: 16)),
         content: Text(
           'Are you sure you want to delete this chat history? This action cannot be undone.',
-          style: TextStyle(color: cs.onSurface.withOpacity(0.7)),
+          style: TextStyle(color: cs.onSurface.withOpacity(0.6), fontSize: 14, height: 1.4),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text('Cancel',
-                style: TextStyle(color: cs.onSurface.withOpacity(0.6))),
+                style: TextStyle(color: cs.onSurface.withOpacity(0.5), fontWeight: FontWeight.w500, fontSize: 14)),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
               controller.deleteSessionApi(context, session.sessionId);
             },
-            child: Text('Delete', style: TextStyle(color: cs.error, fontWeight: FontWeight.w600)),
+            child: Text('Delete', style: TextStyle(color: cs.error, fontWeight: FontWeight.w500, fontSize: 14)),
           ),
         ],
       ),

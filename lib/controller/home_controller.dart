@@ -293,29 +293,33 @@ class HomeController extends GetxController {
           'Confirm Logout',
           style: TextStyle(
             color: Theme.of(context).colorScheme.onSurface,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
           ),
         ),
         content: Text(
           'Are you sure you want to logout?',
           style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
           ),
         ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+        actionsPadding: const EdgeInsets.only(bottom: 8, right: 16, top: 4),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
             child: Text(
               'Cancel',
-              style: TextStyle(color: Theme.of(context).colorScheme.primary),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
             ),
           ),
-          BasicButtonWidget(
-            height: 40,
-            width: 100,
+          TextButton(
             onPressed: () => Get.back(result: true),
-            label: AppStrings.logout,
+            child: Text(
+              AppStrings.logout,
+              style: TextStyle(color: Theme.of(context).colorScheme.error, fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),
