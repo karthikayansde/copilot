@@ -294,7 +294,7 @@ class _ResendActivationViewState extends State<ResendActivationView> {
         method: ApiMethod.post,
         customUrl: true,
         useFormData: true,
-        endpoint: Endpoints.registerBaseUrl + Endpoints.resendActivation,
+        endpoint: Endpoints.resendActivation,
         body: {
           "username": _usernameController.text,
           "password": _passwordController.text,

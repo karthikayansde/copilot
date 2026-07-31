@@ -38,7 +38,7 @@ class _DataControlsViewState extends State<DataControlsView> {
       }
 
       final String url =
-          '${Endpoints.baseUrl}${Endpoints.exportChats}$username';
+          '${Endpoints.exportChats}$username';
       debugPrint('Exporting chats from: $url');
 
       final response = await http.get(Uri.parse(url));

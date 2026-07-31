@@ -786,7 +786,7 @@ class HomeController extends GetxController {
         return;
       }
 
-      final String url = '${Endpoints.baseUrl}${Endpoints.exportChats}$username/$sessionID';
+      final String url = '${Endpoints.exportChats}$username/$sessionID';
       debugPrint('Exporting session chats from: $url');
 
       final response = await http.get(Uri.parse(url));
@@ -948,7 +948,7 @@ class HomeController extends GetxController {
       ApiResponse response = await apiService.request(
         method: ApiMethod.post,
         customUrl: true,
-        endpoint: Endpoints.insightBaseUrl + Endpoints.dataInsights,
+        endpoint: Endpoints.dataInsights,
         body: {
           "SESSION_ID": sessionId,
           "QUESTION": userQuestion,
@@ -1049,8 +1049,7 @@ class HomeController extends GetxController {
 
   try {
     final url = Uri.parse(
-      Endpoints.askQuestionBaseUrl +
-          Endpoints.askQuestion.replaceAll(RegExp(r'/$'), ''),
+      Endpoints.askQuestion.replaceAll(RegExp(r'/$'), ''),
     );
 
     final response = await http.post(
@@ -1161,7 +1160,7 @@ class HomeController extends GetxController {
         response = await apiService.request(
           method: ApiMethod.post,
           customUrl: true,
-          endpoint: Endpoints.chatWithDataMobBaseUrl + Endpoints.chatWithDataMob,
+          endpoint: Endpoints.chatWithDataMob,
           body: {
             "question": '',
             "sellnow": "sell",
@@ -1173,7 +1172,7 @@ class HomeController extends GetxController {
         response = await apiService.request(
           method: ApiMethod.post,
           customUrl: true,
-          endpoint: Endpoints.chatWithDataBaseUrl + Endpoints.chatWithData,
+          endpoint: Endpoints.chatWithData,
           body: {
             "SESSION_ID": sessionId,
             "QUESTION": originalQuestion,

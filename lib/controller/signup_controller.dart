@@ -53,7 +53,7 @@ class SignupController extends GetxController {
       ApiResponse response = await apiService.request(
         method: ApiMethod.post,
         customUrl: true,
-        endpoint: Endpoints.registerBaseUrl+Endpoints.signUp,
+        endpoint: Endpoints.signUp,
         body: {
           "name": nameController.text,
           "username": userNameController.text,

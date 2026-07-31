@@ -144,7 +144,10 @@ class ApiService {
     bool customUrl = false,
     bool useFormData = false,
   }) async {
-    final Uri uri = Uri.parse('${customUrl?"":Endpoints.baseUrl}$endpoint');
+    final Uri uri = Uri.parse(
+        (customUrl || endpoint.startsWith('http://') || endpoint.startsWith('https://'))
+            ? endpoint
+            : '${Endpoints.baseUrl}$endpoint');
 
     // Combine common headers with any request-specific headers
     final Map<String, String> requestHeaders = {
@@ -249,7 +252,10 @@ class ApiService {
     Map<String, String>? headers,
     bool customUrl = false,
   }) async {
-    final Uri uri = Uri.parse('${customUrl?"":Endpoints.baseUrl}$endpoint');
+    final Uri uri = Uri.parse(
+        (customUrl || endpoint.startsWith('http://') || endpoint.startsWith('https://'))
+            ? endpoint
+            : '${Endpoints.baseUrl}$endpoint');
     
     var request = http.MultipartRequest('POST', uri);
     
@@ -305,7 +311,10 @@ class ApiService {
     bool useFormData = true,
   }) async*
   {
-    final Uri uri = Uri.parse('${customUrl ? "" : Endpoints.baseUrl}$endpoint');
+    final Uri uri = Uri.parse(
+        (customUrl || endpoint.startsWith('http://') || endpoint.startsWith('https://'))
+            ? endpoint
+            : '${Endpoints.baseUrl}$endpoint');
 
     final client = http.Client();
     final request = http.Request('POST', uri);
