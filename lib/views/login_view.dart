@@ -1,12 +1,8 @@
-import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
-
 import '../utils/app_strings.dart';
-import '../utils/app_validators.dart';
 import '../views/signup_view.dart';
 import '../views/resend_activation_view.dart';
 import '../views/forgot_password_view.dart';
 import '../widgets/button_widgets.dart';
-import '../widgets/snack_bar_widget.dart';
 import '../widgets/text_field_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -29,6 +25,7 @@ class _LoginViewState extends State<LoginView> {
   void initState() {
     super.initState();
     controller = Get.put(LoginController());
+    controller.usernameController.text = "";
     controller.emailController.text = "";
     controller.passwordController.text = "";
     controller.isPasswordHidden.value = true;
@@ -102,11 +99,11 @@ class _LoginViewState extends State<LoginView> {
                               TextFieldWidget(
                                 isBorderNeeded: true,
                                 hasHindOnTop: true,
-                                suffixIcon: Padding(
+                                prefixIcon: Padding(
                                   padding: const EdgeInsets.only(
-                                      left: 10, right: 10),
+                                      left: 12, right: 8),
                                   child: Icon(
-                                    Icons.person_2_outlined,
+                                    Icons.person_outline,
                                     size: 18,
                                     color: cs.onSurface.withOpacity(0.6),
                                   ),
@@ -116,8 +113,88 @@ class _LoginViewState extends State<LoginView> {
                                   AppInputFormatters.limitedText(maxLength: 50),
                                   AppInputFormatters.noSpaceFormat,
                                 ],
-                                validator: AppValidators.name,
-                                hint: AppStrings.userName,
+                                validator: (value) {
+                                  if (controller.emailController.text.trim().isEmpty &&
+                                      (value == null || value.trim().isEmpty)) {
+                                    return "Please enter username or email";
+                                  }
+                                  if (value != null && value.trim().isNotEmpty) {
+                                    if (value.contains(' ')) {
+                                      return AppStrings.userNameSpaceValidator;
+                                    }
+                                  }
+                                  return null;
+                                },
+                                hint: "your.username",
+                                header: AppStrings.userName.toUpperCase(),
+                                controller: controller.usernameController,
+                              ),
+
+                              // OR Divider
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Divider(
+                                        color: cs.outlineVariant,
+                                        thickness: 1,
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                      child: Text(
+                                        "OR",
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                          color: cs.onSurface.withOpacity(0.5),
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Divider(
+                                        color: cs.outlineVariant,
+                                        thickness: 1,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // Email field
+                              TextFieldWidget(
+                                isBorderNeeded: true,
+                                hasHindOnTop: true,
+                                prefixIcon: Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 12, right: 8),
+                                  child: Icon(
+                                    Icons.mail_outline,
+                                    size: 18,
+                                    color: cs.onSurface.withOpacity(0.6),
+                                  ),
+                                ),
+                                maxLines: 1,
+                                inputFormatters: [
+                                  AppInputFormatters.limitedText(maxLength: 100),
+                                  AppInputFormatters.noSpaceFormat,
+                                ],
+                                validator: (value) {
+                                  if (controller.usernameController.text.trim().isEmpty &&
+                                      (value == null || value.trim().isEmpty)) {
+                                    return "Please enter username or email";
+                                  }
+                                  if (value != null && value.trim().isNotEmpty) {
+                                    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                                    if (!emailRegex.hasMatch(value.trim())) {
+                                      return AppStrings.emailValidator;
+                                    }
+                                  }
+                                  return null;
+                                },
+                                hint: "you@company.com",
+                                header: AppStrings.email.toUpperCase(),
                                 controller: controller.emailController,
                               ),
 
@@ -198,8 +275,13 @@ class _LoginViewState extends State<LoginView> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (_) => ForgotPasswordView(
-                                        initialUsername:
-                                        controller.emailController.text,
+                                        initialUsername: controller
+                                                .usernameController
+                                                .text
+                                                .isNotEmpty
+                                            ? controller
+                                                .usernameController.text
+                                            : controller.emailController.text,
                                       ),
                                     ),
                                   ),
@@ -274,7 +356,15 @@ class _LoginViewState extends State<LoginView> {
                                               builder: (_) =>
                                                   ResendActivationView(
                                                     initialUsername: controller
-                                                        .emailController.text,
+                                                            .usernameController
+                                                            .text
+                                                            .isNotEmpty
+                                                        ? controller
+                                                            .usernameController
+                                                            .text
+                                                        : controller
+                                                            .emailController
+                                                            .text,
                                                     initialPassword: controller
                                                         .passwordController.text,
                                                   ),

@@ -1278,10 +1278,19 @@ class HomeController extends GetxController {
         String cellValue = "";
         if (value is List) {
           if (i < value.length) {
-            cellValue = value[i].toString();
+            var item = value[i];
+            if (item == null || item.toString().trim().toLowerCase() == "null") {
+              cellValue = "N/A";
+            } else {
+              cellValue = item.toString();
+            }
           }
         } else if (i == 0) {
-          cellValue = value.toString();
+          if (value == null || value.toString().trim().toLowerCase() == "null") {
+            cellValue = "N/A";
+          } else {
+            cellValue = value.toString();
+          }
         }
         htmlBuffer.write("<td>$cellValue</td>");
       }

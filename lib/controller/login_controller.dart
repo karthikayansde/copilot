@@ -1,10 +1,8 @@
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iMirAI/utils/app_strings.dart';
 
-import '../main.dart';
 import '../services/api/api_service.dart';
 import '../services/api/endpoints.dart';
 import '../services/shared_pref_manager.dart';
@@ -14,6 +12,7 @@ import '../widgets/snack_bar_widget.dart';
 class LoginController extends GetxController {
   // data members
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   var isPasswordHidden = true.obs;
@@ -36,7 +35,8 @@ class LoginController extends GetxController {
         customUrl: true,
         endpoint: Endpoints.login,
         body: {
-          "username": emailController.text,
+          "username": usernameController.text.trim(),
+          "email": emailController.text.trim(),
           "password": passwordController.text
         },
         useFormData: true,
@@ -106,7 +106,10 @@ class LoginController extends GetxController {
 
       if(result){
         await SharedPrefManager.instance.setBoolAsync(SharedPrefManager.isLoggedIn, true);
-        await SharedPrefManager.instance.setStringAsync(SharedPrefManager.username, emailController.text);
+        final String savedUsername = usernameController.text.isNotEmpty 
+            ? usernameController.text.trim() 
+            : emailController.text.trim();
+        await SharedPrefManager.instance.setStringAsync(SharedPrefManager.username, savedUsername);
         await SharedPrefManager.instance.setStringAsync(SharedPrefManager.role, response.data['role']??"");
         await SharedPrefManager.instance.setStringAsync(SharedPrefManager.contentAuth, response.data['CONTENT_AUTHORIZATION']??'');
         isLoading.value = false;
